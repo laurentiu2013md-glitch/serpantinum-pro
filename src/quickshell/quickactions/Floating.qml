@@ -329,7 +329,8 @@ Variants {
                 "actions/Notes.qml",
                 "actions/Calculator.qml",
                 "actions/DropShelf.qml",
-                "actions/Bluetooth.qml"
+                "actions/Bluetooth.qml",
+                "actions/Network.qml"
             ]
 
             property int tabCount: Math.max(1, tabModules.length)
@@ -346,6 +347,8 @@ Variants {
                     return { name: I18n.t("quickactions.tabs.notes"), icon: "󰈙" };
                 } else if (mod.indexOf("Calculator") !== -1) {
                     return { name: I18n.t("quickactions.tabs.calculator"), icon: "󰃬" };
+                } else if (mod.indexOf("Network") !== -1) {
+                    return { name: "Network", icon: "󰤨" };
                 } else if (mod.indexOf("Bluetooth") !== -1) {
                     return { name: "Bluetooth", icon: "󰂯" };
                 } else if (mod.indexOf("DropShelf") !== -1) {
@@ -1515,7 +1518,8 @@ Variants {
 
                             delegate: Loader {
                                 id: contentLoader
-                                active: (floatingWidget.isExpanded && index === floatingWidget.activeIndex) || status === Loader.Ready
+                                property bool retained: false
+                                active: retained || (floatingWidget.isExpanded && index === floatingWidget.activeIndex)
                                 z: 10
                                 anchors.fill: parent
                                 anchors.topMargin: floatingWidget.s(4)
@@ -1557,7 +1561,7 @@ Variants {
                                     }
                                 }
 
-                                onLoaded: updateSizes()
+                                onLoaded: { updateSizes(); Qt.callLater(() => contentLoader.retained = true); }
                                 onIsCurrentTargetChanged: updateSizes()
                                 onModWidthChanged: updateSizes()
                                 onModExtChanged: updateSizes()

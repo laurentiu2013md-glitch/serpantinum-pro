@@ -904,10 +904,10 @@ Item {
             isRightAligned: (modelData === "tray") ? contentWrapper.trayAlignRight : false
 
             HoverHandler {
-                enabled: barMod.moduleActive && (barMod.moduleId === "bt" || (contentWrapper.flatCenterArr.indexOf(barMod.moduleId) !== -1
+                enabled: barMod.moduleActive && (["bt", "wifi"].indexOf(barMod.moduleId) !== -1 || (contentWrapper.flatCenterArr.indexOf(barMod.moduleId) !== -1
                     && ["media", "timedate", "weather"].indexOf(barMod.moduleId) !== -1))
                 onHoveredChanged: {
-                    if (hovered) islandPreview.enter(barMod, barMod.moduleId === "bt" ? "bluetooth" : barMod.moduleId === "media" ? "music" : "calendar");
+                    if (hovered) islandPreview.enter(barMod, barMod.moduleId === "bt" ? "bluetooth" : barMod.moduleId === "wifi" ? "network" : barMod.moduleId === "media" ? "music" : "calendar");
                     else islandPreview.leave(barMod);
                 }
             }

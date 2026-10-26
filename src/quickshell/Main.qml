@@ -102,8 +102,9 @@ PanelWindow {
             }
 
             // The center island replaces the former standalone player/calendar windows.
-            if ((cmd === "network" || targetWidget === "network") && (arg === "bt" || arg === "bluetooth" || targetWidget === "bt")) {
-                IslandController.request("bluetooth", cmd === "close" ? "close" : "open", masterWindow.resolveTargetScreen());
+            if (cmd === "network" || targetWidget === "network" || cmd === "wifi" || targetWidget === "wifi") {
+                const kind = ["bt", "bluetooth"].indexOf(arg) !== -1 || targetWidget === "bt" ? "bluetooth" : "network";
+                IslandController.request(kind, cmd === "close" ? "close" : cmd === "toggle" ? "toggle" : "open", masterWindow.resolveTargetScreen());
                 return;
             }
             const islandTarget = ["music", "calendar"].indexOf(targetWidget) !== -1 ? targetWidget

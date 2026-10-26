@@ -83,3 +83,6 @@ singleton BluetoothController 1.0 singletons/widgetcontrols/BluetoothController.
 BluetoothPanel 1.0 bluetooth/BluetoothPanel.qml
 
 singleton BarPointerZone 1.0 singletons/widgetcontrols/BarPointerZone.qml
+
+singleton NetworkController 1.0 singletons/widgetcontrols/NetworkController.qml
+NetworkPanel 1.0 network/NetworkPanel.qml

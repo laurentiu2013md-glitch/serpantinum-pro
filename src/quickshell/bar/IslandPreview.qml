@@ -39,7 +39,7 @@ Item {
         eventUid = uid === undefined ? -1 : uid;
         eventTitle = title; eventDetail = detail; eventPriority = priority;
         eventTimer.interval = timeout;
-        if (!temporaryActive && !(opened && (panelHover.hovered || sourceHovered || kind === "bluetooth"))) {
+        if (!temporaryActive && !(opened && (panelHover.hovered || sourceHovered || (kind === "bluetooth" || kind === "network")))) {
             restoreKind = kind; restoreOpened = opened;
             temporaryActive = true; show("event");
         }
@@ -155,7 +155,7 @@ Item {
         interval: 350
         onTriggered: if (!preview.temporaryActive && !preview.sourceHovered && !panelHover.hovered && !preview.triggerHovered && !preview.triggerDragging && !bodyDrop.containsDrag && !preview.shelfDragging) preview.opened = false
     }
-    readonly property real contentHeight: s(kind === "music" ? 510 : kind === "shelf" ? 330 : kind === "bluetooth" ? 470 : kind === "event" ? (eventUid >= 0 ? 170 : 110) : 420)
+    readonly property real contentHeight: s(kind === "music" ? 510 : kind === "shelf" ? 330 : (kind === "bluetooth" || kind === "network") ? 470 : kind === "event" ? (eventUid >= 0 ? 170 : 110) : 420)
     property real expansionHeight: opened ? contentHeight : 0
     Behavior on expansionHeight { NumberAnimation { duration: Motion.duration(preview.opened ? 450 : 340); easing.type: Easing.OutBack; easing.overshoot: preview.opened ? 0.85 : 0.45 } }
     height: expansionHeight
@@ -224,6 +224,11 @@ Item {
             visible: eventTimer.running && preview.kind !== "event"
             z: 100
             LabelText { anchors.fill: parent; anchors.margins: 10; text: preview.eventTitle + " · " + preview.eventDetail; verticalAlignment: Text.AlignVCenter }
+        }
+        NetworkPanel {
+            anchors.fill: parent
+            anchors.margins: preview.s(20)
+            visible: preview.kind === "network"
         }
         BluetoothPanel {
             anchors.fill: parent

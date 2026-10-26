@@ -4,7 +4,7 @@ Pro integrates the local island/ColorOS overhaul into the actual shell source. H
 
 ## Island and hover controls
 
-The center bar rests as the configured modules. Hover the clock/weather for a combined calendar/weather view, music for the compact original player, and Bluetooth for the shared device panel. These are expansions of the bar’s own window. Legacy music/calendar and Bluetooth entry points route into the new interface.
+The center bar rests as the configured modules. Hover the clock/weather for a combined calendar/weather view, music for the compact original player, Bluetooth for the shared device panel, and Wi-Fi for the new network panel. These are expansions of the bar’s own window. Legacy music/calendar and Bluetooth entry points route into the new interface.
 
 On Hyprland the center becomes clock-only below the upper 10% of the monitor. A four-logical-pixel deadband avoids repeated animation reversals at the boundary. An open panel remains expanded while being used. The helper reads native Hyprland IPC every 80ms in one process, emits only zone transitions, and refreshes monitor geometry every five seconds. No global input overlay is installed. Without supported IPC, the full bar remains available.
 
@@ -73,3 +73,13 @@ Snapshots contain private state and absolute paths. They are intended primarily 
 The source merge retains newer fork changes outside overlapping feature hunks, including its clipboard selection/contrast fixes. Local validation covers QML lint, Python/Bash/Fish syntax and isolated snapshot/restore tests. The original live implementation was exercised on one Hyprland laptop, including native shelf dragging, saved-device Bluetooth connection, scan/power, notification actions, reduced motion and blur restoration. The merged fork is not a claim of fresh physical pairing coverage, multi-monitor hardware validation, universal compositor behavior or measured 120 FPS.
 
 Validation for this merge: all 172 changed/added QML files parsed successfully with Qt 6.12; three isolated snapshot/reset tests passed; Python AST, Bash and Fish syntax checks passed. Tests did not replace the active desktop or start a second bar.
+
+## Network panel and appearance button
+
+Hover the Wi-Fi module to open the integrated network panel. Click and legacy `network` commands also route there. It shares the same rounded parent surface, Material switch and compact row styling as Bluetooth, and is available as the Network tab in QuickActions. Native Quickshell/NetworkManager objects provide signal strength, saved and connected status, power, connection/disconnection and confirmed forgetting. Personal Wi-Fi passwords are passed through the native connection API rather than process arguments, and are cleared when submitted, canceled or the panel closes. Enterprise setup can be opened in `nmtui` through the existing terminal. Ethernet interfaces appear when available.
+
+Scanning is enabled only while a panel is visible and stops after eight seconds or when all views close. A pending connection listens for actual success/failure and has a timeout; network-list reordering does not replace that listener. The default bar includes the Wi-Fi module; existing configurations can add `wifi` through Settings.
+
+The battery/system menu contains a sun/moon button immediately beside Game Mode. Its active state represents dark mode. It uses the existing Matugen generator and current wallpaper (or a palette-derived static fallback), preserves unrelated settings, disables repeated requests while generating, and persists the selected mode. System reduced-motion support is unchanged.
+
+Live checks verified the connected network, island and QuickActions loading, scan start/timeout/close behavior, and repeated command routing without disconnecting the current Wi-Fi session. The light/dark action regenerated both palettes successfully and restored the original mode. Connecting to a new SSID, password authentication, forgetting a network and physical Ethernet transitions were not exercised against live hardware during this change.

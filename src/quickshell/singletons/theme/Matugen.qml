@@ -40,8 +40,32 @@ Item {
     signal generationStarted()
     signal generationFinished(bool success)
 
+    // The system-panel button uses the same palette generator as Theme Settings.
+    function toggleMode() {
+        if (root.isRunning) return false;
+        const previous = Object.assign({}, Config.getSetting("theme", {}));
+        const next = Object.assign({}, previous, {mode:previous.mode === "dark" ? "light" : "dark", matugen:true, activePreset:"Matugen"});
+        const screen = Quickshell.cursorScreen || Quickshell.screens[0];
+        const wallpaper = Wallpaper.getWallpaperPath(screen ? screen.name : "") || previous.wallpaper || root.lastWallpaper;
+        Config.setSetting("theme", next);
+        let accepted = false;
+        if (wallpaper) accepted = root.generate(wallpaper, next.mode, next.schemeType);
+        else {
+            const colors = {};
+            for (const role of ["base","mantle","crust","surface0","surface1","surface2","text","subtext0","subtext1","overlay0","blue","sapphire","green","yellow","peach","pink","red","maroon","mauve"]) colors[role] = ThemeBackend[role].toString();
+            accepted = root.generateFromStatic(colors, next.mode);
+        }
+        if (!accepted && !root.isRunning) {
+            Config.setSetting("theme", previous);
+            IslandController.notify("Appearance", "Unable to generate the selected Matugen mode.", 50, 2500);
+        }
+        return accepted || root.isRunning;
+    }
+
     IpcHandler {
         target: "matugen"
+        function toggleMode(): bool { return root.toggleMode(); }
+        function modeState(): string { return JSON.stringify({running:root.isRunning,mode:Config.getSetting("theme", {}).mode,light:ThemeBackend.isLight}); }
 
         function generate(imagePath: string, mode: string, schemeType: string): bool {
             return root.generate(imagePath, mode, schemeType);
