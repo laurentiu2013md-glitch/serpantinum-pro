@@ -84,8 +84,11 @@ write_tab() {
 }
 
 if [[ "$FORCE_WINDOW" != 1 ]] && { embedded_open || { ! separate_window_enabled && ! is_running; }; }; then
-    main_ipc embeddedSettings "$ACTION" "${TAB}${SUBTAB:+:$SUBTAB}"
-    exit 0
+    if main_ipc embeddedSettings "$ACTION" "${TAB}${SUBTAB:+:$SUBTAB}"; then
+        exit 0
+    fi
+    # An older running shell may lack this IPC method after an update.
+    # Continue to the standalone settings app instead of silently doing nothing.
 fi
 
 if [[ "$ACTION" == "close" ]]; then

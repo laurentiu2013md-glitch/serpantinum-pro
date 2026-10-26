@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Effects
@@ -8,7 +9,8 @@ import "../reusables"
 MusicEqualizerState {
     id: popupRoot
     visible: false
-    focus: true
+    property bool embedded: false
+    focus: !embedded
 
     property alias maskRectOuter: borderLayer.maskRectOuter
     property alias chargeAnim: borderLayer.chargeAnim
@@ -30,6 +32,14 @@ MusicEqualizerState {
 
     function resetAndPlayIntro() {
         exitAnim.stop();
+        if (embedded) {
+            introAnim.stop();
+            chargeAnim.stop();
+            introMain = introCover = introText = introControls = 1;
+            introSeparator = introEqHeader = introEqSliders = introPresets = 1;
+            audioIntroBalance = audioIntroFlags = audioIntroDynamics = 1;
+            return;
+        }
         introMain = 0;
         introCover = 0;
         introText = 0;
@@ -82,9 +92,9 @@ MusicEqualizerState {
     onActiveChanged: {
         updateLyricsSubscription();
         if (active) {
-            forceActiveFocus();
+            if (!embedded) forceActiveFocus();
             resetAndPlayIntro();
-            registerCava();
+            if (!Motion.reduced) registerCava();
             triggerLocalArtFetch();
         } else {
             exitAnim.stop();
@@ -103,9 +113,9 @@ MusicEqualizerState {
             popupRoot.savedEqData = Object.assign({}, popupRoot.eqData);
         }
         if (active) {
-            forceActiveFocus();
+            if (!embedded) forceActiveFocus();
             resetAndPlayIntro();
-            registerCava();
+            if (!Motion.reduced) registerCava();
             triggerLocalArtFetch();
             updateLyricsSubscription();
         }
@@ -119,6 +129,13 @@ MusicEqualizerState {
         }
     }
 
+    Connections {
+        target: Motion
+        function onReducedChanged() {
+            if (!popupRoot.active || Motion.reduced) popupRoot.unregisterCava();
+            else popupRoot.registerCava();
+        }
+    }
     Text {
         id: eqMeasureText
         visible: false
@@ -176,21 +193,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 2.0
-            duration: 400
+            duration: Motion.duration(420)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 1.0
-            duration: 400
+            duration: Motion.duration(400)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 0.0
-            duration: 250
+            duration: Motion.duration(320)
             easing.type: Easing.OutCubic
         }
     }
@@ -202,21 +219,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 1.0
-            duration: 400
+            duration: Motion.duration(420)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 1.0
-            duration: 400
+            duration: Motion.duration(400)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 1.0
-            duration: 250
+            duration: Motion.duration(320)
             easing.type: Easing.OutCubic
         }
     }
@@ -228,21 +245,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 0.0
-            duration: 400
+            duration: Motion.duration(420)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 0.0
-            duration: 400
+            duration: Motion.duration(400)
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 0.0
-            duration: 250
+            duration: Motion.duration(320)
             easing.type: Easing.OutCubic
         }
     }
@@ -269,16 +286,16 @@ MusicEqualizerState {
         id: audioIntroAnim
         running: false
 
-        NumberAnimation { target: popupRoot; property: "audioIntroBalance"; from: 0; to: 1.0; duration: 560; easing.type: Easing.OutQuart }
+        NumberAnimation { target: popupRoot; property: "audioIntroBalance"; from: 0; to: 1.0; duration: Motion.duration(560); easing.type: Easing.OutQuart }
 
         SequentialAnimation {
-            PauseAnimation { duration: 70 }
-            NumberAnimation { target: popupRoot; property: "audioIntroFlags"; from: 0; to: 1.0; duration: 560; easing.type: Easing.OutQuart }
+            PauseAnimation { duration: Motion.duration(70) }
+            NumberAnimation { target: popupRoot; property: "audioIntroFlags"; from: 0; to: 1.0; duration: Motion.duration(560); easing.type: Easing.OutQuart }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 150 }
-            NumberAnimation { target: popupRoot; property: "audioIntroDynamics"; from: 0; to: 1.0; duration: 560; easing.type: Easing.OutQuart }
+            PauseAnimation { duration: Motion.duration(140) }
+            NumberAnimation { target: popupRoot; property: "audioIntroDynamics"; from: 0; to: 1.0; duration: Motion.duration(560); easing.type: Easing.OutQuart }
         }
     }
 
@@ -293,41 +310,41 @@ MusicEqualizerState {
         id: introAnim
         running: false
 
-        NumberAnimation { target: popupRoot; property: "introMain"; from: 0; to: 1.0; duration: 760; easing.type: Easing.OutQuart }
+        NumberAnimation { target: popupRoot; property: "introMain"; from: 0; to: 1.0; duration: Motion.duration(760); easing.type: Easing.OutQuart }
 
         SequentialAnimation {
-            PauseAnimation { duration: 70 }
-            NumberAnimation { target: popupRoot; property: "introCover"; from: 0; to: 1.0; duration: 810; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
+            PauseAnimation { duration: Motion.duration(70) }
+            NumberAnimation { target: popupRoot; property: "introCover"; from: 0; to: 1.0; duration: Motion.duration(810); easing.type: Easing.OutBack; easing.overshoot: 1.0 }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 150 }
-            NumberAnimation { target: popupRoot; property: "introText"; from: 0; to: 1.0; duration: 760; easing.type: Easing.OutQuart }
+            PauseAnimation { duration: Motion.duration(150) }
+            NumberAnimation { target: popupRoot; property: "introText"; from: 0; to: 1.0; duration: Motion.duration(760); easing.type: Easing.OutQuart }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 230 }
-            NumberAnimation { target: popupRoot; property: "introControls"; from: 0; to: 1.0; duration: 760; easing.type: Easing.OutBack; easing.overshoot: 0.8 }
+            PauseAnimation { duration: Motion.duration(230) }
+            NumberAnimation { target: popupRoot; property: "introControls"; from: 0; to: 1.0; duration: Motion.duration(760); easing.type: Easing.OutBack; easing.overshoot: 0.8 }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 310 }
-            NumberAnimation { target: popupRoot; property: "introSeparator"; from: 0; to: 1.0; duration: 660; easing.type: Easing.OutQuart }
+            PauseAnimation { duration: Motion.duration(310) }
+            NumberAnimation { target: popupRoot; property: "introSeparator"; from: 0; to: 1.0; duration: Motion.duration(660); easing.type: Easing.OutQuart }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 370 }
-            NumberAnimation { target: popupRoot; property: "introEqHeader"; from: 0; to: 1.0; duration: 710; easing.type: Easing.OutQuart }
+            PauseAnimation { duration: Motion.duration(370) }
+            NumberAnimation { target: popupRoot; property: "introEqHeader"; from: 0; to: 1.0; duration: Motion.duration(710); easing.type: Easing.OutQuart }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 430 }
-            NumberAnimation { target: popupRoot; property: "introEqSliders"; from: 0; to: 1.0; duration: 860; easing.type: Easing.OutExpo }
+            PauseAnimation { duration: Motion.duration(430) }
+            NumberAnimation { target: popupRoot; property: "introEqSliders"; from: 0; to: 1.0; duration: Motion.duration(860); easing.type: Easing.OutExpo }
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 550 }
-            NumberAnimation { target: popupRoot; property: "introPresets"; from: 0; to: 1.0; duration: 810; easing.type: Easing.OutBack; easing.overshoot: 0.8 }
+            PauseAnimation { duration: Motion.duration(550) }
+            NumberAnimation { target: popupRoot; property: "introPresets"; from: 0; to: 1.0; duration: Motion.duration(810); easing.type: Easing.OutBack; easing.overshoot: 0.8 }
         }
     }
 
@@ -335,22 +352,22 @@ MusicEqualizerState {
         id: exitAnim
         running: false
         ParallelAnimation {
-            NumberAnimation { target: popupRoot; property: "introPresets"; to: 0.0; duration: 130; easing.type: Easing.InBack }
-            NumberAnimation { target: popupRoot; property: "introEqSliders"; to: 0.0; duration: 150; easing.type: Easing.InExpo }
+            NumberAnimation { target: popupRoot; property: "introPresets"; to: 0.0; duration: Motion.duration(130); easing.type: Easing.InBack }
+            NumberAnimation { target: popupRoot; property: "introEqSliders"; to: 0.0; duration: Motion.duration(140); easing.type: Easing.InExpo }
             SequentialAnimation {
-                PauseAnimation { duration: 30 }
-                NumberAnimation { target: popupRoot; property: "introEqHeader"; to: 0.0; duration: 130; easing.type: Easing.InCubic }
-                NumberAnimation { target: popupRoot; property: "introSeparator"; to: 0.0; duration: 130; easing.type: Easing.InCubic }
+                PauseAnimation { duration: Motion.duration(30) }
+                NumberAnimation { target: popupRoot; property: "introEqHeader"; to: 0.0; duration: Motion.duration(130); easing.type: Easing.InCubic }
+                NumberAnimation { target: popupRoot; property: "introSeparator"; to: 0.0; duration: Motion.duration(130); easing.type: Easing.InCubic }
             }
             SequentialAnimation {
-                PauseAnimation { duration: 50 }
-                NumberAnimation { target: popupRoot; property: "introControls"; to: 0.0; duration: 150; easing.type: Easing.InBack }
-                NumberAnimation { target: popupRoot; property: "introText"; to: 0.0; duration: 150; easing.type: Easing.InCubic }
-                NumberAnimation { target: popupRoot; property: "introCover"; to: 0.0; duration: 150; easing.type: Easing.InBack }
+                PauseAnimation { duration: Motion.duration(50) }
+                NumberAnimation { target: popupRoot; property: "introControls"; to: 0.0; duration: Motion.duration(140); easing.type: Easing.InBack }
+                NumberAnimation { target: popupRoot; property: "introText"; to: 0.0; duration: Motion.duration(140); easing.type: Easing.InCubic }
+                NumberAnimation { target: popupRoot; property: "introCover"; to: 0.0; duration: Motion.duration(150); easing.type: Easing.InBack }
             }
             SequentialAnimation {
-                PauseAnimation { duration: 70 }
-                NumberAnimation { target: popupRoot; property: "introMain"; to: 0.0; duration: 170; easing.type: Easing.InQuart }
+                PauseAnimation { duration: Motion.duration(70) }
+                NumberAnimation { target: popupRoot; property: "introMain"; to: 0.0; duration: Motion.duration(170); easing.type: Easing.InQuart }
             }
         }
         ScriptAction {
@@ -382,17 +399,19 @@ MusicEqualizerState {
 
         MusicBorder {
             id: borderLayer
+            visible: !popupRoot.embedded && !ThemeBackend.liquidGlass
             root: popupRoot
         }
 
         Rectangle {
             id: innerBg
             anchors.fill: parent
-            anchors.margins: ThemeBackend.liquidGlass ? 0 : popupRoot.s(3)
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            anchors.margins: popupRoot.embedded || ThemeBackend.liquidGlass ? 0 : popupRoot.s(3)
+            color: popupRoot.embedded ? "transparent" : ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             radius: ThemeBackend.borderRadius
 
             WallpaperBlur {
+                surfaceEnabled: !popupRoot.embedded
                 z: -1
                 anchors.fill: parent
                 radius: parent.radius

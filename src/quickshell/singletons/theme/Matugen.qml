@@ -20,8 +20,8 @@ Item {
         }
         return dir;
     }
-    property string configPath: matugenBaseDir + "/config.toml"
-    property string configPathStatic: matugenBaseDir + "/config-static.toml"
+    property string configPath: root.matugenBaseDir + "/config.toml"
+    property string configPathStatic: root.matugenBaseDir + "/config-static.toml"
 
     property var _pendingRequest: null
     property string _currentReqType: ""

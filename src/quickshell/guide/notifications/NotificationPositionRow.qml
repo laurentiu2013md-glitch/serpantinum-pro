@@ -304,7 +304,7 @@ SettingsRow {
                                         text: "󰂚"
                                         font.family: ThemeBackend.iconFont
                                         font.pixelSize: rootObj.s(16)
-                                        color: ThemeBackend.mauve
+                                        color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                                     }
                                 }
 

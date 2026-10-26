@@ -149,7 +149,7 @@ PanelWindow {
                         }
                         font.family: ThemeBackend.iconFont
                         font.pixelSize: polkitWindow.s(22)
-                        color: ThemeBackend.mauve
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                     }
                 }
 
@@ -214,13 +214,13 @@ PanelWindow {
                         text: "󰅚"
                         font.family: ThemeBackend.iconFont
                         font.pixelSize: polkitWindow.s(14)
-                        color: ThemeBackend.red
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.red)
                     }
 
                     Text {
                         id: errorText
                         text: PolkitService.errorMessage
-                        color: ThemeBackend.red
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.red)
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: polkitWindow.s(12)
                         font.weight: Font.Medium

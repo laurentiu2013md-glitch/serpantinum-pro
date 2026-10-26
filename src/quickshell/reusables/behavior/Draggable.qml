@@ -326,7 +326,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: root.valueFormatter(root.effectiveValue)
-            color: handleGlass.active ? ThemeBackend.text : Qt.hsla(root.accentColor.hslHue, root.accentColor.hslSaturation, 0.12, 1.0)
+            color: ThemeBackend.neutralTextColor(handleGlass.active ? ThemeBackend.text : Qt.hsla(root.accentColor.hslHue, root.accentColor.hslSaturation, 0.12, 1.0))
             font.family: "JetBrains Mono"
             font.weight: Font.Bold
             font.pixelSize: Math.max(8, Math.round(root.handleSize * 0.42 * handle.fontScale))
@@ -402,7 +402,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             text: root.valueFormatter(valueBubble.previewVal)
-            color: Qt.hsla(root.accentColor.hslHue, root.accentColor.hslSaturation, 0.12, 1.0)
+            color: ThemeBackend.neutralTextColor(Qt.hsla(root.accentColor.hslHue, root.accentColor.hslSaturation, 0.12, 1.0))
             font.family: "JetBrains Mono"
             font.weight: Font.Bold
             font.pixelSize: 11

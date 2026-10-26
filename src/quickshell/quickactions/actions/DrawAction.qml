@@ -590,7 +590,7 @@ Item {
                             color: zoomResetMouse.containsMouse ? ThemeBackend.surface0 : "transparent"
                         }
                         Text {
-                            anchors.centerIn: parent; text: Math.round(zoomContainer.scale * 100) + "%"; font.pixelSize: s(12); color: root.baseTextColor; font.bold: true
+                            anchors.centerIn: parent; text: Math.round(zoomContainer.scale * 100) + "%"; font.pixelSize: s(12); color: ThemeBackend.neutralTextColor(root.baseTextColor); font.bold: true
                         }
                         MouseArea {
                             id: zoomResetMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -689,7 +689,7 @@ Item {
                 Text {
                     text: root.currentTool === "eraser" ? "\uF12D" : (root.currentTool === "brush" ? "\uF1FC" : "\uF040")
                     font.family: root.iconFont
-                    color: root.baseTextColor
+                    color: ThemeBackend.neutralTextColor(root.baseTextColor)
                     font.pixelSize: s(16)
                     opacity: 0.7
                 }
@@ -741,7 +741,7 @@ Item {
                     TextInput {
                         anchors.fill: parent
                         anchors.margins: s(2)
-                        color: root.baseTextColor
+                        color: ThemeBackend.neutralTextColor(root.baseTextColor)
                         text: Math.round(root.actualToolSize).toString()
                         font.pixelSize: s(13)
                         verticalAlignment: TextInput.AlignVCenter
@@ -924,7 +924,7 @@ Item {
                             if (pName === "Default") return I18n.t("quickactions.draw.palette_default", "Default");
                             return pName || I18n.t("quickactions.draw.palette", "Palette");
                         }
-                        color: root.baseTextColor
+                        color: ThemeBackend.neutralTextColor(root.baseTextColor)
                         font.pixelSize: s(14)
                         font.bold: true
                         Layout.fillWidth: true
@@ -979,7 +979,7 @@ Item {
                     
                     Text { 
                         text: I18n.t("quickactions.draw.hex", "Hex")
-                        color: Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.6)
+                        color: ThemeBackend.neutralTextColor(Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.6))
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: s(13)
                         font.bold: true
@@ -995,7 +995,7 @@ Item {
                             id: hexInput
                             anchors.fill: parent
                             anchors.margins: s(4)
-                            color: root.baseTextColor
+                            color: ThemeBackend.neutralTextColor(root.baseTextColor)
                             text: root.currentColor.toString()
                             font.pixelSize: s(14)
                             verticalAlignment: TextInput.AlignVCenter

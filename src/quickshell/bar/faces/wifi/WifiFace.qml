@@ -371,7 +371,7 @@ Item {
                 font.pixelSize: s(root.isCompact ? 14 : 15)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.blue, 1.15) : (root.isActive ? ThemeBackend.blue : ThemeBackend.subtext0)
+                color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.blue, 1.15) : (root.isActive ? ThemeBackend.blue : ThemeBackend.subtext0))
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -382,7 +382,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.pixelSize: root.isVertical ? s(root.isCompact ? 9 : 10) : s(root.isCompact ? 11 : 12)
             font.bold: true
-            color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text
+            color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text)
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }

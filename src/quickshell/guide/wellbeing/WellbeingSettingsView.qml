@@ -62,7 +62,7 @@ Flickable {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: view.rootObj.s(13)
                 font.bold: true
-                color: view.tab.textMain
+                color: ThemeBackend.neutralTextColor(view.tab.textMain)
             }
         }
 

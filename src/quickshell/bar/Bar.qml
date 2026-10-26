@@ -14,6 +14,7 @@ Variants {
     delegate: Component {
         PanelWindow {
             id: barWindowRoot
+            WlrLayershell.namespace: "quickshell-coloros-" + (screen ? screen.name : "default")
             visible: barConfigReady && !shouldHideForRedact
 
             property bool pendingReload: false
@@ -50,9 +51,16 @@ Variants {
                 }
             }
 
-            WlrLayershell.keyboardFocus: (barWindowRoot.isNotifOpen || barWindowRoot.isSysOpen)
+            WlrLayershell.keyboardFocus: (barWindowRoot.isNotifOpen || barWindowRoot.isSysOpen || (contentWrapper && contentWrapper.islandBody.opened))
                 ? WlrKeyboardFocus.OnDemand
                 : WlrKeyboardFocus.None
+
+            Shortcut {
+                sequence: "Escape"
+                enabled: contentWrapper && contentWrapper.islandBody.opened
+                context: Qt.WindowShortcut
+                onActivated: contentWrapper.islandBody.opened = false
+            }
 
             property int configRevision: 0
 
@@ -112,7 +120,7 @@ Variants {
                 let dummy = configRevision;
                 return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.autohideTimeout !== undefined) ? Config.rawSettings.bar.autohideTimeout : 1000;
             }
-            property real barOpacity: ThemeBackend.elementOpacity
+            property real barOpacity: ThemeBackend.opacityForScreen(screen)
 
             HoverHandler {
                 id: barHover
@@ -241,13 +249,13 @@ Variants {
             }
 
             property int barHeight: s(thicknessSetting)
-            property real cornerRadius: s(12)
+            property real cornerRadius: ThemeBackend.borderRadius
 
             property real baseOffsetY: {
                 if (barPosition === "bottom") {
                     return isFill ? (barWindowRoot.height - barWindowRoot.barHeight) : (barWindowRoot.height - barWindowRoot.barHeight - edgePadding);
                 } else {
-                    return isFill ? 0 : edgePadding;
+                    return isFill || autohide ? 0 : s(4);
                 }
             }
 
@@ -258,28 +266,32 @@ Variants {
                 right: barPosition === "right" || !barWindowRoot.isVertical
             }
 
-            implicitHeight: barWindowRoot.isVertical ? 0 : (barHeight + (isFill ? cornerRadius : edgePadding))
+            implicitHeight: barWindowRoot.isVertical ? 0 : (barHeight + (isFill ? cornerRadius : edgePadding + (autohide ? 0 : s(4))) + contentWrapper.islandMaximumHeight)
             implicitWidth: barWindowRoot.isVertical ? (barHeight + (isFill ? cornerRadius : edgePadding)) : 0
 
             margins {
-                top: isFill ? 0 : (barPosition === "bottom" ? 0 : (autohide ? 0 : s(4)))
+                top: 0
                 bottom: isFill ? 0 : (barPosition === "top" ? 0 : (autohide ? 0 : s(4)))
                 left: isFill ? 0 : (barPosition === "right" ? 0 : (autohide ? 0 : s(4)))
                 right: isFill ? 0 : (barPosition === "left" ? 0 : (autohide ? 0 : s(4)))
             }
 
-            exclusiveZone: (!barConfigReady || autohide || shouldHideForRedact) ? 0 : barHeight
+            exclusiveZone: (!barConfigReady || autohide || shouldHideForRedact) ? 0 : barHeight + (!isFill && barPosition === "top" ? s(4) : 0)
             color: "transparent"
 
             property real activeMaskHeight: shouldHideForRedact ? 0 : ((autohide && !isRevealed) ? s(4) : (isVertical ? (isFill ? barWindowRoot.height : (effectiveBarHeight + edgePadding * 2)) : (isFill ? (barHeight + cornerRadius) : (barHeight + edgePadding))))
             property real activeMaskWidth: shouldHideForRedact ? 0 : ((autohide && !isRevealed) ? s(4) : (isVertical ? (isFill ? (barHeight + cornerRadius) : (barHeight + edgePadding)) : (isFill ? barWindowRoot.width : (effectiveBarWidth + edgePadding * 2))))
 
             mask: Region {
+                Region { item: contentWrapper.shelfEdgeArea }
+                Region {
+                    item: contentWrapper.islandBody
+                }
                 Region {
                     x: barWindowRoot.isVertical ? (barWindowRoot.barPosition === "right" ? (barWindowRoot.width - barWindowRoot.activeMaskWidth) : 0) : barWindowRoot.currentBarMinX
                     y: barWindowRoot.isVertical ? barWindowRoot.currentBarMinY : (barWindowRoot.barPosition === "bottom" ? barWindowRoot.baseOffsetY : 0)
                     width: barWindowRoot.isVertical ? barWindowRoot.activeMaskWidth : (barWindowRoot.currentBarMaxX - barWindowRoot.currentBarMinX)
-                    height: barWindowRoot.isVertical ? (barWindowRoot.currentBarMaxY - barWindowRoot.currentBarMinY) : (isFill ? barWindowRoot.barHeight : barWindowRoot.activeMaskHeight)
+                    height: barWindowRoot.isVertical ? (barWindowRoot.currentBarMaxY - barWindowRoot.currentBarMinY) : (isFill ? barWindowRoot.barHeight : barWindowRoot.activeMaskHeight + (barWindowRoot.barPosition === "top" ? barWindowRoot.baseOffsetY : 0))
                 }
                 Region {
                     x: barWindowRoot.isVertical ? (barWindowRoot.barPosition === "right" ? (barWindowRoot.width - barWindowRoot.barHeight - barWindowRoot.cornerRadius) : barWindowRoot.barHeight) : 0

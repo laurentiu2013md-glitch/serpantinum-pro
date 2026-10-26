@@ -81,7 +81,7 @@ PanelWindow {
     onWVariantChanged: updateEffectiveSize()
     onWTypeChanged: updateEffectiveSize()
 
-    WlrLayershell.namespace: "qs-widget-" + wType + "-" + wId
+    WlrLayershell.namespace: "qs-widget--coloros-" + (screen ? screen.name : "default") + wType + "-" + wId
     WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.keyboardFocus: effectiveKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 

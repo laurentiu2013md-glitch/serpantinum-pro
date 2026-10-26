@@ -242,7 +242,7 @@ Item {
                 font.pixelSize: root.isVertical ? (root.isDesktop ? s(root.isCompact ? 15 : 16) : s(root.isCompact ? 13 : 14)) : s(root.isCompact ? 14 : 15)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textMouseArea.containsMouse ? Qt.lighter(root.batDynamicColor, 1.15) : root.batDynamicColor
+                color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(root.batDynamicColor, 1.15) : root.batDynamicColor)
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -253,7 +253,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.pixelSize: root.isVertical ? s(root.isCompact ? 9 : 10) : s(root.isCompact ? 11 : 12.6)
             font.bold: true
-            color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text
+            color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text)
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
@@ -404,7 +404,7 @@ Item {
                         text: (!root.isDesktop && root.batStyle === "minimal" && root.isCharging) ? "󱐋" : root.batIcon
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: root.isDesktop ? s(root.isCompact ? 15 : 16) : s(root.isCompact ? 12 : 13.5)
-                        color: root.isDesktop ? ThemeBackend.red : (root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0)
+                        color: ThemeBackend.neutralTextColor(root.isDesktop ? ThemeBackend.red : (root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0))
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -439,7 +439,7 @@ Item {
                             text: batIconText.text
                             font.family: batIconText.font.family
                             font.pixelSize: batIconText.font.pixelSize
-                            color: batPillGlass.active ? ThemeBackend.text : Qt.rgba(ThemeBackend.crust.r, ThemeBackend.crust.g, ThemeBackend.crust.b, 0.85)
+                            color: ThemeBackend.neutralTextColor(batPillGlass.active ? ThemeBackend.text : Qt.rgba(ThemeBackend.crust.r, ThemeBackend.crust.g, ThemeBackend.crust.b, 0.85))
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
@@ -449,7 +449,7 @@ Item {
                             font.family: batPercentText.font.family
                             font.pixelSize: batPercentText.font.pixelSize
                             font.bold: batPercentText.font.bold
-                            color: batPillGlass.active ? ThemeBackend.text : ThemeBackend.crust
+                            color: ThemeBackend.neutralTextColor(batPillGlass.active ? ThemeBackend.text : ThemeBackend.crust)
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -595,7 +595,7 @@ Item {
                         text: (!root.isDesktop && root.batStyle === "minimal" && root.isCharging) ? "󱐋" : root.batIcon
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: root.isDesktop ? s(root.isCompact ? 15 : 16) : s(root.isCompact ? 12 : 13)
-                        color: root.isDesktop ? ThemeBackend.red : (root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0)
+                        color: ThemeBackend.neutralTextColor(root.isDesktop ? ThemeBackend.red : (root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0))
                     }
                 }
 
@@ -614,7 +614,7 @@ Item {
                         text: sideBatIconText.text
                         font.family: sideBatIconText.font.family
                         font.pixelSize: sideBatIconText.font.pixelSize
-                        color: batBtnGlass.active ? ThemeBackend.text : Qt.rgba(ThemeBackend.crust.r, ThemeBackend.crust.g, ThemeBackend.crust.b, 0.85)
+                        color: ThemeBackend.neutralTextColor(batBtnGlass.active ? ThemeBackend.text : Qt.rgba(ThemeBackend.crust.r, ThemeBackend.crust.g, ThemeBackend.crust.b, 0.85))
                     }
                 }
 

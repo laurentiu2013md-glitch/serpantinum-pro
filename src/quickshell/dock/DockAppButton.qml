@@ -51,7 +51,7 @@ Item {
     property real targetScale: {
         let s = baseHoverScale;
         if (btnMa.pressed && canHoverScale) {
-            return s > 1.0 ? (s * 1.04) : 1.06;
+            return s * 0.94;
         }
         return s;
     }
@@ -74,7 +74,7 @@ Item {
     property real animLift: {
         if (!canHoverScale || targetScale <= 1.0) return 0.0;
         let liftProgress = (targetScale - 1.0) / Math.max(0.01, maxHoverScale - 1.0);
-        return dockWindow.s(5) * Math.min(1.0, Math.max(0.0, liftProgress));
+        return dockWindow.s(7) * Math.min(1.0, Math.max(0.0, liftProgress));
     }
 
     property real targetOffsetX: {
@@ -104,11 +104,11 @@ Item {
 
     Behavior on currentOffsetX {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 280; easing.type: Easing.OutCubic }
     }
     Behavior on currentOffsetY {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 280; easing.type: Easing.OutCubic }
     }
 
     Rectangle {
@@ -187,13 +187,13 @@ Item {
 
             scale: dockButton.targetScale * dockButton.popScale
             Behavior on scale {
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: btnMa.pressed ? 90 : 340; easing.type: btnMa.pressed ? Easing.OutCubic : Easing.OutBack; easing.overshoot: 1.15 }
             }
 
             SequentialAnimation {
                 id: btnPopAnim
-                NumberAnimation { target: dockButton; property: "popScale"; to: 1.1; duration: 110; easing.type: Easing.OutQuad }
-                NumberAnimation { target: dockButton; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+                NumberAnimation { target: dockButton; property: "popScale"; to: 1.055; duration: 110; easing.type: Easing.OutQuad }
+                NumberAnimation { target: dockButton; property: "popScale"; to: 1.0; duration: 300; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
             }
 
             Image {

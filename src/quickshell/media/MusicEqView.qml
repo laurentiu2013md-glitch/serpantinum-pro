@@ -335,7 +335,7 @@ Item {
                             }
                             Text {
                                 text: modelData.lbl
-                                color: ThemeBackend.overlay1 || "#7f849c"
+                                color: ThemeBackend.neutralTextColor(ThemeBackend.overlay1 || "#7f849c")
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: root.s(9.5)
                                 font.bold: true

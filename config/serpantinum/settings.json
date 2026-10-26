@@ -14,9 +14,9 @@
   "bar": {
     "position": "top",
     "width": 100,
-    "height": 40,
+    "height": 48,
     "opacity": 100,
-    "style": "fill", 
+    "style": "modular",
     "time": {
       "format": "HH:mm:ss"
     },
@@ -24,34 +24,38 @@
     "autohideTimeout": 1000,
     "modules": {
       "left": [
-        "left",
-        "workspaces",
-        "media" 
+        [
+          "left",
+          "workspaces"
+        ]
       ],
-     "center": [
+      "center": [
         [
           "timedate",
-          "info",
-          "weather"
+          "media",
+          "bt"
         ]
-      ],      
-     "right": [
-        "tray",
+      ],
+      "right": [
         [
-          "kb",
-          "wifi",
-          "bt",
           "vol",
           "bat"
         ]
       ]
-    }
+    },
+    "mediaShowControls": true,
+    "mediaShowIcon": true,
+    "mediaWidth": 120
   },
   "theme": {
     "fontFamily": "Adwaita Mono",
-    "borderRadius": 10,
+    "borderRadius": 24,
     "activePreset": "Matugen",
-    "matugen": true
+    "matugen": true,
+    "elementOpacity": 50,
+    "blurBackground": true,
+    "blurStyle": "blur",
+    "mode": "light"
   },
   "idle": {
     "enabled": true,
@@ -150,5 +154,11 @@
     "showRunningIndicators": true,
     "showRunningApps": false,
     "runningScope": "auto"
+  },
+  "coloros": {
+    "neutralSurfaces": true,
+    "reducedMotion": false,
+    "adaptiveBlur": false,
+    "clockOnlyAway": true
   }
 }

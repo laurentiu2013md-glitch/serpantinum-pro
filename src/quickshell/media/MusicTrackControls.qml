@@ -36,7 +36,7 @@ ColumnLayout {
 
         Text {
             text: root.targetPlayer && root.targetPlayer.trackArtist ? I18n.t("music.by_artist", { "artist": root.targetPlayer.trackArtist }) : I18n.t("music.by_artist", { "artist": I18n.t("music.unknown_artist") })
-            color: root.dynamicTextColor
+            color: ThemeBackend.neutralTextColor(root.dynamicTextColor)
             font.family: ThemeBackend.fontFamily
             font.pixelSize: root.s(13.5)
             font.bold: true
@@ -147,7 +147,7 @@ ColumnLayout {
             Layout.fillWidth: true
             Text { 
                 text: root.formatTime(root.currentLivePosition); 
-                color: root.dynamicTextColor; 
+                color: ThemeBackend.neutralTextColor(root.dynamicTextColor);
                 font.family: ThemeBackend.fontFamily; 
                 font.bold: true; 
                 font.pixelSize: root.s(12); 
@@ -156,7 +156,7 @@ ColumnLayout {
             Item { Layout.fillWidth: true }
             Text { 
                 text: root.formatTime(root.targetPlayer ? root.targetPlayer.length : 0); 
-                color: root.dynamicTextColor; 
+                color: ThemeBackend.neutralTextColor(root.dynamicTextColor);
                 font.family: ThemeBackend.fontFamily; 
                 font.bold: true; 
                 font.pixelSize: root.s(12); 

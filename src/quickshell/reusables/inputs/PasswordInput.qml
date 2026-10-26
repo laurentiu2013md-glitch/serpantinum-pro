@@ -729,7 +729,7 @@ FocusScope {
                 text: root.placeholderText
                 font.family: root.fontFamily
                 font.pixelSize: root.fontPixelSize
-                color: root.subTextColor
+                color: ThemeBackend.neutralTextColor(root.subTextColor)
                 opacity: (innerInput.text.length === 0 && !root.hasFocus && charModel.count === 0) ? 0.45 : 0.0
                 x: root.computeRowX(implicitWidth, fieldArea.width)
                 anchors.verticalCenter: parent.verticalCenter
@@ -906,7 +906,7 @@ FocusScope {
                         id: charText
                         anchors.centerIn: parent
                         text: charSlot.glyph
-                        color: root.textColor
+                        color: ThemeBackend.neutralTextColor(root.textColor)
 
                         font.family: root.fontFamily
                         font.pixelSize: root.fontPixelSize

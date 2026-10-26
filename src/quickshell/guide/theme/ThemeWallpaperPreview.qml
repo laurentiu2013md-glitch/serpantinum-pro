@@ -307,7 +307,7 @@ Item {
                     text: wpPreviewContainer.tab.currentWallpaperPath ? wpPreviewContainer.tab.currentWallpaperPath.replace(Quickshell.env("HOME"), "~") : ""
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: rootObj.s(10)
-                    color: Qt.rgba(1, 1, 1, 0.75)
+                    color: ThemeBackend.neutralTextColor(Qt.rgba(1, 1, 1, 0.75))
                     Layout.alignment: Qt.AlignRight
                     elide: Text.ElideLeft
                     Layout.maximumWidth: Math.max(rootObj.s(100), Math.min(rootObj.s(320), wpPreviewContainer.width - rootObj.s(220)))

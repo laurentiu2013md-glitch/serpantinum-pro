@@ -77,7 +77,7 @@ FilePicker {
                             text: "󰎈"
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: soundPickerRoot.s(36)
-                            color: soundPickerRoot.selectedFilePath !== "" ? ThemeBackend.mauve : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(soundPickerRoot.selectedFilePath !== "" ? ThemeBackend.mauve : ThemeBackend.subtext0)
                         }
                     }
 
@@ -102,7 +102,7 @@ FilePicker {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Bold
                             font.pixelSize: soundPickerRoot.s(14)
-                            color: soundPickerRoot.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(soundPickerRoot.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0)
                             elide: Text.ElideMiddle
                         }
 

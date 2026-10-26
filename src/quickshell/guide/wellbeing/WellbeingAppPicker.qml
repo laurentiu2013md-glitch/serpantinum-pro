@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Controls
 import QtQuick.Layouts
 import "../../"
@@ -59,7 +60,9 @@ Item {
         width: Math.min(parent.width - rootObj.s(32), rootObj.s(480))
         height: Math.min(parent.height - rootObj.s(32), rootObj.s(70) + rootObj.s(48) * 6 + rootObj.s(56))
         radius: ThemeBackend.borderRadius <= 16 ? ThemeBackend.borderRadius * 1.5 : 24
-        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+        border.width: ThemeBackend.liquidGlass ? 0 : 1
+        border.color: Qt.alpha(ThemeBackend.surface1, 0.45)
         clip: true
         scale: picker.active ? 1.0 : 0.94
         Behavior on scale { NumberAnimation { duration: 280; easing.type: Easing.OutBack; easing.overshoot: 1.1 } }
@@ -157,7 +160,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: rootObj.s(12)
                                 font.bold: true
-                                color: row.isSelected ? ThemeBackend.mauve : ThemeBackend.text
+                                color: ThemeBackend.neutralTextColor(row.isSelected ? ThemeBackend.mauve : ThemeBackend.text)
                             }
                         }
 
@@ -173,7 +176,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: rootObj.s(11)
                                 font.weight: row.isSelected ? Font.Bold : Font.Medium
-                                color: row.isSelected ? ThemeBackend.crust : ThemeBackend.text
+                                color: ThemeBackend.neutralTextColor(row.isSelected ? ThemeBackend.crust : ThemeBackend.text)
                             }
 
                             Text {
@@ -183,7 +186,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: rootObj.s(9)
                                 opacity: 0.85
-                                color: row.isSelected ? ThemeBackend.crust : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(row.isSelected ? ThemeBackend.crust : ThemeBackend.subtext0)
                             }
                         }
                     }

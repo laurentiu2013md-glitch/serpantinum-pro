@@ -165,7 +165,7 @@ Item {
                 NumberAnimation on rotation {
                     from: 0; to: 360; duration: 25000
                     loops: Animation.Infinite
-                    running: root.active
+                    running: root.active && !Motion.reduced
                     paused: root.active && !(root.targetPlayer && root.targetPlayer.isPlaying)
                 }
 
@@ -248,7 +248,7 @@ Item {
                             anchors.centerIn: parent
                             text: "󰝚"
                             font.pixelSize: parent.width * 0.26
-                            color: ThemeBackend.overlay1 || "#7f849c"
+                            color: ThemeBackend.neutralTextColor(ThemeBackend.overlay1 || "#7f849c")
                         }
                     }
 

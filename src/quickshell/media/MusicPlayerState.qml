@@ -231,6 +231,8 @@ Item {
     property color bc4: borderColors[3] || ThemeBackend.mauve || "#cba6f7"
 
     property color dynamicTextColor: {
+        // Album-derived white text loses contrast on light shell surfaces.
+        if (ThemeBackend.isLight) return ThemeBackend.text;
         var rawCol = root.activeTextColor || (typeof MprisController !== "undefined" ? MprisController.textColor : "");
         if (rawCol) {
             var c = String(rawCol).trim();

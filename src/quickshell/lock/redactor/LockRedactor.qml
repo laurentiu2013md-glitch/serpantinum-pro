@@ -85,7 +85,7 @@ Scope {
 
                 screen: win.targetScreen
 
-                WlrLayershell.namespace: "qs-lock-redactor-" + win.safeMonitorName
+                WlrLayershell.namespace: "qs-lock-redactor--coloros-" + (screen ? screen.name : "default") + win.safeMonitorName
                 WlrLayershell.layer: WlrLayer.Overlay
                 WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -605,7 +605,7 @@ Scope {
 
                         Rectangle {
                             anchors.fill: parent
-                            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                             radius: ThemeBackend.borderRadius
 
                             WallpaperBlur {

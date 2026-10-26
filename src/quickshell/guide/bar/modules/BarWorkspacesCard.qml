@@ -60,7 +60,7 @@ BarModuleCard {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: rootObj.s(10)
                             font.bold: isActive
-                            color: isActive ? ThemeBackend.crust : ThemeBackend.text
+                            color: ThemeBackend.neutralTextColor(isActive ? ThemeBackend.crust : ThemeBackend.text)
                         }
 
                         Text {
@@ -70,7 +70,7 @@ BarModuleCard {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: rootObj.s(14)
                             font.bold: false
-                            color: isActive ? ThemeBackend.yellow : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(isActive ? ThemeBackend.yellow : ThemeBackend.subtext0)
                         }
                     }
                 }
@@ -102,7 +102,7 @@ BarModuleCard {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: rootObj.s(10)
                             font.bold: isActive
-                            color: isActive ? ThemeBackend.crust : ThemeBackend.text
+                            color: ThemeBackend.neutralTextColor(isActive ? ThemeBackend.crust : ThemeBackend.text)
                         }
 
                         Text {
@@ -112,7 +112,7 @@ BarModuleCard {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: rootObj.s(14)
                             font.bold: false
-                            color: isActive ? ThemeBackend.yellow : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(isActive ? ThemeBackend.yellow : ThemeBackend.subtext0)
                         }
                     }
                 }

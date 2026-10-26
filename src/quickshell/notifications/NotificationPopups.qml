@@ -81,7 +81,7 @@ PanelWindow {
     property bool isLeft: position.indexOf("left") !== -1
     property bool isRight: position.indexOf("right") !== -1 || (!isLeft && !isCenter)
 
-    WlrLayershell.namespace: "qs-popups"
+    WlrLayershell.namespace: "qs-popups-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
 
     anchors {
@@ -156,19 +156,20 @@ PanelWindow {
 
                 add: Transition {
                     ParallelAnimation {
-                        NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+                        NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: Motion.notification; easing.type: Easing.OutCubic }
+                        NumberAnimation { property: "scale"; from: 0.94; to: 1.0; duration: Motion.notification; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
                         NumberAnimation {
                             property: "x"
-                            from: (popupWindow.isPreset ? (popupWindow.isCenter ? 0 : (popupWindow.isLeft ? -1 : 1)) : (popupWindow.horizontalPosition < 33 ? -1 : (popupWindow.horizontalPosition > 66 ? 1 : 0))) * popupWindow.s(350) * 0.35
+                            from: (popupWindow.isPreset ? (popupWindow.isCenter ? 0 : (popupWindow.isLeft ? -1 : 1)) : (popupWindow.horizontalPosition < 33 ? -1 : (popupWindow.horizontalPosition > 66 ? 1 : 0))) * popupWindow.s(350) * 0.16
                             to: 0
-                            duration: 250
+                            duration: Motion.notification
                             easing.type: Easing.OutCubic
                         }
                         NumberAnimation {
                             property: "y"
                             from: (popupWindow.isPreset ? (popupWindow.isCenter ? (popupWindow.isBottom ? popupWindow.s(24) : -popupWindow.s(24)) : 0) : ((popupWindow.verticalPosition > 50) ? popupWindow.s(24) : -popupWindow.s(24)))
                             to: 0
-                            duration: 250
+                            duration: Motion.notification
                             easing.type: Easing.OutCubic
                         }
                     }
@@ -176,28 +177,29 @@ PanelWindow {
 
                 remove: Transition {
                     ParallelAnimation {
-                        NumberAnimation { property: "opacity"; to: 0.0; duration: 150; easing.type: Easing.OutCubic }
+                        NumberAnimation { property: "opacity"; to: 0.0; duration: Motion.menu; easing.type: Easing.InCubic }
+                        NumberAnimation { property: "scale"; to: 0.96; duration: Motion.menu; easing.type: Easing.InCubic }
                         NumberAnimation {
                             property: "x"
-                            to: (popupWindow.isPreset ? (popupWindow.isCenter ? 0 : (popupWindow.isLeft ? -1 : 1)) : (popupWindow.horizontalPosition < 33 ? -1 : (popupWindow.horizontalPosition > 66 ? 1 : 0))) * popupWindow.s(350) * 0.35
-                            duration: 250
+                            to: (popupWindow.isPreset ? (popupWindow.isCenter ? 0 : (popupWindow.isLeft ? -1 : 1)) : (popupWindow.horizontalPosition < 33 ? -1 : (popupWindow.horizontalPosition > 66 ? 1 : 0))) * popupWindow.s(350) * 0.16
+                            duration: Motion.menu
                             easing.type: Easing.OutCubic
                         }
                         NumberAnimation {
                             property: "y"
                             to: (popupWindow.isPreset ? (popupWindow.isCenter ? (popupWindow.isBottom ? popupWindow.s(24) : -popupWindow.s(24)) : 0) : ((popupWindow.verticalPosition > 50) ? popupWindow.s(24) : -popupWindow.s(24)))
-                            duration: 250
+                            duration: Motion.menu
                             easing.type: Easing.OutCubic
                         }
                     }
                 }
 
                 displaced: Transition {
-                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { property: "y"; duration: Motion.menu; easing.type: Easing.OutCubic }
                 }
 
                 removeDisplaced: Transition {
-                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { property: "y"; duration: Motion.menu; easing.type: Easing.OutCubic }
                 }
 
                 delegate: Item {

@@ -18,6 +18,9 @@ Rectangle {
     property bool isSolid: false
     property bool distinctPills: barWindow ? (barWindow.distinctPills !== undefined ? barWindow.distinctPills : false) : false
     property bool moduleActive: true
+    // Hidden island widgets retain their natural width; only their layout slot collapses.
+    property bool islandHeader: false
+    property real revealOpacity: 1
     property bool isGrouped: false
     property bool isCompact: isGrouped || (isSolid && distinctPills)
     property bool layoutAnimationsEnabled: true
@@ -25,7 +28,7 @@ Rectangle {
     property bool isRightAligned: false
     readonly property bool isRightBar: barWindow ? (barWindow.barPosition === "right") : false
     property real contentWrapperWidth: 0
-    readonly property real barOpacity: ThemeBackend.elementOpacity
+    readonly property real barOpacity: ThemeBackend.opacityForScreen(barWindow ? barWindow.screen : null)
 
     function s(val) {
         if (barWindow && typeof barWindow.cs === "function") return barWindow.cs(val);
@@ -53,7 +56,7 @@ Rectangle {
     readonly property real thickness: barWindow ? (isGrouped ? barWindow.barHeight - 8 : ((isSolid && distinctPills) ? barWindow.barHeight - 6 : barWindow.barHeight)) : (isGrouped ? 22 : ((isSolid && distinctPills) ? 24 : 30))
 
     readonly property real effectiveTargetLength: {
-        if (!moduleActive) return 0;
+        if (!moduleActive && !islandHeader) return 0;
         if (!faceLoader.item) return 0;
         if (faceLoader.item.targetLength !== undefined) {
             return faceLoader.item.targetLength;
@@ -71,25 +74,25 @@ Rectangle {
     x: targetX
     Behavior on x {
         enabled: barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: root.islandHeader ? Motion.duration(430) : Motion.duration(320); easing.type: root.islandHeader ? Easing.OutBack : Easing.OutCubic; easing.overshoot: 0.65 }
     }
 
     y: isVertical ? targetY : (barWindow ? barWindow.baseOffsetY + (barWindow.barHeight - height) / 2 : 0)
     Behavior on y {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled))
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
     }
 
     width: isVertical ? thickness : targetWidth
     Behavior on width {
         enabled: !root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
     }
 
     height: isVertical ? targetHeight : thickness
     Behavior on height {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
     }
 
     radius: ThemeBackend.borderRadius
@@ -118,7 +121,7 @@ Rectangle {
     readonly property bool isFaceVisible: faceLoader.item ? (faceLoader.item.isFaceVisible !== undefined ? faceLoader.item.isFaceVisible : true) : true
     readonly property bool effectiveVisible: moduleActive && isFaceVisible && (isVertical ? targetHeight : targetWidth) > 0
 
-    opacity: effectiveVisible ? 1.0 : 0.0
+    opacity: effectiveVisible ? revealOpacity : 0.0
     visible: false
     function updateVisible() {
         visible = opacity > 0 && (isVertical ? targetHeight : targetWidth) > 0;
@@ -130,7 +133,7 @@ Rectangle {
     enabled: moduleActive
 
     Behavior on opacity {
-        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(root.islandHeader && !root.moduleActive ? 60 : 150); easing.type: Easing.OutCubic }
     }
 
     readonly property url faceSource: BarModuleRegistry.faceFile(moduleId, variant)

@@ -422,7 +422,7 @@ GuideTab {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: rootObj.s(10)
                         font.bold: true
-                        color: ThemeBackend.red
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.red)
                     }
                 }
             }
@@ -903,7 +903,7 @@ GuideTab {
                         text: I18n.t("guide.idle.pipeline_notice", "Order: Dim Screen < Lock Session < Display Off < Suspend. Actions violating this order are excluded.")
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: rootObj.s(10)
-                        color: Qt.alpha(ThemeBackend.subtext0, 0.6)
+                        color: ThemeBackend.neutralTextColor(Qt.alpha(ThemeBackend.subtext0, 0.6))
                     }
                 }
             }

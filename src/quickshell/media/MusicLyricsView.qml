@@ -43,7 +43,7 @@ Item {
             text: "󰎈"
             font.family: ThemeBackend.iconFont
             font.pixelSize: root.s(28)
-            color: root.dynamicTextColor
+            color: ThemeBackend.neutralTextColor(root.dynamicTextColor)
             opacity: 0.75
         }
 
@@ -57,7 +57,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.DemiBold
             font.pixelSize: root.s(12)
-            color: ThemeBackend.subtext0 || "#a6adc8"
+            color: ThemeBackend.neutralTextColor(ThemeBackend.subtext0 || "#a6adc8")
         }
     }
 }

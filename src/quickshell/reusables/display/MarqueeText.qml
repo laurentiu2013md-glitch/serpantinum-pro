@@ -59,7 +59,7 @@ Item {
             Text {
                 id: mainText
                 text: root.text
-                color: root.color
+                color: ThemeBackend.neutralTextColor(root.color)
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: 12
             }
@@ -67,7 +67,7 @@ Item {
             Text {
                 id: cloneText
                 text: root.text
-                color: root.color
+                color: ThemeBackend.neutralTextColor(root.color)
                 font.family: mainText.font.family
                 font.pixelSize: mainText.font.pixelSize
                 font.weight: mainText.font.weight

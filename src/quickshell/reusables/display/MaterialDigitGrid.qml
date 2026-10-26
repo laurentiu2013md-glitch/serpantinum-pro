@@ -95,7 +95,7 @@ Item {
                     font.weight: Font.Black
                     font.variableAxes: ({ "wght": 1000, "ROND": 100, "wdth": 100 })
                     renderType: Text.NativeRendering
-                    color: Qt.rgba(0, 0, 0, modelData.alpha)
+                    color: ThemeBackend.neutralTextColor(Qt.rgba(0, 0, 0, modelData.alpha))
                 }
             }
 
@@ -108,7 +108,7 @@ Item {
                 font.weight: Font.Black
                 font.variableAxes: ({ "wght": 1000, "ROND": 100, "wdth": 100 })
                 renderType: Text.NativeRendering
-                color: cell.tint
+                color: ThemeBackend.neutralTextColor(cell.tint)
             }
         }
     }

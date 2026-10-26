@@ -20,7 +20,7 @@ ColumnLayout {
         font.family: ThemeBackend.fontFamily
         font.weight: Font.DemiBold
         font.pixelSize: rootObj.s(12)
-        color: metric.tab.textSub
+        color: ThemeBackend.neutralTextColor(metric.tab.textSub)
         text: metric.caption
     }
 
@@ -45,7 +45,7 @@ ColumnLayout {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.Bold
             font.pixelSize: metric.valueSize
-            color: metric.tab.textMain
+            color: ThemeBackend.neutralTextColor(metric.tab.textMain)
             text: metric.value
         }
     }
@@ -57,7 +57,7 @@ ColumnLayout {
         font.family: ThemeBackend.fontFamily
         font.weight: Font.Medium
         font.pixelSize: rootObj.s(11)
-        color: metric.tab.textDim
+        color: ThemeBackend.neutralTextColor(metric.tab.textDim)
         text: metric.detail
     }
 }

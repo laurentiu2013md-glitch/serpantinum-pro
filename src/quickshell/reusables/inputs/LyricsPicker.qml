@@ -11,7 +11,7 @@ PanelWindow {
     color: "transparent"
     visible: false
 
-    WlrLayershell.namespace: "qs-lyrics-picker"
+    WlrLayershell.namespace: "qs-lyrics-picker-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
@@ -110,7 +110,7 @@ PanelWindow {
                                 text: "󰈔"
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: Scaler.s(36)
-                                color: filePicker.selectedFilePath !== "" ? ThemeBackend.mauve : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(filePicker.selectedFilePath !== "" ? ThemeBackend.mauve : ThemeBackend.subtext0)
                             }
                         }
 
@@ -135,7 +135,7 @@ PanelWindow {
                                 font.family: ThemeBackend.fontFamily
                                 font.weight: Font.Bold
                                 font.pixelSize: Scaler.s(14)
-                                color: filePicker.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(filePicker.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0)
                                 elide: Text.ElideMiddle
                             }
 

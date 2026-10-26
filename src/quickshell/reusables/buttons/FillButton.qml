@@ -10,7 +10,7 @@ Item {
     implicitHeight: 56
 
     property int horizontalPadding: 30
-    property int cornerRadius: 12
+    property int cornerRadius: ThemeBackend.borderRadius
     readonly property real effectiveRadius: Math.max(0, Math.min(root.cornerRadius, Math.min(width > 0 ? width : desiredWidth, height > 0 ? height : implicitHeight) / 2))
 
     property string buttonText: ""
@@ -88,7 +88,7 @@ Item {
                 text: root.buttonIcon
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: root.iconFontSize
-                color: bRoot.contentTextColor
+                color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                 Behavior on color { ColorAnimation { duration: 150 } }
 
                 property real iconXInBRoot: contentRow.x + iconText.x + (iconText.width / 2)
@@ -121,7 +121,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Bold
                     font.pixelSize: root.textFontSize
-                    color: bRoot.contentTextColor
+                    color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
                     Behavior on color { ColorAnimation { duration: 150 } }
                 }
@@ -200,7 +200,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.weight: Font.Bold
                                 font.pixelSize: root.textFontSize
-                                color: bRoot.contentTextColor
+                                color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                                 Behavior on color { ColorAnimation { duration: 150 } }
                             }
 
@@ -228,7 +228,7 @@ Item {
                     text: root.subText
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: Math.max(10, root.textFontSize - 6)
-                    color: bRoot.contentTextColor
+                    color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
                     opacity: 0.8
                     Behavior on color { ColorAnimation { duration: 150 } }

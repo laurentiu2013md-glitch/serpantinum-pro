@@ -251,7 +251,7 @@ Item {
                 font.pixelSize: s(root.isCompact ? 14 : 15)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.subtext0)
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -261,7 +261,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.pixelSize: s(root.isCompact ? 11 : 12)
             font.bold: true
-            color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text
+            color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text)
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }

@@ -74,7 +74,7 @@ Item {
                 text: root.icon
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: Math.round(root.diameter * 0.16)
-                color: root.iconColor
+                color: ThemeBackend.neutralTextColor(root.iconColor)
             }
 
             Text {
@@ -83,7 +83,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.Black
                 font.pixelSize: Math.round(root.diameter * (root.compact ? 0.2 : 0.22))
-                color: root.valueTextColor
+                color: ThemeBackend.neutralTextColor(root.valueTextColor)
             }
 
             Text {
@@ -93,7 +93,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.DemiBold
                 font.pixelSize: Math.round(root.diameter * 0.095)
-                color: root.subTextColor
+                color: ThemeBackend.neutralTextColor(root.subTextColor)
             }
         }
     }

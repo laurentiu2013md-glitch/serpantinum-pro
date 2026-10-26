@@ -18,8 +18,8 @@ Item {
     }
 
     property var rootContext: null
-    property real cornerRadius: Math.min(ThemeBackend.borderRadius, root.s(20))
-    property real cardRadius: Math.min(ThemeBackend.borderRadius, root.s(14))
+    property real cornerRadius: ThemeBackend.borderRadius
+    property real cardRadius: ThemeBackend.borderRadius
     property color baseColor: ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))
     property color borderColor: "transparent"
     property real borderWidth: 0
@@ -181,7 +181,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.weight: Font.Bold
                 font.pixelSize: root.s(12)
-                color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0)
             }
 
             Item { Layout.fillWidth: true }
@@ -265,7 +265,7 @@ Item {
                         text: "󰂚"
                         font.family: ThemeBackend.iconFont
                         font.pixelSize: root.s(40)
-                        color: ThemeBackend.surface2
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.surface2)
                     }
                 }
 
@@ -275,7 +275,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Medium
                     font.pixelSize: root.s(12)
-                    color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.overlay0
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.overlay0)
                 }
             }
 
@@ -711,7 +711,7 @@ Item {
                                                     text: "󰄀"
                                                     font.family: ThemeBackend.iconFont
                                                     font.pixelSize: root.s(22)
-                                                    color: ThemeBackend.mauve
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                                                 }
 
                                                 Text {
@@ -720,7 +720,7 @@ Item {
                                                     text: "󰖕"
                                                     font.family: ThemeBackend.iconFont
                                                     font.pixelSize: root.s(22)
-                                                    color: ThemeBackend.peach
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.peach)
                                                 }
 
                                                 Text {
@@ -729,7 +729,7 @@ Item {
                                                     text: "󰚰"
                                                     font.family: ThemeBackend.fontFamily
                                                     font.pixelSize: root.s(22)
-                                                    color: ThemeBackend.green
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.green)
                                                 }
 
                                                 Image {
@@ -765,7 +765,7 @@ Item {
                                                     text: "󰋽"
                                                     font.family: ThemeBackend.fontFamily
                                                     font.pixelSize: root.s(22)
-                                                    color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 }
                                             }
                                         }
@@ -793,7 +793,7 @@ Item {
                                                     text: "·"
                                                     font.family: ThemeBackend.fontFamily
                                                     font.pixelSize: root.s(11)
-                                                    color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext1
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext1)
                                                     visible: opacity > 0.001
                                                     opacity: Math.max(0.0, 1.0 - groupWrapper.groupExpandProgress * 2.0)
                                                 }
@@ -815,7 +815,7 @@ Item {
                                                     text: timeText
                                                     font.family: ThemeBackend.fontFamily
                                                     font.pixelSize: root.s(11)
-                                                    color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext1
+                                                    color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext1)
                                                     visible: opacity > 0.001
                                                     opacity: Math.max(0.0, 1.0 - groupWrapper.groupExpandProgress * 2.0)
                                                 }
@@ -833,7 +833,7 @@ Item {
                                                 }
                                                 font.family: ThemeBackend.fontFamily
                                                 font.pixelSize: root.s(11)
-                                                color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0
+                                                color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 elide: Text.ElideRight
                                                 maximumLineCount: 1
                                                 visible: opacity > 0.001 && text !== ""

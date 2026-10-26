@@ -48,6 +48,7 @@ singleton Weather 1.0 singletons/environment/Weather.qml
 singleton AppMatcher 1.0 singletons/system/AppMatcher.qml
 singleton Caching 1.0 singletons/system/Caching.qml
 singleton Config 1.0 singletons/system/Config.qml
+singleton GameMode 1.0 singletons/system/GameMode.qml
 singleton CurrentFocus 1.0 singletons/system/CurrentFocus.qml
 singleton DateTime 1.0 singletons/system/DateTime.qml
 singleton FirstLaunch 1.0 singletons/system/FirstLaunch.qml
@@ -71,3 +72,14 @@ singleton TrayMenuController 1.0 singletons/widgetcontrols/TrayMenuController.qm
 singleton WidgetSync 1.0 singletons/widgetcontrols/WidgetSync.qml
 singleton DesktopMenuController singletons/widgetcontrols/DesktopMenuController.qml
 singleton DockAppMenuController 1.0 singletons/widgetcontrols/DockAppMenuController.qml
+
+singleton DropShelfStore 1.0 singletons/widgetcontrols/DropShelfStore.qml
+singleton IslandController 1.0 singletons/widgetcontrols/IslandController.qml
+
+singleton Motion 1.0 singletons/theme/Motion.qml
+singleton SurfacePolicy 1.0 singletons/theme/SurfacePolicy.qml
+
+singleton BluetoothController 1.0 singletons/widgetcontrols/BluetoothController.qml
+BluetoothPanel 1.0 bluetooth/BluetoothPanel.qml
+
+singleton BarPointerZone 1.0 singletons/widgetcontrols/BarPointerZone.qml

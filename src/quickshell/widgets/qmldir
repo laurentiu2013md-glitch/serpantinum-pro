@@ -1,3 +1,11 @@
 Widget 1.0 Widget.qml
 singleton WidgetRegistry 1.0 WidgetRegistry.qml
 SelectionOutline 1.0 SelectionOutline.qml
+SwiftlyBridge 1.0 SwiftlyBridge.qml
+singleton SwiftlyController 1.0 SwiftlyController.qml
+SwiftlyEdge 1.0 SwiftlyEdge.qml
+SwiftlyCard 1.0 SwiftlyCard.qml
+SwiftlySettings 1.0 SwiftlySettings.qml
+SwiftlyStack 1.0 SwiftlyStack.qml
+WidgetFace 1.0 WidgetFace.qml
+SwiftlyPalette 1.0 SwiftlyPalette.qml

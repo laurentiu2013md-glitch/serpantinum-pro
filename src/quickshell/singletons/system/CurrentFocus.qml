@@ -29,7 +29,7 @@ Item {
     Process {
         id: focusDaemon
         command: ["bash", "-c", "exec " + Caching.serpantinumDir + "/scripts/current_focus.sh"]
-        running: typeof Caching !== "undefined" && Caching.serpantinumDir !== undefined && Caching.serpantinumDir !== ""
+        running: !GameMode.enabled && !Config.getSetting("general", {}).lowMemory && typeof Caching !== "undefined" && Caching.serpantinumDir !== undefined && Caching.serpantinumDir !== ""
         stdout: SplitParser {
             onRead: data => root.updateFocus(data)
         }

@@ -53,7 +53,7 @@ Item {
             font.pixelSize: parent.font.pixelSize
             font.weight: parent.font.weight
             font.letterSpacing: parent.font.letterSpacing
-            color: Qt.rgba(0, 0, 0, 0.32)
+            color: ThemeBackend.neutralTextColor(Qt.rgba(0, 0, 0, 0.32))
             text: parent.text
             z: -1
         }

@@ -154,7 +154,7 @@ Rectangle {
             font.family: ThemeBackend.fontFamily
             font.pixelSize: rootObj.s(11)
             font.weight: delegateContainer.isSelected ? Font.Bold : Font.Medium
-            color: delegateContainer.textC
+            color: ThemeBackend.neutralTextColor(delegateContainer.textC)
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true
             Layout.minimumWidth: 0

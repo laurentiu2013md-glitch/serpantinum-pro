@@ -153,7 +153,7 @@ Item {
     Behavior on revealProgress {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
         NumberAnimation {
-            duration: dockWindow.isRevealed ? 240 : 180
+            duration: dockWindow.isRevealed ? 420 : 220
             easing.type: dockWindow.isRevealed ? Easing.OutCubic : Easing.InCubic
         }
     }
@@ -205,11 +205,11 @@ Item {
 
         Behavior on x {
             enabled: dockWindow.initialized && !dockWindow.positionChanging && !dockWindow.sameSideAsBar
-            NumberAnimation { duration: 280; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: dockWindow.isRevealed ? 420 : 220; easing.type: dockWindow.isRevealed ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.15 }
         }
         Behavior on y {
             enabled: dockWindow.initialized && !dockWindow.positionChanging && !dockWindow.sameSideAsBar
-            NumberAnimation { duration: 280; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: dockWindow.isRevealed ? 420 : 220; easing.type: dockWindow.isRevealed ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.15 }
         }
     }
 

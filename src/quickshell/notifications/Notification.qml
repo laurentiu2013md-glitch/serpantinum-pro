@@ -662,7 +662,7 @@ Rectangle {
                             text: "•"
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: s(10)
-                            color: typeRoot.mutedText
+                            color: ThemeBackend.neutralTextColor(typeRoot.mutedText)
                             opacity: (!typeRoot.timeOnNextRowCollapsed) ? Math.max(0.0, 1.0 - typeRoot.expandProgress * 3.0) : 0.0
                             visible: opacity > 0.0
                         }
@@ -673,7 +673,7 @@ Rectangle {
                             text: typeRoot.timeText
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: s(11)
-                            color: typeRoot.mutedText
+                            color: ThemeBackend.neutralTextColor(typeRoot.mutedText)
 
                             readonly property real startX: I18n.rtl ? (topHeaderRow.width - collapsedSummary.width - s(12) - dotLabel.implicitWidth - implicitWidth) : (collapsedSummary.width + s(12) + dotLabel.implicitWidth)
                             readonly property real endX: I18n.rtl ? typeRoot.expandBtnSpace : Math.max(0, topHeaderRow.width - typeRoot.expandBtnSpace - implicitWidth)
@@ -722,7 +722,7 @@ Rectangle {
                                     text: "•"
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: s(10)
-                                    color: typeRoot.mutedText
+                                    color: ThemeBackend.neutralTextColor(typeRoot.mutedText)
                                     anchors.verticalCenter: parent.verticalCenter
                                     visible: typeRoot.summaryLastWord !== ""
                                 }
@@ -731,7 +731,7 @@ Rectangle {
                                     text: typeRoot.timeText
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: s(11)
-                                    color: typeRoot.mutedText
+                                    color: ThemeBackend.neutralTextColor(typeRoot.mutedText)
                                     anchors.verticalCenter: parent.verticalCenter
                                     visible: typeRoot.timeText !== ""
                                 }
@@ -799,7 +799,7 @@ Rectangle {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Normal
                             font.pixelSize: typeRoot.isPopup ? s(12) : s(11)
-                            color: typeRoot.bodyText
+                            color: ThemeBackend.neutralTextColor(typeRoot.bodyText)
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             opacity: Math.max(0.0, 1.0 - typeRoot.expandProgress * 2.5)
@@ -816,7 +816,7 @@ Rectangle {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Normal
                             font.pixelSize: typeRoot.isPopup ? s(12) : s(11)
-                            color: typeRoot.bodyText
+                            color: ThemeBackend.neutralTextColor(typeRoot.bodyText)
                             wrapMode: Text.Wrap
                             textFormat: Text.StyledText
                             opacity: Math.max(0.0, (typeRoot.expandProgress - 0.2) / 0.8)

@@ -52,3 +52,6 @@ hl.animation({ leaf = "fade", enabled = true, speed = 5, bezier = "myBezier" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 5, bezier = "myBezier", style = "slide" })
 hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 5, bezier = "myBezier", style = "fade" })
 hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 5, bezier = "myBezier", style = "fade" })
+
+-- Real blur for the shell’s integrated ColorOS surfaces.
+hl.layer_rule({ name = "coloros-native-blur", order = 110, match = { namespace = ".*-coloros-.*" }, blur = true, blur_popups = true, ignore_alpha = 0.01 })

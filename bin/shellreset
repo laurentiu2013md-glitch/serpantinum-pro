@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+snapshot=${SERPANTINUM_SNAPSHOT_DIR:-"$HOME/quickshellconf"}
+if [[ ! -x "$snapshot/restore.sh" ]]; then
+    printf 'No reset snapshot found at %s. Create one with serpantinum-snapshot first.\n' "$snapshot" >&2
+    exit 1
+fi
+exec "$snapshot/restore.sh" --all "$@"

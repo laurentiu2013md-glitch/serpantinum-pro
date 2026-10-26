@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Io
 import "../"
 import "../reusables"
@@ -28,6 +29,7 @@ Item {
     }
 
     onVisibleChanged: {
+        NotificationManager.sysPanelOpen = visible;
         if (visible) {
             startupSequence.restart();
             focusTimer.restart();
@@ -58,7 +60,7 @@ Item {
             target: root
             property: "introContent"
             to: 1.0
-            duration: 400
+            duration: Motion.notification
             easing.type: Easing.OutQuart
         } 
     }
@@ -70,7 +72,7 @@ Item {
                 target: root
                 property: "introContent"
                 to: 0.0
-                duration: 250
+                duration: Motion.menu
                 easing.type: Easing.InQuart
             }
         }
@@ -96,29 +98,60 @@ Item {
         event.accepted = true;
     }
 
-    Rectangle {
+    Component.onDestruction: NotificationManager.sysPanelOpen = false
+    ClippingRectangle {
         id: sidebarPanel
         anchors.fill: parent
-        color: ThemeBackend.faded(ThemeBackend.base)
+        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
         radius: ThemeBackend.borderRadius
-        clip: true
+        border.width: 1
+        border.color: ThemeBackend.borderColor
         opacity: root.introContent
-
-        Rectangle {
-            anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom; width: root.s(16)
-            color: sidebarPanel.color
-        }
-
-        Item {
-            anchors.fill: parent
-            opacity: introContent
-            scale: 0.96 + (0.04 * introContent)
-            transform: Translate { y: root.s(40) * (1.0 - introContent) }
-
-            Reserved {
-                anchors.centerIn: parent
-                imageSize: root.s(220)
-                textSize: root.s(15)
+        WallpaperBlur { anchors.fill: parent; z: -1; radius: sidebarPanel.radius }
+        ColumnLayout {
+            anchors.fill: parent; anchors.margins: 18; spacing: 14
+            RowLayout {
+                Layout.fillWidth: true
+                Label { text: "Notifications"; font.family: ThemeBackend.fontFamily; font.pixelSize: 22; font.bold: true; color: ThemeBackend.text; Layout.fillWidth: true }
+                ClickButton { buttonText: "Clear"; enabled: NotificationManager.globalNotificationHistory.count > 0; onClicked: NotificationManager.clearNotifications() }
+            }
+            Label { visible: NotificationManager.globalNotificationHistory.count === 0; text: "No notifications"; color: ThemeBackend.subtext0; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 30 }
+            ListView {
+                id: history
+                Layout.fillWidth: true; Layout.fillHeight: true
+                clip: true; spacing: 12
+                model: NotificationManager.globalNotificationHistory
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: ScrollBar {}
+                delegate: Rectangle {
+                    id: card
+                    required property int index
+                    readonly property var entry: NotificationManager.globalNotificationHistory.get(index) || ({uid: -1, appName: "", summary: "", body: "", actionsJson: "[]"})
+                    property bool expanded: false
+                    width: history.width
+                    implicitHeight: contents.implicitHeight + 24
+                    radius: ThemeBackend.cardRadius
+                    color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
+                    ColumnLayout {
+                        id: contents
+                        anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top; anchors.margins: 12; spacing: 8
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label { text: card.entry.appName; textFormat: Text.PlainText; color: ThemeBackend.subtext0; font.family: ThemeBackend.fontFamily; font.pixelSize: 11; Layout.fillWidth: true; elide: Text.ElideRight }
+                            ClickButton { buttonText: "×"; implicitWidth: 28; onClicked: NotificationManager.dismissNotification(card.entry.uid) }
+                        }
+                        Label { text: card.entry.summary; textFormat: Text.PlainText; color: ThemeBackend.text; font.family: ThemeBackend.fontFamily; font.bold: true; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                        Label { text: card.entry.body; textFormat: Text.PlainText; color: ThemeBackend.subtext0; font.family: ThemeBackend.fontFamily; wrapMode: Text.Wrap; Layout.fillWidth: true; maximumLineCount: card.expanded ? 100 : 4; elide: Text.ElideRight }
+                        ClickButton { visible: card.entry.body.length > 100; buttonText: card.expanded ? "Show less" : "Show more"; onClicked: card.expanded = !card.expanded }
+                        Flow {
+                            Layout.fillWidth: true; spacing: 6
+                            Repeater {
+                                model: { try { return JSON.parse(card.entry.actionsJson || "[]"); } catch(error) { return []; } }
+                                ClickButton { required property var modelData; buttonText: modelData.text; onClicked: NotificationManager.invokeAction(card.entry.uid, modelData.id) }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

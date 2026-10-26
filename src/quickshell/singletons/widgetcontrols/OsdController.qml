@@ -217,6 +217,9 @@ Item {
             controller.screen = scr;
         }
         controller.isVisible = true;
+        if (controller.kind === "volume" || controller.kind === "brightness") {
+            IslandController.notify(controller.kind === "volume" ? "Volume" : "Brightness", controller.kind === "volume" ? (controller.sysMuted ? "Muted" : controller.sysVolume + "%") : controller.briVal + "%", 60, 1400, controller.screen);
+        }
         hideTimer.restart();
     }
 

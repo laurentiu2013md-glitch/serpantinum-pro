@@ -44,7 +44,7 @@ Item {
                     Layout.preferredWidth: Scaler.s(70)
                     Layout.preferredHeight: Scaler.s(70)
                     size: Scaler.s(70)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(12)) : Scaler.s(12)
+                    cornerRadius: ThemeBackend.borderRadius
                     imageRadius: cornerRadius
                     source: SystemInfo.avatarPath !== "" ? "file://" + SystemInfo.avatarPath : ""
                     backgroundColor: SystemInfo.avatarPath === "" ? ThemeBackend.surface1 : "transparent"
@@ -67,7 +67,7 @@ Item {
                     ClickButton {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Scaler.s(32)
-                        cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(8)) : Scaler.s(8)
+                        cornerRadius: ThemeBackend.borderRadius
                         horizontalPadding: Scaler.s(10)
                         contentAlignment: Qt.AlignLeft
                         buttonIcon: ""
@@ -83,7 +83,7 @@ Item {
                     ClickButton {
                         Layout.fillWidth: true
                         Layout.preferredHeight: Scaler.s(32)
-                        cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(8)) : Scaler.s(8)
+                        cornerRadius: ThemeBackend.borderRadius
                         horizontalPadding: Scaler.s(10)
                         contentAlignment: Qt.AlignLeft
                         buttonIcon: ""
@@ -117,7 +117,7 @@ Item {
                         id: actionCapsule
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(8)) : Scaler.s(8)
+                        radius: ThemeBackend.borderRadius
                         clip: true
 
                         property real fillLevel: 0.0
@@ -179,7 +179,7 @@ Item {
                             anchors.centerIn: parent
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: Scaler.s(16)
-                            color: actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                             text: actionCapsule.icon
                             Behavior on color {
                                 ColorAnimation { duration: 150 }
@@ -198,7 +198,7 @@ Item {
                                 y: (actionCapsule.height / 2) - (height / 2) - (actionCapsule.height - parent.height)
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: Scaler.s(16)
-                                color: ThemeBackend.crust
+                                color: ThemeBackend.neutralTextColor(ThemeBackend.crust)
                                 text: actionCapsule.icon
                             }
                         }

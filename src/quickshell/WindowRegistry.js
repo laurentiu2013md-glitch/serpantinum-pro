@@ -132,7 +132,7 @@ function getLayout(name, mx, my, mw, mh, userScale, barPosition) {
             } 
         },
         "system": { 
-            w: 500, h: "fill", comp: "syspanel/SystemPanel.qml", 
+            w: 520, h: "fill", comp: "syspanel/SystemPanel.qml",
             pos: { 
                 "top": { anchor: "right" }, 
                 "bottom": { anchor: "right" }, 

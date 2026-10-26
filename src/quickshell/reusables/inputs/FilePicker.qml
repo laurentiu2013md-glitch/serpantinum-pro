@@ -352,7 +352,7 @@ Popup {
                                                 text: modelData.icon
                                                 font.family: ThemeBackend.iconFont
                                                 font.pixelSize: Scaler.s(16)
-                                                color: parent.parent.parent.isActive ? ThemeBackend.crust : (placeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                                                color: ThemeBackend.neutralTextColor(parent.parent.parent.isActive ? ThemeBackend.crust : (placeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
 
                                                 Behavior on color {
                                                     ColorAnimation { duration: 150 }
@@ -365,7 +365,7 @@ Popup {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: parent.parent.isActive ? Font.Bold : Font.Medium
                                             font.pixelSize: Scaler.s(13)
-                                            color: parent.parent.isActive ? ThemeBackend.crust : (placeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                                            color: ThemeBackend.neutralTextColor(parent.parent.isActive ? ThemeBackend.crust : (placeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
                                             elide: Text.ElideRight
@@ -478,7 +478,7 @@ Popup {
 
                                         Text {
                                             text: "󰅂"
-                                            color: ThemeBackend.surface2
+                                            color: ThemeBackend.neutralTextColor(ThemeBackend.surface2)
                                             font.family: ThemeBackend.iconFont
                                             font.pixelSize: Scaler.s(14)
                                             visible: index > 0
@@ -498,7 +498,7 @@ Popup {
                                                 anchors.centerIn: parent
                                                 text: modelData.name
                                                 font.family: ThemeBackend.fontFamily
-                                                color: parent.isCurrent ? ThemeBackend.mauve : (bcMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                                                color: ThemeBackend.neutralTextColor(parent.isCurrent ? ThemeBackend.mauve : (bcMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
                                                 font.pixelSize: Scaler.s(12)
                                             }
 
@@ -637,7 +637,7 @@ Popup {
                                     text: fileIsDir ? "󰉋" : "󰋩"
                                     font.family: ThemeBackend.iconFont
                                     font.pixelSize: Scaler.s(16)
-                                    color: fileIsDir ? ThemeBackend.blue : ThemeBackend.text
+                                    color: ThemeBackend.neutralTextColor(fileIsDir ? ThemeBackend.blue : ThemeBackend.text)
                                 }
 
                                 Text {
@@ -710,7 +710,7 @@ Popup {
                     }
                     return typeof I18n !== "undefined" ? I18n.t("guide.file_picker.no_file_selected") : "No file selected";
                 }
-                color: pickerRoot.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor(pickerRoot.selectedFileName !== "" ? ThemeBackend.text : ThemeBackend.subtext0)
                 font.pixelSize: Scaler.s(14)
                 font.family: ThemeBackend.fontFamily
                 elide: Text.ElideRight

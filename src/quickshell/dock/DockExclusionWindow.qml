@@ -8,7 +8,7 @@ PanelWindow {
     required property var modelData
     screen: modelData
 
-    WlrLayershell.namespace: "qs-dock-exclusion"
+    WlrLayershell.namespace: "qs-dock-exclusion-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: dockWindow.dockOnTop ? WlrLayer.Top : WlrLayer.Bottom
     color: "transparent"
     visible: dockWindow.isEffectivelyExclusive

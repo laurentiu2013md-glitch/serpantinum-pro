@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 
 Item {
@@ -28,6 +29,27 @@ Item {
         "slack": "slack",
         "spotify": "spotify"
     })
+
+    function invokeAction(uid, identifier) {
+        const notification = liveNotifs[uid];
+        if (!notification || !notification.actions) return false;
+        for (let i = 0; i < notification.actions.length; i++) {
+            const action = notification.actions[i];
+            if (action.identifier === identifier) { action.invoke(); return true; }
+        }
+        return false;
+    }
+    IpcHandler {
+        target: "notifications"
+        function count(): int { return historyModel.count; }
+        function testIds(): string {
+            let ids = [];
+            for (let i = 0; i < historyModel.count; i++) if (historyModel.get(i).appName === "ColorOS test") ids.push(historyModel.get(i).uid);
+            return JSON.stringify(ids);
+        }
+        function action(uid: string, identifier: string): bool { return root.invokeAction(parseInt(uid), identifier); }
+        function dismiss(uid: string): void { root.dismissNotification(parseInt(uid)); }
+    }
 
     signal popupAdded(int uid, var notif)
 

@@ -354,7 +354,7 @@ Item {
                             text: myButtonIcon
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: window.s(18)
-                            color: dynamicTextColor
+                            color: ThemeBackend.neutralTextColor(dynamicTextColor)
                             anchors.verticalCenter: parent.verticalCenter
                             Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
                         }
@@ -406,7 +406,7 @@ Item {
                                     text: myButtonIcon
                                     font.family: ThemeBackend.iconFont
                                     font.pixelSize: window.s(18)
-                                    color: floatCardDelegateContainer.filledContentColor
+                                    color: ThemeBackend.neutralTextColor(floatCardDelegateContainer.filledContentColor)
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
 
@@ -429,7 +429,7 @@ Item {
                                                 font.family: ThemeBackend.fontFamily
                                                 font.weight: Font.Bold
                                                 font.pixelSize: window.s(12)
-                                                color: floatCardDelegateContainer.filledContentColor
+                                                color: ThemeBackend.neutralTextColor(floatCardDelegateContainer.filledContentColor)
                                             }
 
                                             Text {
@@ -437,7 +437,7 @@ Item {
                                                 font.family: ThemeBackend.fontFamily
                                                 font.weight: Font.Bold
                                                 font.pixelSize: window.s(12)
-                                                color: floatCardDelegateContainer.filledContentColor
+                                                color: ThemeBackend.neutralTextColor(floatCardDelegateContainer.filledContentColor)
                                                 visible: marqueeClip.canMarquee
                                             }
                                         }

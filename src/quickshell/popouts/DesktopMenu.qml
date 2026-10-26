@@ -14,7 +14,7 @@ PanelWindow {
 
     screen: DesktopMenuController.screen
 
-    WlrLayershell.namespace: "desktopmenu"
+    WlrLayershell.namespace: "desktopmenu-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Bottom
     focusable: desktopMenuWindow.isVisible
     exclusionMode: ExclusionMode.Ignore

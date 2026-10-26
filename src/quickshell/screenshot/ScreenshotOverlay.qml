@@ -14,7 +14,7 @@ PanelWindow {
     id: root
     color: "transparent"
 
-    WlrLayershell.namespace: "qs-screenshot-overlay"
+    WlrLayershell.namespace: "qs-screenshot-overlay-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: root.isActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
@@ -23,6 +23,11 @@ PanelWindow {
     visible: root.isActive
 
     property string targetMonitorName: ""
+    property string captureDestination: "normal"
+
+    function chooseCaptureDestination(index) {
+        root.captureDestination = index === 1 ? "chatgpt" : "normal";
+    }
 
     // Take the shot as soon as the region drag ends, instead of requiring a
     // second click on the toolbar shutter. Off by default.
@@ -767,7 +772,9 @@ PanelWindow {
 
             Rectangle {
                 anchors.fill: parent
-                color: ThemeBackend.liquidGlass ? Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity) : ThemeBackend.base
+                color: ThemeBackend.liquidGlass ? ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null) : ThemeBackend.base
+                border.color: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.08)
+                border.width: ThemeBackend.liquidGlass ? 0 : s(1)
                 radius: ThemeBackend.borderRadius
 
                 WallpaperBlur {
@@ -803,7 +810,9 @@ PanelWindow {
                 anchors.top: toolbar.fitsOutsideBottom ? parent.bottom : undefined
                 anchors.topMargin: toolbar.fitsOutsideBottom ? s(4) : 0
 
-                color: ThemeBackend.liquidGlass ? Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity) : ThemeBackend.base
+                color: ThemeBackend.liquidGlass ? ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null) : ThemeBackend.base
+                border.color: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.08)
+                border.width: ThemeBackend.liquidGlass ? 0 : s(1)
                 radius: ThemeBackend.borderRadius
                 z: 50
                 opacity: showMenu ? 1.0 : 0.0
@@ -857,7 +866,7 @@ PanelWindow {
                                 text: modelData.icon
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: s(15)
-                                color: root.videoBackend === modelData.id ? ThemeBackend.mauve : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(root.videoBackend === modelData.id ? ThemeBackend.mauve : ThemeBackend.subtext0)
                             }
 
                             ColumnLayout {
@@ -866,7 +875,7 @@ PanelWindow {
 
                                 Text {
                                     text: modelData.name
-                                    color: root.videoBackend === modelData.id ? ThemeBackend.mauve : ThemeBackend.text
+                                    color: ThemeBackend.neutralTextColor(root.videoBackend === modelData.id ? ThemeBackend.mauve : ThemeBackend.text)
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: s(12)
                                     font.weight: Font.DemiBold
@@ -913,7 +922,9 @@ PanelWindow {
                 anchors.top: toolbar.fitsOutsideBottom ? parent.bottom : undefined
                 anchors.topMargin: toolbar.fitsOutsideBottom ? s(4) : 0
 
-                color: ThemeBackend.liquidGlass ? Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity) : ThemeBackend.base
+                color: ThemeBackend.liquidGlass ? ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null) : ThemeBackend.base
+                border.color: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.08)
+                border.width: ThemeBackend.liquidGlass ? 0 : s(1)
                 radius: ThemeBackend.borderRadius
                 z: 50
                 opacity: showMenu ? 1.0 : 0.0
@@ -976,7 +987,7 @@ PanelWindow {
                                 text: "󰍬"
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: s(15)
-                                color: root.micDevice === modelData.name ? ThemeBackend.mauve : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(root.micDevice === modelData.name ? ThemeBackend.mauve : ThemeBackend.subtext0)
                             }
 
                             ColumnLayout {
@@ -985,7 +996,7 @@ PanelWindow {
 
                                 Text {
                                     text: (typeof Audio !== "undefined" && Audio.getNodeName) ? Audio.getNodeName(modelData) : (modelData.description || modelData.name)
-                                    color: root.micDevice === modelData.name ? ThemeBackend.mauve : ThemeBackend.text
+                                    color: ThemeBackend.neutralTextColor(root.micDevice === modelData.name ? ThemeBackend.mauve : ThemeBackend.text)
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: s(12)
                                     font.weight: Font.DemiBold
@@ -1171,6 +1182,44 @@ PanelWindow {
                 }
 
                 AnimWrap {
+                    isShown: !root.isVideoMode
+                    contentWidth: s(244)
+                    Switch {
+                        id: destinationSwitch
+                        objectName: "screenshotDestination"
+                        width: s(244)
+                        height: s(36)
+                        options: ["Screenshot", "ChatGPT → delete"]
+                        currentIndex: root.captureDestination === "chatgpt" ? 1 : 0
+                        accentColor: ThemeBackend.mauve
+                        baseColor: ThemeBackend.surface0
+                        textColor: ThemeBackend.text
+                        activeTextColor: ThemeBackend.crust
+                        cornerRadius: ThemeBackend.borderRadius
+                        fontPixelSize: s(11)
+                        onValueChanged: function(index, value) { root.chooseCaptureDestination(index); }
+                        onToggled: function(index) { root.chooseCaptureDestination(index); }
+                    }
+                }
+
+                AnimWrap {
+                    isShown: !root.isVideoMode
+                    contentWidth: s(36)
+                    IconButton {
+                        objectName: "sendScreenshotToChatGPT"
+                        size: s(36)
+                        cornerRadius: ThemeBackend.borderRadius
+                        buttonIcon: "󰚩"
+                        iconFontSize: s(18)
+                        accentColor: root.captureDestination === "chatgpt" ? ThemeBackend.mauve : ThemeBackend.surface0
+                        textColor: root.captureDestination === "chatgpt" ? ThemeBackend.crust : ThemeBackend.text
+                        ToolTip.visible: isHoveredOrHighlighted
+                        ToolTip.text: "Attach to ChatGPT, then delete the temporary capture"
+                        onClicked: root.executeCapture(false, false, "chatgpt")
+                    }
+                }
+
+                AnimWrap {
                     id: backendWrap
                     isShown: root.isVideoMode; contentWidth: s(136)
                     Rectangle {
@@ -1200,7 +1249,7 @@ PanelWindow {
                                 text: root.videoBackend === "wf-recorder" ? "󰕧" : "󰢮"
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: s(15)
-                                color: ThemeBackend.mauve
+                                color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                                 verticalAlignment: Text.AlignVCenter
                             }
 
@@ -1219,7 +1268,7 @@ PanelWindow {
                                 text: toolbar.fitsOutsideBottom ? (backendDropdown.showMenu ? "󰅃" : "󰅀") : (backendDropdown.showMenu ? "󰅀" : "󰅃")
                                 font.family: ThemeBackend.iconFont
                                 font.pixelSize: s(13)
-                                color: backendDropdown.showMenu ? ThemeBackend.mauve : ThemeBackend.subtext0
+                                color: ThemeBackend.neutralTextColor(backendDropdown.showMenu ? ThemeBackend.mauve : ThemeBackend.subtext0)
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }
@@ -1371,6 +1420,8 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
+                        ToolTip.visible: containsMouse
+                        ToolTip.text: root.isVideoMode ? "Start recording" : (root.captureDestination === "chatgpt" ? "Attach to ChatGPT and delete capture" : "Save and copy screenshot")
                         onClicked: root.executeCapture(false, root.isVideoMode)
                     }
                 }
@@ -1417,7 +1468,9 @@ PanelWindow {
                 width: qrPopupLayout.implicitWidth + s(32)
                 height: s(52)
                 radius: ThemeBackend.borderRadius
-                color: ThemeBackend.liquidGlass ? Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity) : ThemeBackend.base
+                color: ThemeBackend.liquidGlass ? ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null) : ThemeBackend.base
+                border.color: model.qSuccess ? ThemeBackend.green : ThemeBackend.red
+                border.width: s(2)
 
                 WallpaperBlur {
                     z: -1
@@ -1448,7 +1501,7 @@ PanelWindow {
 
                     Text {
                         text: model.qText
-                        color: model.qSuccess ? ThemeBackend.text : ThemeBackend.red
+                        color: ThemeBackend.neutralTextColor(model.qSuccess ? ThemeBackend.text : ThemeBackend.red)
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: s(13)
                         font.weight: Font.DemiBold
@@ -1646,7 +1699,8 @@ PanelWindow {
         return ` --source "${root.freezeImg}" --crop "${rect}" --logical-size "${Math.round(root.width)}x${Math.round(root.height)}"`;
     }
 
-    function executeCapture(openEditor, isRecord) {
+    function executeCapture(openEditor, isRecord, destination) {
+        if (!root.hasSelection) return;
         let cmd = `bash ${Caching.serpantinumDir}/scripts/screenshot.sh --geometry "${root.geometryString}"`;
         let useFrozen = !isRecord && root.frozenSourceArgs() !== "";
         if (useFrozen) {
@@ -1662,6 +1716,8 @@ PanelWindow {
             if (root.micDevice !== "") cmd += ` --mic-dev "${root.micDevice}"`;
         }
         if (openEditor) cmd += " --edit";
+        const chosenDestination = destination || root.captureDestination;
+        if (!isRecord && !openEditor && chosenDestination === "chatgpt") cmd += " --chatgpt";
 
         root.animateChanges = false;
         if (useFrozen) {

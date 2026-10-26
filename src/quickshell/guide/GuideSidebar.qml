@@ -227,9 +227,9 @@ Rectangle {
                                     font.family: ThemeBackend.fontFamily
                                     font.weight: header.active ? Font.Bold : Font.Medium
                                     font.pixelSize: popup.s(13)
-                                    color: header.active
+                                    color: ThemeBackend.neutralTextColor(header.active
                                         ? (activeGlass.active ? ThemeBackend.text : ThemeBackend.crust)
-                                        : (headerMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                                        : (headerMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignVCenter
                                     horizontalAlignment: I18n.textAlignment
@@ -242,9 +242,9 @@ Rectangle {
                                     text: "󰅀"
                                     font.family: ThemeBackend.iconFont
                                     font.pixelSize: popup.s(14)
-                                    color: header.active
+                                    color: ThemeBackend.neutralTextColor(header.active
                                         ? (activeGlass.active ? ThemeBackend.text : ThemeBackend.crust)
-                                        : (headerMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                                        : (headerMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
                                     Layout.alignment: Qt.AlignVCenter
                                     rotation: tabDelegate.expandProgress * 180 - 180
                                 }
@@ -377,7 +377,7 @@ Rectangle {
                                                     font.family: ThemeBackend.fontFamily
                                                     font.weight: sub.isCurrent ? Font.Bold : Font.Medium
                                                     font.pixelSize: popup.s(12)
-                                                    color: sub.isCurrent ? (activeGlass.active ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0
+                                                    color: ThemeBackend.neutralTextColor(sub.isCurrent ? (activeGlass.active ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0)
                                                     Layout.fillWidth: true
                                                     Layout.alignment: Qt.AlignVCenter
                                                     horizontalAlignment: I18n.textAlignment

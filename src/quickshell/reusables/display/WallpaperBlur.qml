@@ -67,7 +67,7 @@ Item {
     readonly property var hostScreen: effectiveScreenOverride ? effectiveScreenOverride : (hostWindow ? hostWindow.screen : null)
     readonly property string screenName: hostScreen && hostScreen.name ? hostScreen.name : ""
     readonly property bool parentVisible: parent ? parent.visible : true
-    readonly property bool active: surfaceEnabled && parentVisible && ThemeBackend.blurBackground && ThemeBackend.elementOpacity < 0.999 && width > 0 && height > 0 && hostScreen !== null && (hostWindow ? hostWindow.visible : true)
+    readonly property bool active: !SurfacePolicy.occupied(hostScreen) && surfaceEnabled && parentVisible && ThemeBackend.blurBackground && !ThemeBackend.compositorBlur && ThemeBackend.elementOpacity < 0.999 && width > 0 && height > 0 && hostScreen !== null && (hostWindow ? hostWindow.visible : true)
 
     readonly property var engine: snapshotMode ? null : (Wallpaper.engines[screenName] || null)
 

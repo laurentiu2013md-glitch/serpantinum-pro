@@ -8,7 +8,7 @@ Item {
     id: root
 
     property int horizontalPadding: 12
-    property int cornerRadius: 10
+    property int cornerRadius: ThemeBackend.borderRadius
 
     property string buttonText: ""
     property string subText: ""
@@ -78,23 +78,23 @@ Item {
             shadow: 1
             press: (btnMa.pressed && root.enabled) ? 1 : (root.isHoveredOrHighlighted ? 0.25 : 0)
             pulse: Math.min(1, root.flashOpacity * 2.5)
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on press { NumberAnimation { duration: Motion.duration(220); easing.type: Easing.OutCubic } }
             radius: root.cornerRadius
             tintColor: root.accentColor
             tintAmount: ((btnMa.pressed && root.enabled) ? 0.55 : (root.isHoveredOrHighlighted ? 0.42 : 0.3)) * root.bgOpacity * root.glassTintScale
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.duration(180) } }
         }
 
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.duration(180) } }
+        Behavior on opacity { NumberAnimation { duration: Motion.duration(180) } }
 
-        scale: ((btnMa.pressed && root.enabled) ? 0.985 : (root.isHoveredOrHighlighted ? 1.015 : 1.0)) * root.popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        scale: ((btnMa.pressed && root.enabled) ? 0.96 : (root.isHoveredOrHighlighted ? 1.035 : 1.0)) * root.popScale
+        Behavior on scale { NumberAnimation { duration: btnMa.pressed ? Motion.press : Motion.menu; easing.type: btnMa.pressed ? Easing.OutCubic : Easing.OutBack; easing.overshoot: 1.15 } }
 
         SequentialAnimation {
             id: btnPopAnim
-            NumberAnimation { target: root; property: "popScale"; to: 1.015; duration: 100; easing.type: Easing.OutQuad }
-            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: root; property: "popScale"; to: 1.035; duration: Motion.duration(100); easing.type: Easing.OutQuad }
+            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: Motion.duration(280); easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
 
         RowLayout {
@@ -116,7 +116,7 @@ Item {
                 text: root.buttonIcon
                 font.family: root.iconFont
                 font.pixelSize: root.iconFontSize
-                color: root.displayTextColor
+                color: ThemeBackend.neutralTextColor(root.displayTextColor)
                 Layout.alignment: Qt.AlignVCenter
             }
 
@@ -133,7 +133,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Bold
                     font.pixelSize: root.textFontSize
-                    color: root.displayTextColor
+                    color: ThemeBackend.neutralTextColor(root.displayTextColor)
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
                     elide: Text.ElideRight
                     Layout.maximumWidth: Math.ceil(root.maxTextWidth > 0 ? Math.min(root.maxTextWidth, root.availableTextWidth) : root.availableTextWidth) + 2
@@ -145,7 +145,7 @@ Item {
                     text: root.subText
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: Math.max(10, root.textFontSize - 6)
-                    color: root.displayTextColor
+                    color: ThemeBackend.neutralTextColor(root.displayTextColor)
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
                     opacity: 0.75
                     elide: Text.ElideRight
@@ -160,7 +160,7 @@ Item {
             color: "#ffffff"
             opacity: root.flashOpacity
             visible: !glass.active
-            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: Motion.duration(350); easing.type: Easing.OutExpo }
         }
     }
 

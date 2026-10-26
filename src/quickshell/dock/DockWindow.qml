@@ -12,7 +12,7 @@ DockWindowApps {
     property alias dockHover: dockContainerItem.dockHover
     property alias dockTransform: dockContainerItem.dockTransform
 
-    WlrLayershell.namespace: "qs-dock"
+    WlrLayershell.namespace: "qs-dock-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: (dockWindowRoot.dockOnTop || dockWindowRoot.editMode) ? WlrLayer.Top : WlrLayer.Bottom
     focusable: dockWindowRoot.editMode
     color: "transparent"

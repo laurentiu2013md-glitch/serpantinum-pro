@@ -83,7 +83,11 @@ Item {
         if (!tabName) return;
         let t = String(tabName).toLowerCase();
         if (t === "wifi" || t === "wlan") t = "wifi";
-        else if (t === "bt" || t === "bluetooth") t = "bt";
+        else if (t === "bt" || t === "bluetooth") {
+            IslandController.request("bluetooth", "open");
+            if (typeof masterWindow !== "undefined") masterWindow.switchWidget("hidden", "");
+            return;
+        }
         else if (t === "eth" || t === "ethernet" || t === "wired") t = "eth";
         if (t === "wifi" && popupWindowRoot.wifiPresent) popupWindowRoot.activeMode = "wifi";
         else if (t === "bt" && popupWindowRoot.btPresent) popupWindowRoot.activeMode = "bt";
@@ -178,7 +182,7 @@ Item {
             btProfilePoller.running = false;
             ipFetcher.running = false;
             freqFetcher.running = false;
-            btConnectSimTimer.stop();
+            btConnectTimeout.stop();
             btConnectDelayTimer.stop();
             busyTimeout.stop();
             failClearTimer.stop();
@@ -206,7 +210,7 @@ Item {
     readonly property bool isDisconnectHovered: disconnectHoverCount > 0
 
     Timer {
-        id: btConnectSimTimer
+        id: btConnectTimeout
         property string targetId: ""
         property int attemptId: 0
         interval: 10000
@@ -255,81 +259,15 @@ Item {
                     d.pair();
                 } else {
                     d.connect();
-                    btConnectSimTimer.targetId = id || "";
-                    btConnectSimTimer.attemptId = popupWindowRoot.activeConnectId;
-                    btConnectSimTimer.restart();
+                    btConnectTimeout.targetId = id || "";
+                    btConnectTimeout.attemptId = popupWindowRoot.activeConnectId;
+                    btConnectTimeout.restart();
                 }
             });
         }
     }
 
-    Item {
-        visible: false
-        Connections {
-            target: Bluetooth
-            ignoreUnknownSignals: true
-            function onDefaultAdapterChanged() {
-                popupWindowRoot.rebuildBtData(false);
-            }
-        }
-        Connections {
-            target: Bluetooth.defaultAdapter || null
-            ignoreUnknownSignals: true
-            function onEnabledChanged() {
-                popupWindowRoot.rebuildBtData(false);
-            }
-            function onDiscoveringChanged() {
-                popupWindowRoot.requestBtRebuild();
-            }
-        }
-        Connections {
-            target: (Bluetooth.defaultAdapter && Bluetooth.defaultAdapter.devices) ? Bluetooth.defaultAdapter.devices : null
-            ignoreUnknownSignals: true
-            function onObjectInsertedPost(object, index) {
-                popupWindowRoot.requestBtRebuild();
-            }
-            function onObjectRemovedPost(object, index) {
-                popupWindowRoot.requestBtRebuild();
-            }
-        }
-        Repeater {
-            id: btDeviceRepeater
-            model: Bluetooth.defaultAdapter ? Bluetooth.defaultAdapter.devices : null
-            Item {
-                property var device: modelData
-                Connections {
-                    target: device || null
-                    ignoreUnknownSignals: true
-                    function onConnectedChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onBatteryChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onBatteryAvailableChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onStateChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onPairedChanged() {
-                        popupWindowRoot.requestBtRebuild();
-                        if (device && device.paired && popupWindowRoot.pendingPairThenConnect === device.address) {
-                            popupWindowRoot.pendingPairThenConnect = "";
-                            let mac = device.address;
-                            popupWindowRoot.withBtOpLock(mac, function() {
-                                let devList = popupWindowRoot.getBtDevicesList();
-                                let d = null;
-                                for (let i = 0; i < devList.length; i++) {
-                                    if (devList[i] && devList[i].address === mac) { d = devList[i]; break; }
-                                }
-                                if (!d) return;
-                                d.connect();
-                                btConnectSimTimer.targetId = popupWindowRoot.connectingId;
-                                btConnectSimTimer.attemptId = popupWindowRoot.activeConnectId;
-                                btConnectSimTimer.restart();
-                            });
-                        }
-                    }
-                    function onTrustedChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onNameChanged() { popupWindowRoot.requestBtRebuild(); }
-                    function onDeviceNameChanged() { popupWindowRoot.requestBtRebuild(); }
-                }
-            }
-        }
-    }
+
 
     property var ethDevice: null
     property var wifiDevice: null
@@ -500,13 +438,9 @@ Item {
         }
     }
 
-    function startBtScan() {
-        if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.discovering = true;
-    }
+    function startBtScan() { /* Bluetooth is exclusively managed by BluetoothController. */ }
 
-    function stopBtScan() {
-        if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.discovering = false;
-    }
+    function stopBtScan() { /* Bluetooth is exclusively managed by BluetoothController. */ }
 
     function startWifiScan() {
         if (popupWindowRoot.wifiDevice && popupWindowRoot.visible && popupWindowRoot.activeMode === "wifi" && popupWindowRoot.wifiPower === "on") {
@@ -553,7 +487,7 @@ Item {
             let modes = [];
             if (popupWindowRoot.ethPresent) modes.push("eth");
             if (popupWindowRoot.wifiPresent) modes.push("wifi");
-            if (popupWindowRoot.btPresent) modes.push("bt");
+
             if (modes.length > 1) {
                 let idx = modes.indexOf(popupWindowRoot.activeMode);
                 let nextMode = modes[(idx + 1) % modes.length];
@@ -614,7 +548,7 @@ Item {
         let validModes = [];
         if (popupWindowRoot.ethPresent) validModes.push("eth");
         if (popupWindowRoot.wifiPresent) validModes.push("wifi");
-        if (popupWindowRoot.btPresent) validModes.push("bt");
+
 
         if (validModes.length > 0 && validModes.indexOf(popupWindowRoot.activeMode) === -1) {
             popupWindowRoot.powerAnimAllowed = false;
@@ -661,7 +595,7 @@ Item {
             let validModes = [];
             if (popupWindowRoot.ethPresent) validModes.push("eth");
             if (popupWindowRoot.wifiPresent) validModes.push("wifi");
-            if (popupWindowRoot.btPresent) validModes.push("bt");
+
 
             if (validModes.length > 0 && validModes.indexOf(popupWindowRoot.activeMode) === -1) {
                 popupWindowRoot.activeMode = validModes[0];
@@ -861,6 +795,11 @@ Item {
     }
 
     onActiveModeChanged: {
+        if (activeMode === "bt") {
+            gotoTab("bluetooth");
+            activeMode = wifiPresent ? "wifi" : "eth";
+            return;
+        }
         popupWindowRoot.cardIntroDelay = 0;
         if (!popupWindowRoot.ignoreNextModeFileUpdate) {
             Quickshell.execDetached(["bash", "-c", "mkdir -p '" + popupWindowRoot.cacheDir + "' && echo '" + popupWindowRoot.activeMode + "' > '" + popupWindowRoot.modeFilePath + "'"]);
@@ -1079,7 +1018,7 @@ Item {
                     if (obj.freq) nodes.push({ id: "freq_" + i, name: obj.freq, icon: "󰖧", action: "", isInfoNode: true, isActionable: false, parentIndex: cIndex });
                     if (popupWindowRoot.connectivityState === "portal") nodes.push({ id: "action_portal", name: I18n.t("network.actions.sign_in") || "Sign in", icon: "󰖟", action: "", isInfoNode: true, isActionable: true, cmdStr: "command -v xdg-open >/dev/null 2>&1 && xdg-open " + popupWindowRoot.shEsc(popupWindowRoot.portalProbeUrl), parentIndex: cIndex });
                 } else if (obj.mac) {
-                    nodes.push({ id: "bat_" + obj.mac, name: (obj.battery || "0") + "%", icon: "󰥉", action: "", isInfoNode: true, isActionable: false, parentIndex: cIndex });
+                    if (obj.battery !== "") nodes.push({ id: "bat_" + obj.mac, name: obj.battery + "%", icon: "󰥉", action: "", isInfoNode: true, isActionable: false, parentIndex: cIndex });
                     if (obj.profile) {
                         nodes.push({ id: "prof_" + obj.mac, name: obj.profile, icon: (obj.profile === "Hi-Fi (A2DP)" ? "󰓃" : "󰋎"), action: "", isInfoNode: true, isActionable: false, parentIndex: cIndex });
                     }
@@ -1283,161 +1222,11 @@ Item {
         popupWindowRoot.validateActiveMode();
     }
 
-    function rebuildBtData(isCache) {
-        if (!isCache && popupWindowRoot.btFirstLoad) {
-            popupWindowRoot.powerAnimAllowed = false;
-            powerAnimBlocker.restart();
-            popupWindowRoot.btFirstLoad = false;
-        }
-        let adapter = Bluetooth.defaultAdapter;
-        if (!adapter) {
-            popupWindowRoot.btMissCount++;
-            if (popupWindowRoot.btMissCount >= 2) popupWindowRoot.btPresent = false;
-            if (!isCache) validateActiveMode();
-            return;
-        }
-
-        popupWindowRoot.btMissCount = 0;
-        popupWindowRoot.btPresent = true;
-
-        let fetchedPower = adapter.enabled ? "on" : "off";
-
-        if (popupWindowRoot.btPowerPending) {
-            popupWindowRoot.btPower = popupWindowRoot.expectedBtPower;
-            if (fetchedPower === popupWindowRoot.expectedBtPower && !powerMinSpinTimer.running) {
-                popupWindowRoot.btPowerPending = false;
-                btPendingReset.stop();
-            }
-        } else {
-            popupWindowRoot.btPower = fetchedPower;
-            popupWindowRoot.expectedBtPower = "";
-        }
-
-        let oldBtLen = popupWindowRoot.btConnected ? popupWindowRoot.btConnected.length : 0;
-        let newBtConnected = [];
-        let newDevices = [];
-        let map = {};
-
-        let devList = popupWindowRoot.getBtDevicesList();
-        for (let i = 0; i < devList.length; i++) {
-            let d = devList[i];
-            if (!d) continue;
-            let mac = d.address || "";
-            if (mac === "") continue;
-
-            map[mac] = d;
-
-            let deviceName = d.deviceName || "";
-            let alias = d.name || "";
-            let hasName = deviceName !== "";
-            let paired = d.paired || d.bonded;
-
-            let name = hasName ? deviceName : (alias !== "" ? alias : mac);
-
-            let connected = d.connected;
-            let battery = d.batteryAvailable ? Math.round(d.battery * 100) : 0;
-            let iconType = d.icon || "";
-
-            let icon = "";
-            let typeLower = iconType.toLowerCase();
-            let nameLower = name.toLowerCase();
-            if (typeLower.indexOf("headset") !== -1 || typeLower.indexOf("headphone") !== -1 || nameLower.indexOf("headphone") !== -1 || nameLower.indexOf("buds") !== -1 || nameLower.indexOf("pods") !== -1) icon = "🎧";
-            else if (typeLower.indexOf("audio") !== -1 || typeLower.indexOf("speaker") !== -1 || typeLower.indexOf("card") !== -1 || nameLower.indexOf("speaker") !== -1) icon = "📻";
-            else if (typeLower.indexOf("phone") !== -1 || nameLower.indexOf("phone") !== -1 || nameLower.indexOf("iphone") !== -1 || nameLower.indexOf("android") !== -1) icon = "📱";
-            else if (typeLower.indexOf("mouse") !== -1 || nameLower.indexOf("mouse") !== -1) icon = "󰍽";
-            else if (typeLower.indexOf("keyboard") !== -1 || nameLower.indexOf("keyboard") !== -1) icon = "⌨️";
-            else if (typeLower.indexOf("controller") !== -1 || nameLower.indexOf("controller") !== -1) icon = "🎮";
-
-            if (connected) {
-                newBtConnected.push({
-                    id: mac,
-                    name: name,
-                    mac: mac,
-                    icon: icon,
-                    battery: battery.toString(),
-                    profile: popupWindowRoot.btAudioProfiles[mac.toLowerCase()] || "Connected"
-                });
-            } else {
-                if (!hasName && !paired) continue;
-
-                newDevices.push({
-                    id: mac,
-                    name: name,
-                    mac: mac,
-                    icon: icon,
-                    action: paired ? "Connect" : "Pair",
-                    isActionable: true
-                });
-            }
-        }
-
-        popupWindowRoot.btDeviceMap = map;
-        let isNowBtConn = newBtConnected.length > 0;
-
-        if (!popupWindowRoot.deepEqual(popupWindowRoot.btConnected, newBtConnected)) {
-            popupWindowRoot.btConnected = newBtConnected;
-        }
-
-        newDevices.sort((a, b) => (a && b && a.id && b.id) ? a.id.localeCompare(b.id) : 0);
-
-        if (isNowBtConn && popupWindowRoot.activeMode === "bt") {
-            newDevices.push({ id: "action_settings", ssid: "", mac: "action_settings", name: I18n.t("network.status.current_device") || "Current Device", icon: "󰒓", action: "", isInfoNode: false, isActionable: true, cmdStr: "TOGGLE_VIEW", parentIndex: -1 });
-        }
-
-        if (!popupWindowRoot.deepEqual(popupWindowRoot.btList, newDevices)) {
-            if (popupWindowRoot.isListLocked) popupWindowRoot.nextBtList = newDevices;
-            else { popupWindowRoot.syncModel(btListModel, newDevices); popupWindowRoot.btList = newDevices; popupWindowRoot.nextBtList = null; popupWindowRoot.refreshOrbitDisplay(); }
-        }
-
-        if (popupWindowRoot.activeMode === "bt") {
-            if (newBtConnected.length > oldBtLen) {
-                popupWindowRoot.showInfoView = true;
-            }
-
-            let dd = popupWindowRoot.disconnectingDevices;
-            let ddChanged = false;
-            for (let mac in dd) {
-                let stillConnected = false;
-                for (let i = 0; i < newBtConnected.length; i++) {
-                    if (newBtConnected[i] && newBtConnected[i].mac === mac) { stillConnected = true; break; }
-                }
-                if (!stillConnected) {
-                    delete dd[mac];
-                    ddChanged = true;
-                }
-            }
-            if (ddChanged) {
-                popupWindowRoot.disconnectingDevices = Object.assign({}, dd);
-                if (Object.keys(popupWindowRoot.disconnectingDevices).length === 0 && Object.keys(popupWindowRoot.busyTasks).length === 0) busyTimeout.stop();
-            }
-
-            let newlyConnected = false;
-            let bt = popupWindowRoot.busyTasks;
-            for (let i = 0; i < newBtConnected.length; i++) {
-                if (newBtConnected[i] && newBtConnected[i].mac) {
-                    let mac = newBtConnected[i].mac;
-                    if (bt[mac]) {
-                        newlyConnected = true;
-                        delete bt[mac];
-                        popupWindowRoot.connectingId = "";
-                    }
-                }
-            }
-            if (newlyConnected) {
-                btConnectSimTimer.stop();
-                Sounds.playSfx("network/connect.wav");
-                popupWindowRoot.busyTasks = Object.assign({}, bt);
-                if (Object.keys(popupWindowRoot.busyTasks).length === 0 && Object.keys(popupWindowRoot.disconnectingDevices).length === 0) busyTimeout.stop();
-            }
-
-            if (isNowBtConn || popupWindowRoot.isWifiConn || popupWindowRoot.isEthConn) popupWindowRoot.updateInfoNodes();
-        }
-        if (!isCache) validateActiveMode();
-    }
+    function rebuildBtData(isCache) { /* Bluetooth is exclusively managed by BluetoothController. */ }
 
     Process {
         id: btProfilePoller
-        command: ["bash", popupWindowRoot.scriptsDir + "/bluetooth_panel_logic.sh"]
+        command: ["true"] // Retired legacy backend; no BlueZ calls here.
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
@@ -1455,8 +1244,8 @@ Item {
     Timer {
         id: mainPollerTimer
         interval: (Object.keys(popupWindowRoot.busyTasks).length > 0 || Object.keys(popupWindowRoot.disconnectingDevices).length > 0) ? 1000 : 3000
-        running: popupWindowRoot.visible
-        repeat: true
+        running: false
+        repeat: false
         property int tick: 0
         onTriggered: {
             tick = (tick + 1) % 4;
@@ -1471,7 +1260,7 @@ Item {
 
     property real globalOrbitAngle: 0
     NumberAnimation on globalOrbitAngle {
-        from: 0; to: Math.PI * 2; duration: 400000; loops: Animation.Infinite; running: popupWindowRoot.visible
+        from: 0; to: Math.PI * 2; duration: 400000; loops: Animation.Infinite; running: popupWindowRoot.visible && !Motion.reduced && Config.getSetting("coloros", {}).decorativeOrbit === true
     }
 
     property real lightningStrikeProg: popupWindowRoot.animWin(popupWindowRoot.introState, 0.40, 0.85)
@@ -1495,7 +1284,9 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+            border.width: 0
+            border.color: "transparent"
             clip: true
 
             WallpaperBlur {

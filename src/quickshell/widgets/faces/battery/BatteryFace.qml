@@ -150,7 +150,7 @@ Item {
                 Text {
                     font.family: ThemeBackend.iconFont
                     font.pixelSize: Math.max(Scaler.s(22), Math.min(Scaler.s(36), root.height * 0.36))
-                    color: bRoot.iconColor
+                    color: ThemeBackend.neutralTextColor(bRoot.iconColor)
                     text: {
                         if (!root.hasBattery) return "󰂎";
                         if (root.isCharging) return "󰂄";
@@ -172,7 +172,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.Black
                         font.pixelSize: Math.max(Scaler.s(14), Math.min(Scaler.s(24), root.height * 0.26))
-                        color: bRoot.contentTextColor
+                        color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                         text: root.hasBattery ? (Math.round(root.animCapacity) + "%") : "No battery found"
                         elide: Text.ElideRight
                         Layout.fillWidth: true
@@ -182,7 +182,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.Bold
                         font.pixelSize: Math.max(Scaler.s(9), Math.min(Scaler.s(12), root.height * 0.13))
-                        color: bRoot.contentTextColor === ThemeBackend.crust ? Qt.alpha(ThemeBackend.crust, 0.85) : (root.isCharging ? ThemeBackend.green : ThemeBackend.subtext0)
+                        color: ThemeBackend.neutralTextColor(bRoot.contentTextColor === ThemeBackend.crust ? Qt.alpha(ThemeBackend.crust, 0.85) : (root.isCharging ? ThemeBackend.green : ThemeBackend.subtext0))
                         text: root.hasBattery ? root.timeString : "AC power connected"
                         elide: Text.ElideRight
                         Layout.fillWidth: true

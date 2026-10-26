@@ -51,7 +51,7 @@ Item {
         }
     }
 
-    readonly property real widgetRadius: root.isRound ? (Math.min(root.width, root.height) / 2) : (ThemeBackend.borderRadius * 2)
+    readonly property real widgetRadius: root.isRound ? (Math.min(root.width, root.height) / 2) : (ThemeBackend.borderRadius)
 
     function syncSubscription() {
         if (root.visible && !root.lyricsSubscribed) {
@@ -323,7 +323,7 @@ Item {
                 text: "󰎈"
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: Scaler.s(26)
-                color: root.dynamicTextColor
+                color: ThemeBackend.neutralTextColor(root.dynamicTextColor)
                 opacity: 0.75
             }
 

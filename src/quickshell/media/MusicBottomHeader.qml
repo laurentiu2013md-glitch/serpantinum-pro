@@ -169,7 +169,7 @@ RowLayout {
             anchors.verticalCenter: parent.verticalCenter
             x: root.s(12) + (root.s(24) * root.presetSlideProgress)
             text: root.eqData && root.eqData.preset ? I18n.t("music.presets." + root.eqData.preset.toLowerCase()) : I18n.t("music.presets.flat")
-            color: ThemeBackend.subtext0 || "#a6adc8"
+            color: ThemeBackend.neutralTextColor(ThemeBackend.subtext0 || "#a6adc8")
             font.family: ThemeBackend.fontFamily
             font.pixelSize: root.s(13)
             font.bold: true

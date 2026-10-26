@@ -101,7 +101,7 @@ Rectangle {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: dockWindow.s(12)
                 font.bold: true
-                color: pickerDelegate.isAdded ? (pickerRowGlass.active ? ThemeBackend.text : ThemeBackend.mauve) : ThemeBackend.text
+                color: ThemeBackend.neutralTextColor(pickerDelegate.isAdded ? (pickerRowGlass.active ? ThemeBackend.text : ThemeBackend.mauve) : ThemeBackend.text)
             }
         }
 
@@ -115,7 +115,7 @@ Rectangle {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: dockWindow.s(11)
                 font.weight: pickerDelegate.isAdded ? Font.Bold : Font.Medium
-                color: pickerDelegate.isAdded ? pickerDelegate.contentOnAdded : ThemeBackend.text
+                color: ThemeBackend.neutralTextColor(pickerDelegate.isAdded ? pickerDelegate.contentOnAdded : ThemeBackend.text)
                 elide: Text.ElideRight
                 Layout.fillWidth: true
                 Behavior on color { ColorAnimation { duration: 150 } }
@@ -125,7 +125,7 @@ Rectangle {
                 text: pickerDelegate.resolvedItem.comment || pickerDelegate.resolvedItem.id || ""
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: dockWindow.s(9)
-                color: pickerDelegate.isAdded ? pickerDelegate.contentOnAdded : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor(pickerDelegate.isAdded ? pickerDelegate.contentOnAdded : ThemeBackend.subtext0)
                 opacity: pickerDelegate.isAdded ? 0.9 : 0.85
                 elide: Text.ElideRight
                 Layout.fillWidth: true

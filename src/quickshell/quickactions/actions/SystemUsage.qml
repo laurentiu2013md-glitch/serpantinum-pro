@@ -14,13 +14,9 @@ Item {
         return typeof scaleFunc === "function" ? scaleFunc(val) : val;
     }
 
-    property var requestedLayoutTemplate: [
-        { x: 0.0, y: 0.0, w: 0.333, h: 0.5 },
-        { x: 0.333, y: 0.0, w: 0.334, h: 0.5 },
-        { x: 0.667, y: 0.0, w: 0.333, h: 0.5 },
-        { x: 0.0, y: 0.5, w: 0.5, h: 0.5 },
-        { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }
-    ]
+    // These cards paint their own backgrounds; avoid duplicate placeholder edges.
+    property var requestedLayoutTemplate: []
+    readonly property real cardRadius: Math.max(0, ThemeBackend.borderRadius - s(4))
 
     property real baseW: s(360)
     property real baseL: s(250)
@@ -137,6 +133,7 @@ Item {
         clip: false
 
         SystemUsageCard {
+            cardRadius: root.cardRadius
             x: root.cellX(0.0)
             y: root.cellY(0.0)
             width: root.cellW(0.0, 0.333)
@@ -153,6 +150,7 @@ Item {
         }
 
         SystemUsageCard {
+            cardRadius: root.cardRadius
             x: root.cellX(0.333)
             y: root.cellY(0.0)
             width: root.cellW(0.333, 0.334)
@@ -169,6 +167,7 @@ Item {
         }
 
         SystemUsageCard {
+            cardRadius: root.cardRadius
             x: root.cellX(0.667)
             y: root.cellY(0.0)
             width: root.cellW(0.667, 0.333)
@@ -185,6 +184,7 @@ Item {
         }
 
         SystemUsageCard {
+            cardRadius: root.cardRadius
             x: root.cellX(0.0)
             y: root.cellY(0.5)
             width: root.cellW(0.0, 0.5)
@@ -203,6 +203,7 @@ Item {
         }
 
         SystemUsageCard {
+            cardRadius: root.cardRadius
             x: root.cellX(0.5)
             y: root.cellY(0.5)
             width: root.cellW(0.5, 0.5)
@@ -254,7 +255,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             text: root.rxSpeedStr
-                            color: root.textPrimary
+                            color: ThemeBackend.neutralTextColor(root.textPrimary)
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.s(12)
                             font.weight: Font.DemiBold
@@ -295,7 +296,7 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             text: root.txSpeedStr
-                            color: root.textPrimary
+                            color: ThemeBackend.neutralTextColor(root.textPrimary)
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.s(12)
                             font.weight: Font.DemiBold

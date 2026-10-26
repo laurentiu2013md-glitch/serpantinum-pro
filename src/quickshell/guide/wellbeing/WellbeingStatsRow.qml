@@ -50,7 +50,7 @@ RowLayout {
                 font.family: ThemeBackend.fontFamily
                 font.weight: Font.Black
                 font.pixelSize: rootObj.s(38)
-                color: stats.tab.textMain
+                color: ThemeBackend.neutralTextColor(stats.tab.textMain)
                 text: stats.tab.formatTimeLarge(stats.tab.animatedTotalSeconds).replace(/ /g, " ")
             }
 
@@ -61,7 +61,7 @@ RowLayout {
                     visible: !stats.noData && stats.diff !== 0
                     font.family: ThemeBackend.iconFont
                     font.pixelSize: rootObj.s(15)
-                    color: stats.deltaColor
+                    color: ThemeBackend.neutralTextColor(stats.deltaColor)
                     text: stats.diff > 0 ? "󰁝" : "󰁅"
                 }
 
@@ -71,7 +71,7 @@ RowLayout {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Medium
                     font.pixelSize: rootObj.s(11)
-                    color: (stats.noData || stats.diff === 0) ? stats.tab.textDim : stats.deltaColor
+                    color: ThemeBackend.neutralTextColor((stats.noData || stats.diff === 0) ? stats.tab.textDim : stats.deltaColor)
                     text: {
                         if (stats.noData) return I18n.t("guide.wellbeing.no_data");
                         if (stats.diff === 0) return I18n.t("guide.wellbeing.same_as_prev");
@@ -110,7 +110,7 @@ RowLayout {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Medium
                     font.pixelSize: rootObj.s(11)
-                    color: stats.overLimit && !ThemeBackend.liquidGlass ? ThemeBackend.red : stats.tab.textDim
+                    color: ThemeBackend.neutralTextColor(stats.overLimit && !ThemeBackend.liquidGlass ? ThemeBackend.red : stats.tab.textDim)
                     text: stats.overLimit
                         ? I18n.t("guide.wellbeing.limit_reached", { "limit": stats.tab.formatTimeList(stats.limit) })
                         : I18n.t("guide.wellbeing.limit_progress", { "used": stats.tab.formatTimeList(stats.tab.totalSeconds), "limit": stats.tab.formatTimeList(stats.limit) })

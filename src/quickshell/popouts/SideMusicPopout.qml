@@ -13,7 +13,7 @@ PanelWindow {
 
     screen: SideMusicController.screen
 
-    WlrLayershell.namespace: "sidemusic"
+    WlrLayershell.namespace: "sidemusic-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Top
     focusable: false
     exclusionMode: ExclusionMode.Ignore
@@ -305,7 +305,7 @@ PanelWindow {
                 }
                 return sideMusicPopout.alignBottom ? 3.0 : 1.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -332,14 +332,14 @@ PanelWindow {
                 }
                 return sideMusicPopout.alignBottom ? 2.0 : 0.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
         Rectangle {
             id: menuBox
             anchors.fill: parent
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             radius: sideMusicPopout.cornerRadius
             clip: true
 
@@ -359,7 +359,7 @@ PanelWindow {
                 y: 0
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -368,7 +368,7 @@ PanelWindow {
                 y: 0
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -377,7 +377,7 @@ PanelWindow {
                 y: parent.height - menuContainer.dynamicCornerRadius
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -386,7 +386,7 @@ PanelWindow {
                 y: parent.height - menuContainer.dynamicCornerRadius
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -395,7 +395,7 @@ PanelWindow {
                 y: 0
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -404,7 +404,7 @@ PanelWindow {
                 y: parent.height - menuContainer.dynamicCornerRadius
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -413,7 +413,7 @@ PanelWindow {
                 y: 0
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             Rectangle {
@@ -422,7 +422,7 @@ PanelWindow {
                 y: parent.height - menuContainer.dynamicCornerRadius
                 width: menuContainer.dynamicCornerRadius
                 height: menuContainer.dynamicCornerRadius
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             }
 
             HoverHandler {

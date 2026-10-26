@@ -466,7 +466,7 @@ GuideTab {
                                                         text: "󰕾"
                                                         font.family: ThemeBackend.iconFont
                                                         font.pixelSize: rootObj.s(18)
-                                                        color: Qt.lighter(ThemeBackend.sapphire, 1.5)
+                                                        color: ThemeBackend.neutralTextColor(Qt.lighter(ThemeBackend.sapphire, 1.5))
                                                     }
                                                 }
 
@@ -515,7 +515,7 @@ GuideTab {
                                                         text: "󰕾"
                                                         font.family: ThemeBackend.iconFont
                                                         font.pixelSize: rootObj.s(18)
-                                                        color: Qt.lighter(ThemeBackend.sapphire, 1.5)
+                                                        color: ThemeBackend.neutralTextColor(Qt.lighter(ThemeBackend.sapphire, 1.5))
                                                     }
                                                 }
 

@@ -16,7 +16,7 @@ PanelWindow {
 
     screen: OsdController.screen
 
-    WlrLayershell.namespace: "osd"
+    WlrLayershell.namespace: "osd-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     focusable: false
     exclusionMode: ExclusionMode.Ignore
@@ -58,7 +58,7 @@ PanelWindow {
         return true;
     }
 
-    property bool isVisible: OsdController.isVisible && isToggleAllowed
+    property bool isVisible: OsdController.isVisible && isToggleAllowed && kind !== "volume" && kind !== "brightness"
 
     readonly property color toggleActiveColor: {
         if (kind === "capslock") return capsColor;
@@ -283,8 +283,8 @@ PanelWindow {
         property real animProgress: osdWindow.isVisible ? 1.0 : 0.0
         Behavior on animProgress {
             NumberAnimation {
-                duration: osdWindow.isVisible ? 450 : 300
-                easing.type: osdWindow.isVisible ? Easing.OutQuint : Easing.InCubic
+                duration: osdWindow.isVisible ? 360 : 220
+                easing.type: osdWindow.isVisible ? Easing.OutCubic : Easing.InCubic
             }
         }
 
@@ -376,7 +376,7 @@ PanelWindow {
                 }
                 return osdWindow.isBottomBar ? 3.0 : 1.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -403,13 +403,13 @@ PanelWindow {
                 }
                 return osdWindow.isBottomBar ? 2.0 : 0.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
         Rectangle {
             id: osdBox
             anchors.fill: parent
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             radius: osdWindow.cornerRadius
             readonly property bool flatTop: osdWindow.isAttached && !osdWindow.isSideBar && !osdWindow.isBottomBar
             readonly property bool flatBottom: osdWindow.isAttached && !osdWindow.isSideBar && osdWindow.isBottomBar
@@ -528,7 +528,7 @@ PanelWindow {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: osdWindow.s(10)
                         font.bold: true
-                        color: osdWindow.isToggleActive ? osdWindow.toggleActiveColor : ThemeBackend.overlay0
+                        color: ThemeBackend.neutralTextColor(osdWindow.isToggleActive ? osdWindow.toggleActiveColor : ThemeBackend.overlay0)
                     }
                 }
 
@@ -606,7 +606,7 @@ PanelWindow {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: osdWindow.s(13)
                         font.bold: true
-                        color: osdWindow.isMutedState ? ThemeBackend.overlay0 : ThemeBackend.text
+                        color: ThemeBackend.neutralTextColor(osdWindow.isMutedState ? ThemeBackend.overlay0 : ThemeBackend.text)
                     }
                 }
             }
@@ -812,7 +812,7 @@ PanelWindow {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: osdWindow.s(13)
                         font.bold: true
-                        color: osdWindow.isMutedState ? ThemeBackend.overlay0 : ThemeBackend.text
+                        color: ThemeBackend.neutralTextColor(osdWindow.isMutedState ? ThemeBackend.overlay0 : ThemeBackend.text)
                     }
                 }
             }

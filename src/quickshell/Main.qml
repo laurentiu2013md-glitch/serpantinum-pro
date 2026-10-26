@@ -101,6 +101,18 @@ PanelWindow {
                 return;
             }
 
+            // The center island replaces the former standalone player/calendar windows.
+            if ((cmd === "network" || targetWidget === "network") && (arg === "bt" || arg === "bluetooth" || targetWidget === "bt")) {
+                IslandController.request("bluetooth", cmd === "close" ? "close" : "open", masterWindow.resolveTargetScreen());
+                return;
+            }
+            const islandTarget = ["music", "calendar"].indexOf(targetWidget) !== -1 ? targetWidget
+                : (["music", "calendar"].indexOf(cmd) !== -1 ? cmd : "");
+            if (islandTarget !== "") {
+                IslandController.request(islandTarget, cmd === "close" ? "close" : cmd === "toggle" ? "toggle" : "open", masterWindow.resolveTargetScreen());
+                return;
+            }
+
             let isSettingsCmd = cmd === "settings" || targetWidget === "settings";
             let isGuideCmd = cmd === "guide" || targetWidget === "guide";
             if (isSettingsCmd || isGuideCmd) {
@@ -207,7 +219,7 @@ PanelWindow {
         }
     }
 
-    WlrLayershell.namespace: "qs-master"
+    WlrLayershell.namespace: "qs-master-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
 
     exclusionMode: ExclusionMode.Ignore
@@ -419,7 +431,7 @@ PanelWindow {
     property bool userMoved: false
 
     property int morphDuration:       300
-    property int morphDurationSwitch: 300
+    property int morphDurationSwitch: 360
     property int exitDuration:        180
 
     property real _animW: 1
@@ -602,11 +614,12 @@ PanelWindow {
             y: (animContainer.height - height) / 2
             transformOrigin: Item.Center
 
-            scale: masterWindow.isVisible ? 1.0 : 0.96
+            scale: masterWindow.isVisible ? 1.0 : 0.92
             Behavior on scale {
                 NumberAnimation {
-                    duration: masterWindow.isVisible ? 280 : 160
-                    easing.type: masterWindow.isVisible ? Easing.OutCubic : Easing.InCubic
+                    duration: masterWindow.isVisible ? 420 : 220
+                    easing.type: masterWindow.isVisible ? Easing.OutBack : Easing.InCubic
+                    easing.overshoot: 1.15
                 }
             }
 
@@ -646,19 +659,19 @@ PanelWindow {
 
         Behavior on x {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutQuint }
         }
         Behavior on y {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutQuint }
         }
         Behavior on width {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutQuint }
         }
         Behavior on height {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutQuint }
         }
     }
 

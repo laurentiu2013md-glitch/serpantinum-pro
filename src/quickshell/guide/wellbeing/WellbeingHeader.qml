@@ -75,7 +75,7 @@ RowLayout {
         font.family: ThemeBackend.fontFamily
         font.weight: Font.DemiBold
         font.pixelSize: rootObj.s(16)
-        color: header.tab.textMain
+        color: ThemeBackend.neutralTextColor(header.tab.textMain)
         text: header.tab.isSettingsView ? I18n.t("guide.wellbeing.settings.title") : header.tab.selectedAppName
     }
 
@@ -109,7 +109,7 @@ RowLayout {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.DemiBold
             font.pixelSize: rootObj.s(15)
-            color: header.tab.textMain
+            color: ThemeBackend.neutralTextColor(header.tab.textMain)
             text: (header.tab.isWeekView && !header.inApp)
                 ? (header.tab.weekRangeStr !== "" ? header.tab.weekRangeStr : I18n.t("guide.wellbeing.week_overview"))
                 : header.tab.getFancyDate(header.tab.activeDate)

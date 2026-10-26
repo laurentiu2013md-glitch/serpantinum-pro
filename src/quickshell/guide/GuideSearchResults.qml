@@ -113,7 +113,7 @@ Flickable {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Medium
                             font.pixelSize: popup.s(13)
-                            color: tabHeaderItemMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(tabHeaderItemMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                             elide: Text.ElideRight
@@ -248,7 +248,7 @@ Flickable {
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: popup.s(12)
                                             font.bold: true
-                                            color: (directItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text
+                                            color: ThemeBackend.neutralTextColor((directItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text)
                                             elide: Text.ElideRight
 
                                             Behavior on color { ColorAnimation { duration: 150 } }
@@ -260,7 +260,7 @@ Flickable {
                                             visible: text !== ""
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: popup.s(10)
-                                            color: (directItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0
+                                            color: ThemeBackend.neutralTextColor((directItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0)
                                             elide: Text.ElideRight
 
                                             Behavior on color { ColorAnimation { duration: 150 } }
@@ -329,7 +329,7 @@ Flickable {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: Font.Medium
                                             font.pixelSize: popup.s(12)
-                                            color: subtabHeaderItemMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0
+                                            color: ThemeBackend.neutralTextColor(subtabHeaderItemMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
                                             elide: Text.ElideRight
@@ -464,7 +464,7 @@ Flickable {
                                                             font.family: ThemeBackend.fontFamily
                                                             font.pixelSize: popup.s(12)
                                                             font.bold: true
-                                                            color: (subItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text
+                                                            color: ThemeBackend.neutralTextColor((subItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text)
                                                             elide: Text.ElideRight
 
                                                             Behavior on color { ColorAnimation { duration: 150 } }
@@ -476,7 +476,7 @@ Flickable {
                                                             visible: text !== ""
                                                             font.family: ThemeBackend.fontFamily
                                                             font.pixelSize: popup.s(10)
-                                                            color: (subItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0
+                                                            color: ThemeBackend.neutralTextColor((subItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0)
                                                             elide: Text.ElideRight
 
                                                             Behavior on color { ColorAnimation { duration: 150 } }

@@ -36,7 +36,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.Medium
             font.pixelSize: rootObj.s(13)
-            color: bottomPanel.tab.textDim
+            color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim)
             text: I18n.t("guide.wellbeing.no_data")
         }
 
@@ -126,7 +126,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: rootObj.s(13)
                             font.bold: true
-                            color: bottomPanel.tab.textMain
+                            color: ThemeBackend.neutralTextColor(bottomPanel.tab.textMain)
                         }
                     }
 
@@ -140,7 +140,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.DemiBold
                             font.pixelSize: rootObj.s(13)
-                            color: bottomPanel.tab.textMain
+                            color: ThemeBackend.neutralTextColor(bottomPanel.tab.textMain)
                             text: model.name
                             elide: Text.ElideRight
                         }
@@ -255,7 +255,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.DemiBold
                     font.pixelSize: rootObj.s(13)
-                    color: bottomPanel.tab.textMain
+                    color: ThemeBackend.neutralTextColor(bottomPanel.tab.textMain)
                     text: I18n.t("guide.wellbeing.daily_usage")
                 }
             }
@@ -309,15 +309,15 @@ Item {
 
             RowLayout {
                 Layout.fillWidth: true
-                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: bottomPanel.tab.textDim; text: "00:00" }
+                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim); text: "00:00" }
                 Item { Layout.fillWidth: true }
-                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: bottomPanel.tab.textDim; text: "06:00" }
+                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim); text: "06:00" }
                 Item { Layout.fillWidth: true }
-                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: bottomPanel.tab.textDim; text: "12:00" }
+                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim); text: "12:00" }
                 Item { Layout.fillWidth: true }
-                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: bottomPanel.tab.textDim; text: "18:00" }
+                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim); text: "18:00" }
                 Item { Layout.fillWidth: true }
-                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: bottomPanel.tab.textDim; text: "23:00" }
+                Text { font.family: ThemeBackend.fontFamily; font.weight: Font.Medium; font.pixelSize: rootObj.s(10); color: ThemeBackend.neutralTextColor(bottomPanel.tab.textDim); text: "23:00" }
             }
         }
     }

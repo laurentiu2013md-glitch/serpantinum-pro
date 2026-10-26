@@ -10,7 +10,7 @@ Item {
     implicitHeight: size
 
     property int size: 44
-    property int cornerRadius: 12
+    property int cornerRadius: ThemeBackend.borderRadius
 
     property string buttonIcon: ""
     property string iconFont: ThemeBackend.iconFont
@@ -49,13 +49,13 @@ Item {
         id: btnContainer
         anchors.fill: parent
 
-        scale: (!root.enabled ? 1.0 : (btnMa.pressed ? 0.96 : (root.isHoveredOrHighlighted ? 1.04 : 1.0))) * root.popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        scale: (!root.enabled ? 1.0 : (btnMa.pressed ? 0.94 : (root.isHoveredOrHighlighted ? 1.035 : 1.0))) * root.popScale
+        Behavior on scale { NumberAnimation { duration: btnMa.pressed ? 90 : 320; easing.type: btnMa.pressed ? Easing.OutCubic : Easing.OutBack; easing.overshoot: 1.15 } }
 
         SequentialAnimation {
             id: btnPopAnim
-            NumberAnimation { target: root; property: "popScale"; to: 1.1; duration: 110; easing.type: Easing.OutQuad }
-            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: root; property: "popScale"; to: 1.04; duration: 100; easing.type: Easing.OutQuad }
+            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 280; easing.type: Easing.OutQuint }
         }
 
         Rectangle {
@@ -88,7 +88,7 @@ Item {
             text: root.buttonIcon
             font.family: root.iconFont
             font.pixelSize: root.iconFontSize
-            color: root.displayTextColor
+            color: ThemeBackend.neutralTextColor(root.displayTextColor)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             opacity: root.enabled ? 1.0 : 0.5

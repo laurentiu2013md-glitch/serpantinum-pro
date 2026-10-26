@@ -5,9 +5,9 @@ import Quickshell
 QtObject {
     id: root
 
-    readonly property string serpantinumDir: Quickshell.env("SERPANTINUM_DIR")
-    readonly property string qsDir: Quickshell.env("QS_DIR")
-    readonly property string mainQml: Quickshell.env("MAIN_QML")
+    readonly property string serpantinumDir: Quickshell.env("SERPANTINUM_DIR") || (Quickshell.env("HOME") + "/.local/share/serpantinum/src")
+    readonly property string qsDir: Quickshell.env("QS_DIR") || (serpantinumDir + "/quickshell")
+    readonly property string mainQml: Quickshell.env("MAIN_QML") || (qsDir + "/Shell.qml")
     readonly property bool isStandalone: Quickshell.env("SERPANTINUM_STANDALONE") === "1"
 
     readonly property string home: Quickshell.env("HOME")

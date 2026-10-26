@@ -87,7 +87,7 @@ Item {
                     font.family: root.isVertical ? Qt.application.font.family : ThemeBackend.fontFamily
                     font.pixelSize: barWindow ? barWindow.cs(root.isCompact ? 11 : 12) : (root.isCompact ? 11 : 12)
                     font.weight: root.isVertical ? Font.Normal : Font.DemiBold
-                    color: (root.isVertical || root.isCompact) ? ThemeBackend.text : ThemeBackend.subtext1
+                    color: ThemeBackend.neutralTextColor((root.isVertical || root.isCompact) ? ThemeBackend.text : ThemeBackend.subtext1)
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     elide: Text.ElideRight

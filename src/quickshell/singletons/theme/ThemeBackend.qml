@@ -9,14 +9,14 @@ Item {
 
     property string fontFamily: "Adwaita Mono"
     property int borderRadius: 8
-    property int clampedBorderRadius: {
-        const r = borderRadius;
-        return Math.floor(
-            r <= 24
-                ? r
-                : 24 + Math.pow(r - 24, 0.55)
-        );
-    }
+    // Compatibility token: every surface uses the radius selected in Settings.
+    readonly property int clampedBorderRadius: borderRadius
+
+    function opacityForScreen(screen) { return SurfacePolicy.occupied(screen) ? 1 : elementOpacity; }
+    function surfaceColor(screen) { return Qt.alpha(base, opacityForScreen(screen)); }
+    readonly property color borderColor: Qt.alpha(text, isLight ? 0.12 : 0.16)
+    readonly property int smallRadius: Math.min(12, borderRadius)
+    readonly property int cardRadius: Math.min(20, borderRadius)
 
     property real elementOpacity: 1.0
     property bool blurBackground: false
@@ -24,8 +24,11 @@ Item {
     readonly property real liquidGlassOpacity: 0.1
     readonly property bool glassActive: blurBackground && elementOpacity < 0.999
     readonly property bool liquidGlass: blurBackground && blurStyle === "liquid"
+    // Hyprland blurs the live scene behind translucent shell surfaces.
+    readonly property bool compositorBlur: blurBackground && !liquidGlass && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
 
     property color base: "#1e1e2e"
+    readonly property bool isLight: (0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b) > 0.6
     property color mantle: "#181825"
     property color crust: "#11111b"
     property color _text: "#cdd6f4"
@@ -218,8 +221,17 @@ Item {
             root.updateColors();
         }
         function onRawSettingsChanged() {
+            const theme = Config.getSetting("theme", {});
+            if (theme.borderRadius !== undefined) {
+                root.borderRadius = theme.borderRadius;
+            }
             root.syncElementOpacity();
         }
+    }
+
+    Connections {
+        target: GameMode
+        function onEnabledChanged() { root.syncElementOpacity(); }
     }
 
     Connections {
@@ -241,6 +253,13 @@ Item {
         return false;
     }
 
+    // Keep neutral and white text unchanged; render chromatic labels in pure black.
+    function neutralTextColor(value) {
+        const c = Qt.color(value);
+        const chroma = Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b);
+        return chroma > 0.06 ? Qt.rgba(0, 0, 0, 1) : c;
+    }
+
     function faded(c) {
         return Qt.alpha(c, root.elementOpacity);
     }
@@ -248,9 +267,9 @@ Item {
     function syncElementOpacity() {
         const themeConfig = Config.getSetting("theme", {});
         const pct = themeConfig.elementOpacity !== undefined ? Number(themeConfig.elementOpacity) : 100;
-        root.blurBackground = !Caching.isStandalone && (themeConfig.blurBackground !== undefined ? Boolean(themeConfig.blurBackground) : false);
+        root.blurBackground = !GameMode.enabled && !Caching.isStandalone && (themeConfig.blurBackground !== undefined ? Boolean(themeConfig.blurBackground) : false);
         root.blurStyle = themeConfig.blurStyle === "liquid" ? "liquid" : "blur";
-        root.elementOpacity = Caching.isStandalone ? 1.0 : root.liquidGlass ? root.liquidGlassOpacity : (isNaN(pct) ? 1.0 : Math.max(0, Math.min(1.0, pct / 100.0)));
+        root.elementOpacity = (GameMode.enabled || Caching.isStandalone) ? 1.0 : root.liquidGlass ? root.liquidGlassOpacity : (isNaN(pct) ? 1.0 : Math.max(0, Math.min(1.0, pct / 100.0)));
     }
 
     function updateColors() {
@@ -269,7 +288,7 @@ Item {
         if (root.isMatugenTheme()) {
             root.applyMatugenColors();
             let wp = themeConfig.wallpaper || Config.getSetting("wallpaper", "");
-            if (!Caching.isStandalone && typeof Matugen !== "undefined" && typeof Matugen.generate === "function") {
+            if (!GameMode.enabled && !Caching.isStandalone && typeof Matugen !== "undefined" && typeof Matugen.generate === "function") {
                 Matugen.generate(wp, themeConfig.mode, themeConfig.schemeType);
             }
             root._readInProgress = false;
@@ -277,7 +296,7 @@ Item {
             root._readInProgress = false;
             if (customColors) {
                 root.applyColorObject(customColors);
-                if (!Caching.isStandalone && typeof Matugen !== "undefined" && typeof Matugen.generateFromStatic === "function") {
+                if (!GameMode.enabled && !Caching.isStandalone && typeof Matugen !== "undefined" && typeof Matugen.generateFromStatic === "function") {
                     Matugen.generateFromStatic(customColors, themeConfig.mode);
                 }
             } else {
@@ -286,8 +305,14 @@ Item {
         }
     }
 
+    Process {
+        id: syncDesktopPalette
+        command: ["python3", Caching.serpantinumDir + "/scripts/coloros/sync-theme.py"]
+    }
+    Timer { id: paletteSyncDebounce; interval: 300; onTriggered: if (!syncDesktopPalette.running) syncDesktopPalette.running = true }
     function applyColorObject(c) {
         if (!c) return;
+        paletteSyncDebounce.restart();
 
         let resolveHex = function(val) {
             if (!val) return "";
@@ -299,6 +324,16 @@ Item {
             }
             return val.toString();
         };
+
+        // Keep Matugen accents, but use coordinated neutral grays for shell surfaces.
+        if (Config.getSetting("coloros", {}).neutralSurfaces !== false) {
+            const rawBase = Qt.color(resolveHex(c.base) || "#252830");
+            const light = (rawBase.r * 0.2126 + rawBase.g * 0.7152 + rawBase.b * 0.0722) > 0.6;
+            const neutral = light
+                ? {base:"#e6e8ec", mantle:"#dde0e5", crust:"#d4d8df", surface0:"#f0f1f4", surface1:"#d7dce3", surface2:"#c3cbd5", text:"#1b1f28", subtext0:"#505866", subtext1:"#3e4755"}
+                : {base:"#252830", mantle:"#20232a", crust:"#191c22", surface0:"#30343e", surface1:"#3d4350", surface2:"#505967", text:"#f1f3f7", subtext0:"#bbc2cf", subtext1:"#d0d5df"};
+            c = Object.assign({}, c, neutral);
+        }
 
         let names = ["base", "mantle", "crust", "surface0", "surface1", "surface2",
                      "overlay0", "overlay1", "overlay2", "text", "subtext0", "subtext1",

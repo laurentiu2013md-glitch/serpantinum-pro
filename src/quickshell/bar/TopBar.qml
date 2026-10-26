@@ -13,7 +13,63 @@ import "../WindowRegistry.js" as WindowRegistry
 
 Item {
     id: contentWrapper
+    // Keep open controls usable even when their body extends below the top zone.
+    readonly property bool clockOnly: !!barWindow && !barWindow.isVertical
+        && !BarPointerZone.nearTop(barWindow.screen) && !islandPreview.opened
+        && Config.getSetting("coloros", {}).clockOnlyAway !== false
     property var barWindow
+
+    readonly property real islandExpansion: visible ? islandPreview.expansionHeight : 0
+    readonly property alias islandBody: islandPreview
+    readonly property real islandMaximumHeight: islandPreview.maximumHeight
+    IslandPreview {
+        id: islandPreview
+        barWindow: contentWrapper.barWindow
+        // A small inset protects header text from the closing bounce undershoot.
+        collapsedWidth: contentWrapper.cWidthTarget + (barWindow ? barWindow.s(24) : 24)
+        x: contentWrapper.cFinalX + (contentWrapper.cWidthTarget - width) / 2
+        y: barWindow ? (contentWrapper.barAtBottom
+            ? barWindow.baseOffsetY - height
+            : barWindow.baseOffsetY + barWindow.barHeight) : 0
+        width: surfaceWidth
+        z: 10
+    }
+
+    readonly property alias shelfEdgeArea: shelfEdge
+    Item {
+        id: shelfEdge
+        // Hovering the upper 5% of the bar reveals the shared shelf.
+        x: 0
+        y: barWindow ? barWindow.baseOffsetY : 0
+        width: parent.width
+        height: barWindow && !contentWrapper.barAtBottom ? Math.max(2, Math.ceil(barWindow.barHeight * 0.05)) : 0
+        z: 50
+        HoverHandler {
+            onHoveredChanged: {
+                islandPreview.triggerHovered = hovered;
+                if (hovered) shelfHoverTimer.restart();
+                else shelfHoverTimer.stop();
+            }
+        }
+        Timer { id: shelfHoverTimer; interval: 280; onTriggered: islandPreview.show("shelf") }
+    }
+    DropArea {
+        id: shelfHeaderDrop
+        z: 100
+        x: shelfEdge.x
+        y: 0
+        width: shelfEdge.width
+        height: barWindow ? barWindow.baseOffsetY + barWindow.barHeight : 0
+        onEntered: { islandPreview.triggerDragging = true; islandPreview.show("shelf"); }
+        onExited: islandPreview.triggerDragging = false
+        onDropped: drop => {
+            if (DropShelfStore.acceptsDrop(drop)) { DropShelfStore.addDrop(drop); drop.accept(Qt.CopyAction); }
+            else { drop.accepted = false; DropShelfStore.statusText = "Unsupported drop"; }
+            islandPreview.triggerDragging = false;
+            islandPreview.show("shelf");
+            islandPreview.requestClose();
+        }
+    }
 
     property string barStyle: {
         if (barWindow && barWindow.barStyle !== undefined) return barWindow.barStyle;
@@ -223,6 +279,7 @@ Item {
 
     function isModuleActive(moduleId) {
         let norm = BarModuleRegistry.normalizeId(moduleId);
+        if (clockOnly && flatCenterArr.indexOf(norm) !== -1 && norm !== "timedate") return false;
         let checkFlat = arr => {
             for (let i = 0; i < arr.length; i++) {
                 if (BarModuleRegistry.normalizeId(arr[i]) === norm) return true;
@@ -545,7 +602,7 @@ Item {
         y: contentWrapper.hideOffsetY
         Behavior on y {
             enabled: barWindow ? !barWindow.positionChanging : true
-            NumberAnimation { duration: 250; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: barWindow && barWindow.isRevealed ? 420 : 220; easing.type: barWindow && barWindow.isRevealed ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.15 }
         }
     }
 
@@ -582,12 +639,12 @@ Item {
 
         Behavior on x {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
         }
 
         Behavior on width {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
         }
 
         Behavior on opacity {
@@ -743,6 +800,9 @@ Item {
             id: groupBgRect
             z: 0
             property var groupIds: modelData
+            readonly property bool isCenterGroup: !!contentWrapper && groupIds.length === contentWrapper.flatCenterArr.length
+                && groupIds.every((id, i) => id === contentWrapper.flatCenterArr[i])
+            readonly property real expansion: isCenterGroup ? contentWrapper.islandExpansion : 0
 
             function getGroupMetrics() {
                 let firstX = -1;
@@ -752,7 +812,7 @@ Item {
                 for (let i = 0; i < groupIds.length; i++) {
                     let id = groupIds[i];
                     let widget = contentWrapper.getPositionedWidget(id);
-                    if (!widget || !widget.visible) continue;
+                    if (!widget || !widget.moduleActive) continue;
 
                     let targetW = (widget.targetWidth !== undefined) ? widget.targetWidth : widget.width;
                     if (targetW <= 0) continue;
@@ -770,10 +830,11 @@ Item {
 
             property var metrics: getGroupMetrics()
 
-            x: metrics.x
-            height: metrics.h
-            y: barWindow ? (barWindow.baseOffsetY + (barWindow.barHeight - height) / 2) : 0
-            width: metrics.w
+            x: isCenterGroup ? metrics.x + (metrics.w - islandPreview.surfaceWidth) / 2 : metrics.x
+            height: metrics.h + expansion
+            y: barWindow ? (barWindow.baseOffsetY + (barWindow.barHeight - metrics.h) / 2
+                - (contentWrapper.barAtBottom ? expansion : 0)) : 0
+            width: isCenterGroup ? islandPreview.surfaceWidth : metrics.w
             visible: metrics.v && (barWindow ? !barWindow.positionChanging : true) && width > 0 && (!contentWrapper.isSolid || contentWrapper.distinctPills)
             opacity: visible ? 1.0 : 0.0
 
@@ -803,13 +864,13 @@ Item {
             }
 
             Behavior on x {
-                enabled: contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                enabled: !groupBgRect.isCenterGroup && contentWrapper.layoutAnimationsEnabled
+                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
             }
 
             Behavior on width {
-                enabled: contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                enabled: !groupBgRect.isCenterGroup && contentWrapper.layoutAnimationsEnabled
+                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
             }
 
             Behavior on opacity {
@@ -829,6 +890,11 @@ Item {
             barWindow: contentWrapper.barWindow
             isSolid: contentWrapper.isSolid || contentWrapper.isFill
             distinctPills: contentWrapper.distinctPills
+            islandHeader: contentWrapper.flatCenterArr.indexOf(modelData) !== -1
+            // Reveal secondary text after the surface has room for its natural width.
+            revealOpacity: islandHeader && modelData !== "timedate"
+                ? (contentWrapper.clockOnly ? 0 : Math.max(0, Math.min(1,
+                    (islandPreview.surfaceWidth / Math.max(1, islandPreview.collapsedWidth) - 0.96) / 0.04))) : 1
             moduleActive: contentWrapper.isModuleActive(modelData)
             isGrouped: contentWrapper.isModuleGrouped(modelData)
             providedBackdrop: { void groupBgRepeater.count; void contentWrapper.groupRev; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
@@ -836,6 +902,15 @@ Item {
             suppressAnimation: contentWrapper.suppressAnimation
             layoutAnimationsEnabled: contentWrapper.layoutAnimationsEnabled
             isRightAligned: (modelData === "tray") ? contentWrapper.trayAlignRight : false
+
+            HoverHandler {
+                enabled: barMod.moduleActive && (barMod.moduleId === "bt" || (contentWrapper.flatCenterArr.indexOf(barMod.moduleId) !== -1
+                    && ["media", "timedate", "weather"].indexOf(barMod.moduleId) !== -1))
+                onHoveredChanged: {
+                    if (hovered) islandPreview.enter(barMod, barMod.moduleId === "bt" ? "bluetooth" : barMod.moduleId === "media" ? "music" : "calendar");
+                    else islandPreview.leave(barMod);
+                }
+            }
 
             Component.onCompleted: {
                 contentWrapper.registerModuleInstance(modelData, barMod);

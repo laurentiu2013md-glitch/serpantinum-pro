@@ -119,11 +119,11 @@ Item {
         clip: !baseGlass.active
         opacity: root.enabled ? 1.0 : 0.5
 
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.duration(180) } }
+        Behavior on opacity { NumberAnimation { duration: Motion.duration(180) } }
 
         scale: root.popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        Behavior on scale { NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutQuint } }
 
         GlassFill {
             id: baseGlass
@@ -153,15 +153,15 @@ Item {
 
             readonly property bool isMoving: Math.abs(actualLeft - targetLeft) > 0.5 || Math.abs(actualRight - targetRight) > 0.5
             property real lift: (baseGlass.active && isMoving) ? 1.0 : 0.0
-            Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on lift { NumberAnimation { duration: Motion.duration(240); easing.type: Easing.OutCubic } }
             scale: 1.0 + 0.16 * lift
             transformOrigin: Item.Center
 
             property real actualLeft: targetLeft
             property real actualRight: targetRight
 
-            Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: 250; easing.type: Easing.OutExpo } }
-            Behavior on actualRight { NumberAnimation { id: rightAnim; duration: 250; easing.type: Easing.OutExpo } }
+            Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: Motion.duration(250); easing.type: Easing.OutExpo } }
+            Behavior on actualRight { NumberAnimation { id: rightAnim; duration: Motion.duration(250); easing.type: Easing.OutExpo } }
 
             y: 0
             height: bgShape.height
@@ -174,14 +174,14 @@ Item {
             topRightRadius: (!I18n.rtl ? root.currentIndex === root.options.length - 1 : root.currentIndex === 0) ? root.cornerRadius : root.smallRadius
             bottomRightRadius: (!I18n.rtl ? root.currentIndex === root.options.length - 1 : root.currentIndex === 0) ? root.cornerRadius : root.smallRadius
 
-            Behavior on topLeftRadius { NumberAnimation { duration: 150 } }
-            Behavior on bottomLeftRadius { NumberAnimation { duration: 150 } }
-            Behavior on topRightRadius { NumberAnimation { duration: 150 } }
-            Behavior on bottomRightRadius { NumberAnimation { duration: 150 } }
+            Behavior on topLeftRadius { NumberAnimation { duration: Motion.duration(180) } }
+            Behavior on bottomLeftRadius { NumberAnimation { duration: Motion.duration(180) } }
+            Behavior on topRightRadius { NumberAnimation { duration: Motion.duration(180) } }
+            Behavior on bottomRightRadius { NumberAnimation { duration: Motion.duration(180) } }
 
             color: ThemeBackend.liquidGlass ? "transparent" : root.accentColor
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Motion.duration(180) } }
 
             GlassFill {
                 id: highlightGlass
@@ -242,7 +242,7 @@ Item {
                         topRightRadius: optionItem.index === root.options.length - 1 ? root.cornerRadius : root.smallRadius
                         bottomRightRadius: optionItem.index === root.options.length - 1 ? root.cornerRadius : root.smallRadius
                         color: (root.currentIndex === optionItem.index || optionGlass.active) ? "transparent" : (optionMa.containsMouse ? "#1affffff" : "transparent")
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        Behavior on color { ColorAnimation { duration: Motion.duration(200) } }
 
                         GlassFill {
                             id: optionGlass
@@ -271,8 +271,8 @@ Item {
                         font.pixelSize: root.fontPixelSize
                         fontSizeMode: Text.Fit
                         minimumPixelSize: root.minFontPixelSize
-                        color: (root.currentIndex === optionItem.index && !ThemeBackend.liquidGlass) ? root.activeTextColor : root.textColor
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        color: ThemeBackend.neutralTextColor((root.currentIndex === optionItem.index && !ThemeBackend.liquidGlass) ? root.activeTextColor : root.textColor)
+                        Behavior on color { ColorAnimation { duration: Motion.duration(200) } }
                     }
 
                     MouseArea {
@@ -309,13 +309,13 @@ Item {
             opacity: root.flashOpacity
             visible: !baseGlass.active
             z: 2
-            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: Motion.duration(350); easing.type: Easing.OutExpo }
         }
     }
 
     SequentialAnimation {
         id: btnPopAnim
-        NumberAnimation { target: root; property: "popScale"; to: 1.04; duration: 100; easing.type: Easing.OutQuad }
-        NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+        NumberAnimation { target: root; property: "popScale"; to: 1.04; duration: Motion.duration(100); easing.type: Easing.OutQuad }
+        NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: Motion.duration(350); easing.type: Easing.OutQuint }
     }
 }

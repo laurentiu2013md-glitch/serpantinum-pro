@@ -189,7 +189,7 @@ Item {
                     text: Weather.currentIcon
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.iconTop
-                    color: root.accentColor
+                    color: ThemeBackend.neutralTextColor(root.accentColor)
                     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
                 }
 
@@ -282,7 +282,7 @@ Item {
 
                             Text {
                                 text: modelData.icon
-                                color: modelData.hex && modelData.hex.length === 7 ? modelData.hex : root.accentColor
+                                color: ThemeBackend.neutralTextColor(modelData.hex && modelData.hex.length === 7 ? modelData.hex : root.accentColor)
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: root.forecastIcon
                                 Layout.alignment: Qt.AlignHCenter

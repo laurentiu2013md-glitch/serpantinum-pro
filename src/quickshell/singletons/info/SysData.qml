@@ -57,6 +57,7 @@ Item {
     }
 
     function prewarm() {
+        if (GameMode.enabled) return;
         if (!fetchProc.running) {
             fetchProc.running = true;
         }
@@ -65,7 +66,7 @@ Item {
     property real lastNetRxBytes: -1
     property real lastNetTxBytes: -1
     property real lastNetSampleMs: 0
-    property int netInterval: root.onBattery ? 6000 : 3000
+    property int netInterval: GameMode.enabled ? 10000 : (root.onBattery ? 6000 : 3000)
 
     function resetNet() {
         lastNetRxBytes = -1;
@@ -121,7 +122,7 @@ Item {
     readonly property string stateDir: Caching.getRunDir("sysdata")
 
     // One long-running fetcher while anything is subscribed, printing a line per tick.
-    property int streamInterval: root.onBattery ? 4 : 2
+    property int streamInterval: GameMode.enabled ? 8 : (root.onBattery ? 4 : 2)
     onStreamIntervalChanged: {
         if (streamProc.running) {
             streamProc.running = false;

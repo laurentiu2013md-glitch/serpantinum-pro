@@ -512,7 +512,7 @@ Item {
                     Layout.preferredWidth: Scaler.s(30)
                     Layout.preferredHeight: Scaler.s(30)
                     size: Scaler.s(30)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                    cornerRadius: ThemeBackend.borderRadius
                     buttonIcon: root.isEditingUser ? "󰄬" : "󰏫"
                     iconFontSize: Scaler.s(14)
                     accentColor: root.isEditingUser ? ThemeBackend.green : ThemeBackend.surface1
@@ -558,7 +558,7 @@ Item {
                         anchors.fill: parent
                         visible: !root.isEditingUser
                         enabled: !root.isEditingUser
-                        cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                        cornerRadius: ThemeBackend.borderRadius
                         horizontalPadding: Scaler.s(8)
                         textFontSize: Scaler.s(11)
                         accentColor: ThemeBackend.surface1
@@ -590,7 +590,7 @@ Item {
                         enabled: root.isEditingUser
                         fontPixelSize: Scaler.s(11)
                         horizontalPadding: Scaler.s(8)
-                        cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                        cornerRadius: ThemeBackend.borderRadius
                         baseColor: ThemeBackend.surface1
                         bgOpacity: ThemeBackend.elementOpacity
                         textColor: ThemeBackend.text
@@ -621,7 +621,7 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
-                        radius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                        radius: ThemeBackend.borderRadius
                         color: "transparent"
                         visible: root.isEditingUser
                         z: 10
@@ -632,7 +632,7 @@ Item {
                     id: yearSelector
                     Layout.preferredWidth: Scaler.s(104)
                     Layout.preferredHeight: Scaler.s(30)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                    cornerRadius: ThemeBackend.borderRadius
                     from: root.minYear
                     to: root.maxYear
                     stepSize: 1.0
@@ -660,7 +660,7 @@ Item {
                 ClickButton {
                     Layout.preferredHeight: Scaler.s(30)
                     Layout.minimumWidth: Scaler.s(60)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                    cornerRadius: ThemeBackend.borderRadius
                     horizontalPadding: Scaler.s(10)
                     textFontSize: Scaler.s(11)
                     accentColor: ThemeBackend.surface1
@@ -689,7 +689,7 @@ Item {
                     Layout.preferredWidth: Scaler.s(142)
                     Layout.minimumWidth: Scaler.s(90)
                     Layout.preferredHeight: Scaler.s(30)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                    cornerRadius: ThemeBackend.borderRadius
                     horizontalPadding: Scaler.s(8)
                     textFontSize: Scaler.s(10)
                     accentColor: ThemeBackend.surface1
@@ -713,7 +713,7 @@ Item {
                     Layout.preferredWidth: Scaler.s(30)
                     Layout.preferredHeight: Scaler.s(30)
                     size: Scaler.s(30)
-                    cornerRadius: ThemeBackend.borderRadius > 0 ? Math.min(ThemeBackend.borderRadius, Scaler.s(6)) : Scaler.s(6)
+                    cornerRadius: ThemeBackend.borderRadius
                     buttonIcon: "󰑓"
                     iconFontSize: Scaler.s(14)
                     accentColor: ThemeBackend.surface1
@@ -887,7 +887,7 @@ Item {
                         Layout.alignment: Qt.AlignHCenter
                         font.family: ThemeBackend.iconFont
                         font.pixelSize: Scaler.s(22)
-                        color: root.hasError ? ThemeBackend.red : ThemeBackend.subtext0
+                        color: ThemeBackend.neutralTextColor(root.hasError ? ThemeBackend.red : ThemeBackend.subtext0)
                         text: root.hasError ? "󰅚" : (root.loading ? "󰑓" : "󰊤")
                     }
 
@@ -896,7 +896,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: Scaler.s(10)
                         font.weight: Font.Medium
-                        color: root.hasError ? ThemeBackend.red : ThemeBackend.subtext0
+                        color: ThemeBackend.neutralTextColor(root.hasError ? ThemeBackend.red : ThemeBackend.subtext0)
                         text: {
                             if (root.loading) return I18n.t("widgets.github.fetching");
                             if (root.hasError) return I18n.t("widgets.github.fetch_error", { user: root.username }).replace("{user}", root.username);

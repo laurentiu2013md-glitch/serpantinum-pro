@@ -7,9 +7,13 @@ import "../../"
 Item {
     id: controller
 
+    signal previewRequested(var screen, string edge, real position)
     signal setIndexRequested(var screen, string index)
     signal showSystemUsageRequested(var screen)
     signal showNotesRequested(var screen)
+    signal toggleCalculatorRequested(var screen)
+    signal showDropShelfRequested(var screen)
+    signal toggleDropShelfRequested(var screen)
 
     function targetScreen(screen) {
         if (screen) return screen;
@@ -32,9 +36,25 @@ Item {
         if (target) controller.showNotesRequested(target);
     }
 
+    function showDropShelf(screen) {
+        let target = targetScreen(screen);
+        if (target) controller.showDropShelfRequested(target);
+    }
+
+    function toggleCalculator(screen) {
+        let target = targetScreen(screen);
+        if (target) controller.toggleCalculatorRequested(target);
+    }
+
+    function toggleDropShelf(screen) {
+        let target = targetScreen(screen);
+        if (target) controller.toggleDropShelfRequested(target);
+    }
+
     IpcHandler {
         target: "floating"
 
+        function preview(edge: string, position: string) { controller.previewRequested(controller.targetScreen(null), edge, parseFloat(position)); }
         function setIndex(index: string) {
             controller.setIndex(index, null);
         }
@@ -45,6 +65,18 @@ Item {
 
         function showNotes() {
             controller.showNotes(null);
+        }
+
+        function toggleCalculator() {
+            controller.toggleCalculator(null);
+        }
+
+        function showDropShelf() {
+            controller.showDropShelf(null);
+        }
+
+        function toggleDropShelf() {
+            controller.toggleDropShelf(null);
         }
 
         function forceReload() {

@@ -536,7 +536,7 @@ Rectangle {
                         font.family: root.fontFamily
                         font.pixelSize: root.s(root.titlePixelSize)
                         font.bold: root.titleBold
-                        color: root.dimmed ? ThemeBackend.subtext0 : root.titleColor
+                        color: ThemeBackend.neutralTextColor(root.dimmed ? ThemeBackend.subtext0 : root.titleColor)
                         horizontalAlignment: I18n.textAlignment
                         elide: root.wrapText ? Text.ElideNone : Text.ElideRight
                         wrapMode: root.wrapText ? Text.WordWrap : Text.NoWrap
@@ -562,7 +562,7 @@ Rectangle {
                     text: root.effectiveDescription
                     font.family: root.fontFamily
                     font.pixelSize: root.s(root.descriptionPixelSize)
-                    color: root.dimmed ? ThemeBackend.subtext0 : root.descriptionColor
+                    color: ThemeBackend.neutralTextColor(root.dimmed ? ThemeBackend.subtext0 : root.descriptionColor)
                     horizontalAlignment: I18n.textAlignment
                     elide: Text.ElideRight
                     maximumLineCount: root.wrapText ? 99 : 2

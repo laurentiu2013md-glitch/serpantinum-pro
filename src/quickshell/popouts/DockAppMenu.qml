@@ -14,7 +14,7 @@ PanelWindow {
 
     screen: DockAppMenuController.screen
 
-    WlrLayershell.namespace: "dockappmenu"
+    WlrLayershell.namespace: "dockappmenu-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     focusable: false
     exclusionMode: ExclusionMode.Ignore
@@ -228,7 +228,7 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: dockAppMenuWindow.s(32) + dockAppMenuWindow.s(8)
-                    color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                    color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                     radius: dockAppMenuWindow.cornerRadius
                     clip: true
 
@@ -304,7 +304,7 @@ PanelWindow {
                     visible: dockAppMenuWindow.hasWindows
                     Layout.fillWidth: true
                     Layout.preferredHeight: windowsCol.implicitHeight + dockAppMenuWindow.s(8)
-                    color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                    color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                     radius: dockAppMenuWindow.cornerRadius
                     clip: true
 
@@ -396,7 +396,7 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: actionsCol.implicitHeight + dockAppMenuWindow.s(8)
-                    color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                    color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                     radius: dockAppMenuWindow.cornerRadius
                     clip: true
 

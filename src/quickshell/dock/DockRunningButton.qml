@@ -50,7 +50,7 @@ Item {
     property real targetScale: {
         let s = baseHoverScale;
         if (runningBtnMa.pressed && canHoverScale) {
-            return s > 1.0 ? (s * 1.04) : 1.06;
+            return s * 0.94;
         }
         return s;
     }
@@ -73,7 +73,7 @@ Item {
     property real animLift: {
         if (!canHoverScale || targetScale <= 1.0) return 0.0;
         let liftProgress = (targetScale - 1.0) / Math.max(0.01, maxHoverScale - 1.0);
-        return dockWindow.s(5) * Math.min(1.0, Math.max(0.0, liftProgress));
+        return dockWindow.s(7) * Math.min(1.0, Math.max(0.0, liftProgress));
     }
 
     property real targetOffsetX: {
@@ -97,11 +97,11 @@ Item {
 
     Behavior on currentOffsetX {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 280; easing.type: Easing.OutCubic }
     }
     Behavior on currentOffsetY {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 280; easing.type: Easing.OutCubic }
     }
 
     Item {
@@ -134,7 +134,7 @@ Item {
 
             Behavior on color { ColorAnimation { duration: 150 } }
             Behavior on scale {
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: runningBtnMa.pressed ? 90 : 340; easing.type: runningBtnMa.pressed ? Easing.OutCubic : Easing.OutBack; easing.overshoot: 1.15 }
             }
 
             Image {

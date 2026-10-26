@@ -1136,7 +1136,7 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: root.standalone ? 0 : ThemeBackend.clampedBorderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
 
             WallpaperBlur {
                 z: -1

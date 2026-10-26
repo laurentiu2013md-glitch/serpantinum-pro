@@ -78,7 +78,7 @@ Rectangle {
                             font.family: ThemeBackend.fontFamily
                             font.weight: (isTarget || chart.hoverDay === index) ? Font.Bold : Font.Medium
                             font.pixelSize: rootObj.s(11)
-                            color: (isTarget || chart.hoverDay === index) ? chart.tab.textMain : chart.tab.textSub
+                            color: ThemeBackend.neutralTextColor((isTarget || chart.hoverDay === index) ? chart.tab.textMain : chart.tab.textSub)
                             verticalAlignment: Text.AlignVCenter
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
@@ -180,7 +180,7 @@ Rectangle {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Medium
                             font.pixelSize: rootObj.s(10)
-                            color: chart.tab.textDim
+                            color: ThemeBackend.neutralTextColor(chart.tab.textDim)
                             text: String(modelData).padStart(2, "0") + ":00"
                         }
                     }
@@ -195,7 +195,7 @@ Rectangle {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Medium
                     font.pixelSize: rootObj.s(10)
-                    color: chart.tab.textDim
+                    color: ThemeBackend.neutralTextColor(chart.tab.textDim)
                     text: I18n.t("guide.wellbeing.less")
                 }
 
@@ -213,7 +213,7 @@ Rectangle {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Medium
                     font.pixelSize: rootObj.s(10)
-                    color: chart.tab.textDim
+                    color: ThemeBackend.neutralTextColor(chart.tab.textDim)
                     text: I18n.t("guide.wellbeing.more")
                 }
             }

@@ -272,7 +272,7 @@ Item {
                         anchors.centerIn: parent
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: window.s(40) - (window.s(12) * coreContainer.multiShift)
-                        color: window.activeColor
+                        color: ThemeBackend.neutralTextColor(window.activeColor)
                         text: window.activeMode === "wifi" ? "󰤨" : (window.activeMode === "eth" ? "󰈀" : "󰂯")
                         SequentialAnimation on opacity {
                             running: window.visible && showScanning; loops: Animation.Infinite
@@ -305,12 +305,12 @@ Item {
                         anchors.centerIn: parent
                         spacing: window.s(6)
 
-                        Text { Layout.alignment: Qt.AlignHCenter; font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(28); color: coreGlass.active ? ThemeBackend.text : ThemeBackend.crust; text: "󰤨" }
+                        Text { Layout.alignment: Qt.AlignHCenter; font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(28); color: ThemeBackend.neutralTextColor(coreGlass.active ? ThemeBackend.text : ThemeBackend.crust); text: "󰤨" }
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter; Layout.maximumWidth: pwdLayer.width - window.s(30)
                             font.family: ThemeBackend.fontFamily; font.weight: Font.Bold; font.pixelSize: window.s(12)
-                            color: coreGlass.active ? ThemeBackend.text : ThemeBackend.crust; text: window.pendingWifiSsid; elide: Text.ElideRight
+                            color: ThemeBackend.neutralTextColor(coreGlass.active ? ThemeBackend.text : ThemeBackend.crust); text: window.pendingWifiSsid; elide: Text.ElideRight
                         }
 
                         Rectangle {
@@ -364,7 +364,7 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: window.s(40) - (window.s(12) * coreContainer.multiShift)
-                            color: isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? ThemeBackend.text : ThemeBackend.crust)
+                            color: ThemeBackend.neutralTextColor(isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? ThemeBackend.text : ThemeBackend.crust))
                             text: isMyDisconnecting ? "" : (coreMa.containsMouse ? (window.activeMode === "wifi" ? "󰖪" : (window.activeMode === "eth" ? "󰈂" : "󰂲")) : (coreContainer.myDevice ? (coreContainer.myDevice.icon || (window.activeMode === "wifi" ? "󰤨" : (window.activeMode === "eth" ? "󰈀" : "󰂯"))) : ""))
                             Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
                         }
@@ -376,7 +376,7 @@ Item {
                             horizontalAlignment: Text.AlignHCenter
                             font.family: ThemeBackend.fontFamily; font.weight: Font.Black
                             font.pixelSize: window.s(14) - (window.s(3) * coreContainer.multiShift)
-                            color: isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? ThemeBackend.text : ThemeBackend.crust)
+                            color: ThemeBackend.neutralTextColor(isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? ThemeBackend.text : ThemeBackend.crust))
                             text: coreContainer.myDevice ? (window.activeMode === "wifi" ? (coreContainer.myDevice.ssid || "") : (coreContainer.myDevice.name || "")) : ""
                             elide: Text.ElideRight
                             Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
@@ -385,7 +385,7 @@ Item {
                             id: coreStatusText
                             Layout.alignment: Qt.AlignHCenter
                             font.family: ThemeBackend.fontFamily; font.weight: Font.Bold; font.pixelSize: window.s(10)
-                            color: isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? Qt.alpha(ThemeBackend.text, coreMa.containsMouse ? 1.0 : 0.7) : (coreMa.containsMouse ? ThemeBackend.crust : "#99000000"))
+                            color: ThemeBackend.neutralTextColor(isMyDisconnecting ? ThemeBackend.overlay1 : (coreGlass.active ? Qt.alpha(ThemeBackend.text, coreMa.containsMouse ? 1.0 : 0.7) : (coreMa.containsMouse ? ThemeBackend.crust : "#99000000")))
                             text: isMyDisconnecting ? (I18n.t("network.status.disconnecting") || "Disconnecting...") : (centralCore.disconnectFill > 0.01 ? (I18n.t("network.status.hold") || "Hold to Disconnect") : (I18n.t("network.status.connected") || "Connected"))
                             Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
                         }

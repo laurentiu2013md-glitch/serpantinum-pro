@@ -161,7 +161,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: window.s(54)
                 scale: 1.0 + ((20.0 / 54.0) - 1.0) * powerToggleContainer.pwrMorph
-                color: powerGlass.active ? ThemeBackend.text : (window.currentPower ? ThemeBackend.crust : ThemeBackend.subtext0)
+                color: ThemeBackend.neutralTextColor(powerGlass.active ? ThemeBackend.text : (window.currentPower ? ThemeBackend.crust : ThemeBackend.subtext0))
                 text: window.currentPowerPending ? "󰑮" : ""
                 Behavior on color { enabled: window.powerAnimAllowed && window.visible; ColorAnimation { duration: 800; easing.type: Easing.InOutQuint } }
     

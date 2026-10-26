@@ -49,6 +49,7 @@ Item {
         controller.alignBottom = isBottom;
         controller.isSideBar = isSide;
         controller.isVisible = true;
+        IslandController.request("music", "open", scr);
     }
 
     function hide() {

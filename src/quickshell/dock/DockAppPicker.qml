@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import QtQuick.Layouts
 import QtQuick.Controls
 import "../"
@@ -67,7 +68,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: ThemeBackend.borderRadius <= 16 ? ThemeBackend.borderRadius * 1.5 : 24
-        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+        border.width: ThemeBackend.liquidGlass ? 0 : 1
+        border.color: Qt.alpha(ThemeBackend.surface1, 0.45)
         clip: true
 
         WallpaperBlur {

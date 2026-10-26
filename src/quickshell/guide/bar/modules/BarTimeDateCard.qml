@@ -62,7 +62,7 @@ BarModuleCard {
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: rootObj.s(13)
                     font.bold: true
-                    color: ThemeBackend.blue
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.blue)
                 }
 
                 Text {
@@ -71,7 +71,7 @@ BarModuleCard {
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: rootObj.s(13)
                     font.bold: true
-                    color: ThemeBackend.sapphire
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.sapphire)
                 }
 
                 Rectangle {

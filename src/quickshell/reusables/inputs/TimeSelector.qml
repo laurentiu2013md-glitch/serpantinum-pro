@@ -176,7 +176,7 @@ Item {
             font.family: "JetBrains Mono"
             font.weight: Font.Bold
             font.pixelSize: root.fontPixelSize
-            color: (isSelected && !pillGlass.active) ? root.activeTextColor : root.textColor
+            color: ThemeBackend.neutralTextColor((isSelected && !pillGlass.active) ? root.activeTextColor : root.textColor)
             visible: !isEditing
             Behavior on color { ColorAnimation { duration: 250 } }
         }
@@ -187,7 +187,7 @@ Item {
             font.family: "JetBrains Mono"
             font.weight: Font.Bold
             font.pixelSize: root.fontPixelSize
-            color: (isSelected && !pillGlass.active) ? root.activeTextColor : root.accentColor
+            color: ThemeBackend.neutralTextColor((isSelected && !pillGlass.active) ? root.activeTextColor : root.accentColor)
             visible: isEditing
             maximumLength: 2
             validator: RegularExpressionValidator { regularExpression: /^[0-9]{1,2}$/ }
@@ -337,7 +337,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.weight: Font.Bold
                 font.pixelSize: root.fontPixelSize
-                color: root.alpha(root.subTextColor, 0.4)
+                color: ThemeBackend.neutralTextColor(root.alpha(root.subTextColor, 0.4))
                 anchors.verticalCenter: parent.verticalCenter 
             }
 
@@ -355,7 +355,7 @@ Item {
                 font.family: "JetBrains Mono"
                 font.weight: Font.Bold
                 font.pixelSize: root.fontPixelSize
-                color: root.alpha(root.subTextColor, 0.4)
+                color: ThemeBackend.neutralTextColor(root.alpha(root.subTextColor, 0.4))
                 anchors.verticalCenter: parent.verticalCenter 
                 visible: root.showSeconds
             }

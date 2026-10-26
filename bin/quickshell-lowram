@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+"""Launch Quickshell with ordinary memory pages instead of transparent huge pages.
+This process-local flag persists across exec; no system-wide setting is changed.
+See https://man7.org/linux/man-pages/man2/PR_SET_THP_DISABLE.2const.html
+"""
+import fcntl
+import ctypes
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+libc = ctypes.CDLL(None, use_errno=True)
+libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong, ctypes.c_ulong]
+libc.prctl.restype = ctypes.c_int
+if libc.prctl(41, 1, 0, 0, 0) != 0:
+    print("quickshell-lowram: could not disable transparent huge pages: " + os.strerror(ctypes.get_errno()), file=sys.stderr)
+# This launcher is user-owned; upstream daemon updates continue to call it.
+source = Path.home() / ".local/share/serpantinum/src"
+is_shell = any(arg == str(source / "quickshell/Shell.qml") for arg in sys.argv[1:])
+if is_shell:
+    # Hold one per-user lock across exec. Refuse overlapping daemon launches.
+    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+    shell_lock = open(runtime / "serpantinum-shell.lock", "a")
+    try:
+        fcntl.flock(shell_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("Serpantinum shell is already running; duplicate launch ignored.", file=sys.stderr)
+        sys.exit(0)
+    os.set_inheritable(shell_lock.fileno(), True)
+    # Covers a shell launched before this lock was introduced.
+    for proc in Path("/proc").iterdir():
+        if not proc.name.isdigit() or int(proc.name) == os.getpid():
+            continue
+        try:
+            argv = (proc / "cmdline").read_bytes().split(b"\0")
+            if argv and Path(os.fsdecode(argv[0])).name in ("qs", "quickshell") and os.fsencode(str(source / "quickshell/Shell.qml")) in argv:
+                print("Serpantinum shell is already running; duplicate launch ignored.", file=sys.stderr)
+                sys.exit(0)
+        except (FileNotFoundError, PermissionError, ProcessLookupError):
+            pass
+os.execvp("quickshell", ["quickshell", *sys.argv[1:]])

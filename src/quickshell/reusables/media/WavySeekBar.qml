@@ -58,7 +58,7 @@ Item {
     // so the phase loops over 10 cycles without a jump.
     property real phase: 0
     NumberAnimation on phase {
-        running: bar.active
+        running: bar.active && !Motion.reduced
         paused: running && !(bar.playing || bar.ampFactor > 0.001)
         from: 0
         to: Math.PI * 20

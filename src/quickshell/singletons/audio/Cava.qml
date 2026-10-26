@@ -20,7 +20,7 @@ Item {
     property bool hasActiveAudio: false
     property bool isRestarting: false
     property int consecutiveCrashes: 0
-    property bool processEnabled: activeConsumers > 0 && (isPlaying || isDecaying) && !isRestarting
+    property bool processEnabled: !GameMode.enabled && activeConsumers > 0 && (isPlaying || isDecaying) && !isRestarting
 
     function registerConsumer() {
         activeConsumers++;

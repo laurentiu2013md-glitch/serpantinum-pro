@@ -74,7 +74,7 @@ Item {
                 text: root.weatherIcon
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: root.isVertical ? (barWindow ? barWindow.cs(root.isCompact ? 16 : 18) : (root.isCompact ? 16 : 18)) : (barWindow ? barWindow.cs(root.isCompact ? 18 : 20) : (root.isCompact ? 18 : 20))
-                color: Qt.tint(root.weatherHex, Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, root.isCompact ? 0.3 : 0.4))
+                color: ThemeBackend.neutralTextColor(Qt.tint(root.weatherHex, Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, root.isCompact ? 0.3 : 0.4)))
                 visible: !root.isWeatherLoading && root.weatherIcon !== ""
             }
 
@@ -83,7 +83,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: root.isVertical ? (barWindow ? barWindow.cs(root.isCompact ? 11 : 12) : (root.isCompact ? 11 : 12)) : (barWindow ? barWindow.cs(root.isCompact ? 14 : 15) : (root.isCompact ? 14 : 15))
                 font.weight: Font.Black
-                color: root.isCompact ? Qt.lighter(ThemeBackend.peach, 1.1) : ThemeBackend.peach
+                color: ThemeBackend.neutralTextColor(root.isCompact ? Qt.lighter(ThemeBackend.peach, 1.1) : ThemeBackend.peach)
                 visible: !root.isWeatherLoading
             }
         }

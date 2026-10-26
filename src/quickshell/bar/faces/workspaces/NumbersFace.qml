@@ -196,13 +196,13 @@ Item {
                     font.pixelSize: widget ? widget.s(widget.isCompact ? 12 : 14) : 14
                     font.weight: wsPill.isActive ? Font.Black : (wsPill.isOccupied ? Font.Bold : Font.Medium)
 
-                    color: wsPill.isActive
+                    color: ThemeBackend.neutralTextColor(wsPill.isActive
                         ? (numbersGlass.active ? ThemeBackend.text : ThemeBackend.crust)
                         : (wsPill.isHovered
                             ? ThemeBackend.text
                             : (wsPill.isOccupied
                                 ? ThemeBackend.text
-                                : (ThemeBackend.overlay0 !== undefined ? ThemeBackend.overlay0 : ThemeBackend.subtext0)))
+                                : (ThemeBackend.overlay0 !== undefined ? ThemeBackend.overlay0 : ThemeBackend.subtext0))))
 
                     Behavior on color { ColorAnimation { duration: 250 } }
                 }

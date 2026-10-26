@@ -84,7 +84,7 @@ Item {
     property string btIcon: isPreview ? "🎧" : "󰂲"
     property string btDevice: isPreview ? "Headphones" : "Off"
     property bool isBtOn: isPreview ? true : (btStatus.toLowerCase() === "enabled" || btStatus.toLowerCase() === "on")
-    property bool showLayout: (!barWindow || isPreview) ? true : ((!module || module.moduleActive) && barWindow.isStartupReady && barWindow.isDataReady)
+    property bool showLayout: (!barWindow || isPreview) ? true : ((!module || module.islandHeader || module.moduleActive) && barWindow.isStartupReady && barWindow.isDataReady)
     readonly property var btPill: pillLoader.item
     property bool isConnected: isPreview ? true : false
 
@@ -95,6 +95,7 @@ Item {
     Connections {
         target: module || null
         function onModuleActiveChanged() {
+            if (module && module.islandHeader) return;
             if (module && !module.moduleActive) {
                 chassisDetector.running = false;
             } else {
@@ -106,7 +107,7 @@ Item {
 
     Process {
         id: chassisDetector
-        running: !root.isVertical && (!module || module.moduleActive)
+        running: !root.isVertical && (!module || module.islandHeader || module.moduleActive)
         command: ["bash", "-c", "if ls /sys/class/power_supply/BAT* 1> /dev/null 2>&1; then echo 'laptop'; else echo 'desktop'; fi"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -222,7 +223,7 @@ Item {
     readonly property real textLength: isVertical ? textLayout.implicitHeight : textLayout.implicitWidth
 
     property real targetLength: {
-        if (module && !module.moduleActive) return 0;
+        if (module && !module.moduleActive && !module.islandHeader) return 0;
         if (root.isDesktop) return 0;
         if (root.btStyle === "text") {
             return (textLength > 0) ? (textLength + s(root.isCompact ? (isVertical ? 14 : 12) : 16)) : 0;
@@ -259,7 +260,7 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         enabled: root.btStyle === "text" && !root.isPreview
-        onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle network bt"])
+        onClicked: IslandController.request("bluetooth", "toggle", barWindow ? barWindow.screen : null)
     }
 
     AxisFlow {
@@ -286,7 +287,7 @@ Item {
                 font.pixelSize: s(root.isCompact ? 14 : 15)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.mauve, 1.15) : (root.isBtOn ? ThemeBackend.mauve : ThemeBackend.subtext0)
+                color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.mauve, 1.15) : (root.isBtOn ? ThemeBackend.mauve : ThemeBackend.subtext0))
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
@@ -297,7 +298,7 @@ Item {
             font.family: ThemeBackend.fontFamily
             font.pixelSize: root.isVertical ? s(root.isCompact ? 9 : 10) : s(root.isCompact ? 11 : 12)
             font.bold: true
-            color: textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text
+            color: ThemeBackend.neutralTextColor(textMouseArea.containsMouse ? Qt.lighter(ThemeBackend.text, 1.15) : ThemeBackend.text)
             Behavior on color { ColorAnimation { duration: 150 } }
         }
     }
@@ -337,7 +338,7 @@ Item {
             transform: Translate { y: btPill.initAnimTrigger ? 0 : s(15); Behavior on y { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } } }
             Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
 
-            onClicked: if (!root.isPreview) Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle network bt"])
+            onClicked: if (!root.isPreview) IslandController.request("bluetooth", "toggle", barWindow ? barWindow.screen : null)
         }
     }
 
@@ -355,7 +356,7 @@ Item {
             textFontSize: s(root.isCompact ? 9 : 10)
             accentColor: root.isBtOn ? (root.isCompact ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve) : (root.isCompact ? Qt.lighter(ThemeBackend.surface0, 1.18) : ThemeBackend.surface0)
             textColor: root.isBtOn ? ThemeBackend.base : (root.isCompact ? Qt.lighter(ThemeBackend.text, 1.05) : ThemeBackend.text)
-            onClicked: if (!root.isPreview) Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle network bt"])
+            onClicked: if (!root.isPreview) IslandController.request("bluetooth", "toggle", barWindow ? barWindow.screen : null)
         }
     }
 }

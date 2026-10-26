@@ -156,7 +156,7 @@ Scope {
                             text: "󰔛"
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: 34
-                            color: ThemeBackend.mauve
+                            color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                         }
                     }
 

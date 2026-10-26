@@ -215,7 +215,7 @@ GuideTab {
                 Layout.margins: rootObj.s(12)
                 visible: !screenshotTabRoot.loaded || !screenshotTabRoot.online || screenshotTabRoot.failed
                 wrapMode: Text.WordWrap
-                color: (screenshotTabRoot.failed || (screenshotTabRoot.loaded && !screenshotTabRoot.online)) ? ThemeBackend.red : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor((screenshotTabRoot.failed || (screenshotTabRoot.loaded && !screenshotTabRoot.online)) ? ThemeBackend.red : ThemeBackend.subtext0)
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: rootObj.s(11)
                 text: screenshotTabRoot.failed
@@ -281,7 +281,7 @@ GuideTab {
 
                         Text {
                             text: languageRow.installed ? "󰄬" : "󰗊"
-                            color: languageRow.installed ? ThemeBackend.green : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(languageRow.installed ? ThemeBackend.green : ThemeBackend.subtext0)
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: rootObj.s(16)
                             Layout.alignment: Qt.AlignVCenter

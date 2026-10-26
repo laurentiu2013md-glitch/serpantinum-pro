@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Io
 import Quickshell.Wayland
 import "../"
@@ -16,7 +17,7 @@ Variants {
             required property var modelData
             screen: modelData
 
-            WlrLayershell.namespace: "qs-floating-overlay"
+            WlrLayershell.namespace: "qs-floating-overlay-coloros-" + (screen ? screen.name : "default")
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: shouldHaveKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             exclusionMode: ExclusionMode.Ignore
@@ -141,11 +142,11 @@ Variants {
                 }
                 return dockItemCount;
             }
-            property bool isDockActive: dockEnabled && (dockItemCount > 0 || dockEditMode)
+            property bool isDockActive: !Motion.reduced && !GameMode.enabled && dockEnabled && (dockItemCount > 0 || dockEditMode)
 
             property real dockOuterCornerRadius: {
                 let br = (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius !== undefined) ? ThemeBackend.borderRadius : 8;
-                return br <= 16 ? br * 2 : Math.min(32, 32 - 16 * Math.exp(-(br - 16) / 12));
+                return br;
             }
 
             property real dockLength: {
@@ -326,7 +327,9 @@ Variants {
                 "actions/SystemUsage.qml",
                 "actions/Timer.qml",
                 "actions/Notes.qml",
-                "actions/Calculator.qml"
+                "actions/Calculator.qml",
+                "actions/DropShelf.qml",
+                "actions/Bluetooth.qml"
             ]
 
             property int tabCount: Math.max(1, tabModules.length)
@@ -343,6 +346,10 @@ Variants {
                     return { name: I18n.t("quickactions.tabs.notes"), icon: "󰈙" };
                 } else if (mod.indexOf("Calculator") !== -1) {
                     return { name: I18n.t("quickactions.tabs.calculator"), icon: "󰃬" };
+                } else if (mod.indexOf("Bluetooth") !== -1) {
+                    return { name: "Bluetooth", icon: "󰂯" };
+                } else if (mod.indexOf("DropShelf") !== -1) {
+                    return { name: "Drop Shelf", icon: "󰉓" };
                 }
                 return { name: I18n.t("quickactions.tabs.tab"), icon: "󰍜" };
             }
@@ -366,6 +373,10 @@ Variants {
             Connections {
                 target: FloatingController
 
+                function onPreviewRequested(screen, edge, position) {
+                    if (floatingWidget.matchesScreen(screen) && ["left", "right", "top", "bottom"].indexOf(edge) !== -1)
+                        floatingWidget.showSidebar(edge, position, true);
+                }
                 function onSetIndexRequested(screen, index) {
                     if (floatingWidget.matchesScreen(screen)) {
                         floatingWidget.setIndex(index);
@@ -381,6 +392,24 @@ Variants {
                 function onShowNotesRequested(screen) {
                     if (floatingWidget.matchesScreen(screen)) {
                         floatingWidget.showNotes();
+                    }
+                }
+
+                function onToggleCalculatorRequested(screen) {
+                    if (floatingWidget.matchesScreen(screen)) {
+                        floatingWidget.toggleCalculator();
+                    }
+                }
+
+                function onShowDropShelfRequested(screen) {
+                    if (floatingWidget.matchesScreen(screen)) {
+                        floatingWidget.showTab("DropShelf", 5);
+                    }
+                }
+
+                function onToggleDropShelfRequested(screen) {
+                    if (floatingWidget.matchesScreen(screen)) {
+                        floatingWidget.toggleDropShelf();
                     }
                 }
             }
@@ -403,6 +432,51 @@ Variants {
 
             function showNotes() {
                 floatingWidget.showTab("Notes", 3);
+            }
+
+            function toggleCalculator() {
+                let isCalculator = String(tabModules[activeIndex] || "").indexOf("Calculator") !== -1;
+                let shouldClose = isCalculator && (isSidebarVisible || pendingMode === "sidebar");
+                edgeTransitionTimer.stop();
+                teleportTimer.stop();
+                peekShowTimer.stop();
+                peekHideTimer.stop();
+                pendingMode = "";
+                pendingEdge = "";
+                disableAnim = false;
+                isPinned = false;
+                if (shouldClose) {
+                    isExpanded = false;
+                    isSidebarVisible = false;
+                    isPeekVisible = false;
+                    useGraceTimer = false;
+                    hideTimer.stop();
+                } else {
+                    showTab("Calculator", 4);
+                }
+            }
+
+            function toggleDropShelf() {
+                let isShelf = String(tabModules[activeIndex] || "").indexOf("DropShelf") !== -1;
+                let shouldClose = isShelf && (isSidebarVisible || pendingMode === "sidebar");
+                edgeTransitionTimer.stop();
+                teleportTimer.stop();
+                peekShowTimer.stop();
+                peekHideTimer.stop();
+                pendingMode = "";
+                pendingEdge = "";
+                disableAnim = false;
+                isPinned = false;
+                if (shouldClose) {
+                    isExpanded = false;
+                    isSidebarVisible = false;
+                    isPeekVisible = false;
+                    useGraceTimer = false;
+                } else {
+                    showTab("DropShelf", 5);
+                    isPinned = true;
+                }
+                hideTimer.stop();
             }
 
             function showTab(key, fallbackIndex) {
@@ -574,8 +648,8 @@ Variants {
                 }
             }
 
-            property real containerRadius: s(16)
-            property real outerCornerRadius: s(24)
+            property real containerRadius: ThemeBackend.borderRadius
+            property real outerCornerRadius: ThemeBackend.borderRadius
             property real edgeBleed: Math.max(2, Math.ceil(s(2)))
 
             property real h_in: Math.round(s(27))
@@ -604,18 +678,18 @@ Variants {
             property real expandedWidth: baseExpandedWidth
             property real expandedExtraLength: baseExpandedExtraLength
 
-            Behavior on expandedWidth { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
-            Behavior on expandedExtraLength { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
+            Behavior on expandedWidth { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutQuart } }
+            Behavior on expandedExtraLength { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutQuart } }
 
             property real expandProgress: isExpanded ? 1.0 : 0.0
             Behavior on expandProgress {
-                enabled: !floatingWidget.disableAnim
-                NumberAnimation { duration: 400; easing.type: Easing.OutQuart }
+                enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim)
+                NumberAnimation { duration: Motion.morph; easing.type: Easing.OutQuart }
             }
 
             property real visibleProgress: isSidebarVisible ? 1.0 : 0.0
             Behavior on visibleProgress {
-                enabled: !floatingWidget.disableAnim
+                enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim)
                 NumberAnimation { duration: 380; easing.type: Easing.OutQuart }
             }
 
@@ -1113,7 +1187,8 @@ Variants {
                 height: (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top") ? floatingWidget.s(11) : peekBarLength
                 radius: Math.min(floatingWidget.containerRadius, Math.min(width, height) / 2)
 
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+                border.width: 0
 
                 WallpaperBlur {
                     z: -1
@@ -1124,7 +1199,7 @@ Variants {
                 opacity: 1.0
                 scale: floatingWidget.isPeekVisible ? 1.0 : 0.6
 
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
+                Behavior on scale { enabled: !GameMode.enabled; NumberAnimation { duration: 300; easing.type: Easing.OutBack } }
 
                 property real visualDragOffset: {
                     if (!peekMouse.pressed) return 0;
@@ -1163,8 +1238,8 @@ Variants {
                     return 0;
                 }
 
-                Behavior on x { enabled: !floatingWidget.disableAnim && !peekMouse.pressed && floatingWidget.isPeekVisible; NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }
-                Behavior on y { enabled: !floatingWidget.disableAnim && !peekMouse.pressed && floatingWidget.isPeekVisible; NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }
+                Behavior on x { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && !peekMouse.pressed && floatingWidget.isPeekVisible); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo } }
+                Behavior on y { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && !peekMouse.pressed && floatingWidget.isPeekVisible); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo } }
 
                 Rectangle {
                     anchors.centerIn: parent
@@ -1236,19 +1311,19 @@ Variants {
 
                 transformOrigin: Item.Center
                 rotation: floatingWidget.targetRotation
-                Behavior on rotation { enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible; NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
+                Behavior on rotation { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible); NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
 
                 x: floatingWidget.sidebarTargetX
                 y: floatingWidget.sidebarTargetY
 
                 Behavior on x {
-                    enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top")
-                    NumberAnimation { duration: 400; easing.type: Easing.OutExpo }
+                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top"))
+                    NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo }
                 }
 
                 Behavior on y {
-                    enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right")
-                    NumberAnimation { duration: 400; easing.type: Easing.OutExpo }
+                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right"))
+                    NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo }
                 }
 
                 Item {
@@ -1287,7 +1362,7 @@ Variants {
                         height: floatingWidget.outerCornerRadius
                         property vector2d itemSize: Qt.vector2d(width, height)
                         property real cornerIndex: 2.0
-                        property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                        property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                         fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
                     }
 
@@ -1299,7 +1374,7 @@ Variants {
                         height: floatingWidget.outerCornerRadius
                         property vector2d itemSize: Qt.vector2d(width, height)
                         property real cornerIndex: 0.0
-                        property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                        property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                         fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
                     }
                     Rectangle {
@@ -1313,7 +1388,8 @@ Variants {
                         bottomLeftRadius: 0
                         topRightRadius: floatingWidget.containerRadius
                         bottomRightRadius: floatingWidget.containerRadius
-                        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+                        border.width: 0
 
                         WallpaperBlur {
                             z: -1
@@ -1375,8 +1451,12 @@ Variants {
                         }
                     }
 
-                    Item {
+                    ClippingRectangle {
                         id: expandedContainer
+                        radius: floatingWidget.containerRadius
+                        topLeftRadius: 0
+                        bottomLeftRadius: 0
+                        color: "transparent"
                         x: floatingWidget.sidebarW
                         y: 0
                         height: parent.height
@@ -1385,7 +1465,8 @@ Variants {
                         clip: true
 
                         component EmptyBlock : Rectangle {
-                            radius: Math.min(floatingWidget.s(10), Math.min(width, height) / 2)
+                            // Match the 4px inset inside the shared panel curve.
+                            radius: Math.max(0, Math.min(floatingWidget.containerRadius - floatingWidget.s(4), Math.min(width, height) / 2))
                             color: blockGlass.active ? "transparent" : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.05)
                             clip: true
 
@@ -1434,6 +1515,7 @@ Variants {
 
                             delegate: Loader {
                                 id: contentLoader
+                                active: (floatingWidget.isExpanded && index === floatingWidget.activeIndex) || status === Loader.Ready
                                 z: 10
                                 anchors.fill: parent
                                 anchors.topMargin: floatingWidget.s(4)
@@ -1519,8 +1601,8 @@ Variants {
                                     : floatingWidget.getTargetY(floatingWidget.tabCount, floatingWidget.activeIndex)
 
                                 Behavior on y {
-                                    enabled: !floatingWidget.disableAnim
-                                    NumberAnimation { duration: 400; easing.type: Easing.OutExpo }
+                                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim)
+                                    NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo }
                                 }
 
                                 Item {
@@ -1533,7 +1615,7 @@ Variants {
                                         : parent.height - height - floatingWidget.s(4)
 
                                     rotation: floatingWidget.isExpanded ? 180 : 0
-                                    Behavior on rotation { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
+                                    Behavior on rotation { enabled: !GameMode.enabled; NumberAnimation { duration: 300; easing.type: Easing.OutBack } }
 
                                     Item {
                                         anchors.fill: parent
@@ -1552,7 +1634,7 @@ Variants {
                                             color: parent.iconColor
                                             anchors.verticalCenter: parent.verticalCenter
                                             x: parent.pivotX - (width / 2)
-                                            Behavior on color { ColorAnimation { duration: 250 } }
+                                            Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
                                         }
 
                                         Rectangle {
@@ -1564,7 +1646,7 @@ Variants {
                                             transformOrigin: Item.Left
                                             rotation: 42
                                             color: parent.iconColor
-                                            Behavior on color { ColorAnimation { duration: 250 } }
+                                            Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
                                         }
 
                                         Rectangle {
@@ -1576,7 +1658,7 @@ Variants {
                                             transformOrigin: Item.Left
                                             rotation: -42
                                             color: parent.iconColor
-                                            Behavior on color { ColorAnimation { duration: 250 } }
+                                            Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
                                         }
                                     }
 
@@ -1633,7 +1715,8 @@ Variants {
                                                 ? Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, 0.25)
                                                 : "transparent"))
 
-                                    Behavior on color { ColorAnimation { duration: 250 } }
+                                    Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
+                                    Behavior on border.color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
 
                                     MouseArea {
                                         id: pinMouse
@@ -1668,6 +1751,8 @@ Variants {
                                         }
                                     }
                                 }
+
+
                             }
 
                             Rectangle {
@@ -1690,7 +1775,7 @@ Variants {
 
                                 readonly property bool isMoving: Math.abs(actualTop - targetTop) > 0.5 || Math.abs(actualBottom - targetBottom) > 0.5
                                 property real lift: (highlightGlass.active && isMoving) ? 1.0 : 0.0
-                                Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                Behavior on lift { enabled: !GameMode.enabled; NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
                                 scale: 1.0 + 0.14 * lift
                                 transformOrigin: Item.Center
 
@@ -1709,8 +1794,8 @@ Variants {
                                 property real actualTop: targetTop
                                 property real actualBottom: targetBottom
 
-                                Behavior on actualTop { enabled: !floatingWidget.disableAnim; NumberAnimation { id: topAnim; duration: 250; easing.type: Easing.OutExpo } }
-                                Behavior on actualBottom { enabled: !floatingWidget.disableAnim; NumberAnimation { id: bottomAnim; duration: 250; easing.type: Easing.OutExpo } }
+                                Behavior on actualTop { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { id: topAnim; duration: 250; easing.type: Easing.OutExpo } }
+                                Behavior on actualBottom { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { id: bottomAnim; duration: 250; easing.type: Easing.OutExpo } }
 
                                 y: actualTop
                                 height: actualBottom - actualTop
@@ -1730,16 +1815,16 @@ Variants {
                                     z: 1
 
                                     y: floatingWidget.barOffsetY + floatingWidget.getTargetY(index, floatingWidget.activeIndex)
-                                    Behavior on y { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }
+                                    Behavior on y { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo } }
 
                                     height: isActive ? floatingWidget.h_ac : width
-                                    Behavior on height { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 400; easing.type: Easing.OutExpo } }
+                                    Behavior on height { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo } }
 
                                     color: isActive ? "transparent" : (isPressed ? Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, 0.4) : (isHovered ? Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, 0.25) : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.15)))
-                                    Behavior on color { ColorAnimation { duration: 250 } }
+                                    Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 250 } }
 
                                     scale: isActive ? 1.0 : (isPressed ? 0.95 : (isHovered ? 1.05 : 1.0))
-                                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
+                                    Behavior on scale { enabled: !GameMode.enabled; NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
 
                                     Item {
                                         id: tabIconItem
@@ -1748,14 +1833,14 @@ Variants {
                                         height: parent.width
                                         visible: !barPill.isActive || opacity > 0.001
                                         opacity: barPill.isActive ? 0.0 : 1.0
-                                        Behavior on opacity { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 250 } }
+                                        Behavior on opacity { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: 200 } }
 
                                         Text {
                                             anchors.centerIn: parent
                                             font.family: ThemeBackend.iconFont
                                             font.pixelSize: floatingWidget.s(14)
                                             font.bold: true
-                                            color: barPill.isHovered ? ThemeBackend.text : ThemeBackend.subtext0
+                                            color: ThemeBackend.neutralTextColor(barPill.isHovered ? ThemeBackend.text : ThemeBackend.subtext0)
                                             text: floatingWidget.getTabIcon(index)
                                             rotation: floatingWidget.activeEdge === "right" ? 180 : (floatingWidget.activeEdge === "bottom" ? 90 : (floatingWidget.activeEdge === "top" ? -90 : 0))
                                         }
@@ -1769,7 +1854,7 @@ Variants {
                                         visible: barPill.isActive || opacity > 0.001
                                         opacity: barPill.isActive ? 1.0 : 0.0
                                         clip: true
-                                        Behavior on opacity { enabled: !floatingWidget.disableAnim; NumberAnimation { duration: 250 } }
+                                        Behavior on opacity { enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim); NumberAnimation { duration: 200 } }
 
                                         Text {
                                             anchors.centerIn: parent
@@ -1777,7 +1862,7 @@ Variants {
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: floatingWidget.s(10)
                                             font.weight: Font.Bold
-                                            color: highlightGlass.active ? ThemeBackend.text : ThemeBackend.crust
+                                            color: ThemeBackend.neutralTextColor(highlightGlass.active ? ThemeBackend.text : ThemeBackend.crust)
                                             rotation: (floatingWidget.activeEdge === "right" || floatingWidget.activeEdge === "bottom") ? 90 : -90
                                         }
                                     }

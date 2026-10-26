@@ -5,6 +5,7 @@ FULL_MODE=false
 RECORD_MODE=false
 SCAN_QR_MODE=false
 OCR_MODE=false
+CHATGPT_MODE=false
 GEOMETRY=""
 SOURCE_IMG=""
 CROP_RECT=""
@@ -24,6 +25,7 @@ while [[ "$#" -gt 0 ]]; do
         --record) RECORD_MODE=true; shift ;;
         --scan-qr) SCAN_QR_MODE=true; shift ;;
         --ocr) OCR_MODE=true; shift ;;
+        --chatgpt) CHATGPT_MODE=true; shift ;;
         --geometry) GEOMETRY="$2"; shift 2 ;;
         --source) SOURCE_IMG="$2"; shift 2 ;;
         --crop) CROP_RECT="$2"; shift 2 ;;
@@ -496,6 +498,31 @@ if [ "$OCR_MODE" = true ]; then
     fi
     [ "$ACTION" = "default" ] && bash "$SCRIPT_DIR/qs_manager.sh" open settings screenshot
     exit 0
+fi
+
+# ChatGPT captures stay private and temporary; normal screenshots keep the existing path.
+if [ "$CHATGPT_MODE" = true ]; then
+    umask 077
+    CHATGPT_TMP_DIR=$(mktemp -d "${XDG_RUNTIME_DIR}/serpantinum-chatgpt.XXXXXX") || exit 1
+    CHATGPT_IMAGE="$CHATGPT_TMP_DIR/screenshot.png"
+    if [ -n "$SOURCE_IMG" ]; then
+        crop_source "$CHATGPT_IMAGE"
+    elif [ -n "$GEOMETRY" ]; then
+        capture_region "$CHATGPT_IMAGE"
+    elif [ -n "$TARGET_MON" ]; then
+        grim -o "$TARGET_MON" -l 0 "$CHATGPT_IMAGE"
+    else
+        grim -l 0 "$CHATGPT_IMAGE"
+    fi
+    if [ ! -s "$CHATGPT_IMAGE" ]; then
+        rm -f -- "$CHATGPT_IMAGE"
+        rmdir -- "$CHATGPT_TMP_DIR"
+        [ -n "$SOURCE_IMG" ] && rm -f -- "$SOURCE_IMG"
+        notify-send -u critical "Screenshot" "Could not capture the selected region for ChatGPT."
+        exit 1
+    fi
+    [ -n "$SOURCE_IMG" ] && rm -f -- "$SOURCE_IMG"
+    exec python3 "$SCRIPT_DIR/screenshot_chatgpt.py" "$CHATGPT_IMAGE" --delete-after-paste
 fi
 
 time=$(date +'%Y-%m-%d-%H%M%S')

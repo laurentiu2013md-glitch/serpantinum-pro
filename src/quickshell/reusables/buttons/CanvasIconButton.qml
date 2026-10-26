@@ -10,7 +10,7 @@ Item {
     implicitHeight: size
 
     property int size: 44
-    property int cornerRadius: 12
+    property int cornerRadius: ThemeBackend.borderRadius
 
     property int iconSize: 18
 

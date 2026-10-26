@@ -14,7 +14,7 @@ PanelWindow {
     signal finished()
     signal closed()
 
-    WlrLayershell.namespace: "welcome-guide"
+    WlrLayershell.namespace: "welcome-guide-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -113,7 +113,7 @@ PanelWindow {
                 required property int index
                 text: modelData === " " ? "\u00A0" : modelData
                 font: twRoot.font
-                color: twRoot.color
+                color: ThemeBackend.neutralTextColor(twRoot.color)
 
                 property bool shown: (twRoot.reveal * (twRoot.text.length + 2)) > index
 
@@ -458,7 +458,7 @@ PanelWindow {
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: window.s(15)
                     scale: 0.88
-                    color: window.subtext0
+                    color: ThemeBackend.neutralTextColor(window.subtext0)
                     opacity: window.finalAuthorOpacity
                 }
             }
@@ -556,7 +556,7 @@ PanelWindow {
                         text: I18n.t("start.made_by", { "author": "ilyamiro" })
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: window.s(14)
-                        color: window.subtext0
+                        color: ThemeBackend.neutralTextColor(window.subtext0)
                     }
                 }
             }

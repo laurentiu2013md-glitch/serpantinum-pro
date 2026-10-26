@@ -207,7 +207,7 @@ Item {
                 text: preview.shownPath.replace(Quickshell.env("HOME"), "~")
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: rootObj.s(10)
-                color: Qt.rgba(1, 1, 1, 0.75)
+                color: ThemeBackend.neutralTextColor(Qt.rgba(1, 1, 1, 0.75))
                 Layout.alignment: Qt.AlignRight
                 elide: Text.ElideLeft
                 Layout.maximumWidth: rootObj.s(320)

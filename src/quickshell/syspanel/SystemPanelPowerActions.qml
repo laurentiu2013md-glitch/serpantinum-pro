@@ -163,7 +163,7 @@ RowLayout {
                 anchors.centerIn: parent
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: panel.s(19)
-                color: isDisabled ? ThemeBackend.surface2 : (actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                color: ThemeBackend.neutralTextColor(isDisabled ? ThemeBackend.surface2 : (actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0))
                 text: icon
                 Behavior on color {
                     enabled: panel.visible
@@ -181,7 +181,7 @@ RowLayout {
                     y: (actionCapsule.height / 2) - (height / 2) - (actionCapsule.height - parent.height)
                     font.family: ThemeBackend.iconFont
                     font.pixelSize: panel.s(19)
-                    color: capsuleGlass.active ? ThemeBackend.text : ThemeBackend.crust
+                    color: ThemeBackend.neutralTextColor(capsuleGlass.active ? ThemeBackend.text : ThemeBackend.crust)
                     text: icon
                 }
             }

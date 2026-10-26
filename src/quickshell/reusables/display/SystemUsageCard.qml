@@ -194,7 +194,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.DemiBold
                 font.pixelSize: root.midTextFontSize
-                color: root.midTextColor
+                color: ThemeBackend.neutralTextColor(root.midTextColor)
                 text: root.midText
                 visible: root.midText !== ""
             }
@@ -204,7 +204,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.DemiBold
                 font.pixelSize: root.titleFontSize
-                color: root.titleColor
+                color: ThemeBackend.neutralTextColor(root.titleColor)
                 text: root.title
             }
         }
@@ -216,7 +216,7 @@ Item {
             font.family: root.fontFamily
             font.weight: Font.DemiBold
             font.pixelSize: root.subTextFontSize
-            color: root.subTextColor
+            color: ThemeBackend.neutralTextColor(root.subTextColor)
             text: root.subText
             visible: root.subText !== ""
         }
@@ -227,7 +227,7 @@ Item {
             font.family: root.fontFamily
             font.weight: Font.Black
             font.pixelSize: root.valueFontSize
-            color: root.valueTextColor
+            color: ThemeBackend.neutralTextColor(root.valueTextColor)
             text: root.valueText
         }
     }
@@ -271,7 +271,7 @@ Item {
                     font.family: root.fontFamily
                     font.weight: Font.DemiBold
                     font.pixelSize: root.midTextFontSize
-                    color: root.effFilledMidTextColor
+                    color: ThemeBackend.neutralTextColor(root.effFilledMidTextColor)
                     text: root.midText
                     visible: root.midText !== ""
                 }
@@ -281,7 +281,7 @@ Item {
                     font.family: root.fontFamily
                     font.weight: Font.DemiBold
                     font.pixelSize: root.titleFontSize
-                    color: root.effFilledTitleColor
+                    color: ThemeBackend.neutralTextColor(root.effFilledTitleColor)
                     text: root.title
                 }
             }
@@ -293,7 +293,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.DemiBold
                 font.pixelSize: root.subTextFontSize
-                color: root.effFilledSubTextColor
+                color: ThemeBackend.neutralTextColor(root.effFilledSubTextColor)
                 text: root.subText
                 visible: root.subText !== ""
             }
@@ -304,7 +304,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.Black
                 font.pixelSize: root.valueFontSize
-                color: root.effFilledTextColor
+                color: ThemeBackend.neutralTextColor(root.effFilledTextColor)
                 text: root.valueText
             }
         }

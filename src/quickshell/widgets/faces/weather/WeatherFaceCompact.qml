@@ -30,12 +30,12 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
-        radius: ThemeBackend.borderRadius * 2
+        radius: ThemeBackend.borderRadius
 
         WallpaperBlur {
             z: -1
             anchors.fill: parent
-            radius: ThemeBackend.borderRadius * 2
+            radius: ThemeBackend.borderRadius
         }
     }
 
@@ -70,7 +70,7 @@ Item {
                 text: Weather.currentIcon !== "" ? Weather.currentIcon : ""
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: Math.min(parent.width, parent.height) * 0.65
-                color: root.accentColor
+                color: ThemeBackend.neutralTextColor(root.accentColor)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }

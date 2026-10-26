@@ -152,7 +152,7 @@ GuideTab {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Bold
                             font.pixelSize: rootObj.s(18)
-                            color: ThemeBackend.mauve
+                            color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                         }
 
                         ClickButton {

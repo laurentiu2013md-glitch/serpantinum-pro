@@ -275,7 +275,7 @@ Item {
                         font.family: root.fontFamily
                         font.weight: root.fontWeight
                         font.pixelSize: root.baseActiveFont
-                        color: (index === Lyrics.currentIndex && (!modelData.words || modelData.words.length === 0)) ? root.activeLineColor : root.inactiveLineColor
+                        color: ThemeBackend.neutralTextColor((index === Lyrics.currentIndex && (!modelData.words || modelData.words.length === 0)) ? root.activeLineColor : root.inactiveLineColor)
                         opacity: {
                             if (!lineDelegate.isWithinRange) return 0.0;
                             if (index === Lyrics.currentIndex) return 1.0;

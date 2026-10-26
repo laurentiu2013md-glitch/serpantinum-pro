@@ -147,7 +147,7 @@ Item {
                     font.weight: Font.Bold
                     font.variableAxes: ({ "wght": 700, "ROND": 100, "wdth": 100 })
                     font.letterSpacing: -0.8
-                    color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve
+                    color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve)
                 }
 
                 Text {
@@ -221,7 +221,7 @@ Item {
                         font.weight: Font.Bold
                         font.variableAxes: ({ "wght": 700, "ROND": 100, "wdth": 100 })
                         font.letterSpacing: -0.3
-                        color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal
+                        color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal)
                     }
                 }
             }
@@ -251,7 +251,7 @@ Item {
                     font.weight: Font.Bold
                     font.variableAxes: ({ "wght": 700, "ROND": 100, "wdth": 100 })
                     font.letterSpacing: -0.5
-                    color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal
+                    color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal)
                 }
 
                 Column {
@@ -334,7 +334,7 @@ Item {
                     font.weight: Font.Bold
                     font.variableAxes: ({ "wght": 700, "ROND": 100, "wdth": 100 })
                     font.letterSpacing: -0.8
-                    color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve
+                    color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve)
                 }
 
                 Text {
@@ -393,7 +393,7 @@ Item {
                         font.weight: Font.Bold
                         font.variableAxes: ({ "wght": 700, "ROND": 100, "wdth": 100 })
                         font.letterSpacing: -0.3
-                        color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal
+                        color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal)
                     }
 
                     Text {

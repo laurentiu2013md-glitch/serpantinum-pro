@@ -24,7 +24,7 @@ FocusScope {
     property color errorColor: ThemeBackend.red
     property color busyColor: ThemeBackend.peach
 
-    property real cornerRadius: 12
+    property real cornerRadius: ThemeBackend.borderRadius
     property real horizontalPadding: 8
     property real verticalPadding: 4
 
@@ -360,8 +360,8 @@ FocusScope {
             text: root.leadingIcon
             font.family: root.iconFont
             font.pixelSize: root.fontPixelSize
-            color: (root.hasFocus || root.action_highlight) ? root.activeSignalColor : root.subTextColor
-            Behavior on color { ColorAnimation { duration: 150 } }
+            color: ThemeBackend.neutralTextColor((root.hasFocus || root.action_highlight) ? root.activeSignalColor : root.subTextColor)
+            Behavior on color { ColorAnimation { duration: 180 } }
             Layout.alignment: Qt.AlignVCenter
         }
 
@@ -378,7 +378,7 @@ FocusScope {
                 text: root.placeholderText
                 font.family: root.fontFamily
                 font.pixelSize: root.fontPixelSize
-                color: glass.active ? "#ffffff" : root.subTextColor
+                color: ThemeBackend.neutralTextColor(glass.active ? "#ffffff" : root.subTextColor)
                 opacity: (innerInput.text.length === 0 && charModel.count === 0) ? (glass.active ? 1.0 : 0.45) : 0.0
                 x: root.computeRowX(implicitWidth, fieldArea.width)
                 anchors.verticalCenter: parent.verticalCenter
@@ -458,7 +458,7 @@ FocusScope {
                         anchors.centerIn: parent
                         visible: slot.revealed
                         text: model.char
-                        color: root.textColor
+                        color: ThemeBackend.neutralTextColor(root.textColor)
                         font.family: root.fontFamily
                         font.pixelSize: root.fontPixelSize
                     }
@@ -592,7 +592,7 @@ FocusScope {
                     text: root.placeholderText
                     font.family: root.fontFamily
                     font.pixelSize: root.fontPixelSize
-                    color: glass.active ? "#ffffff" : root.subTextColor
+                    color: ThemeBackend.neutralTextColor(glass.active ? "#ffffff" : root.subTextColor)
                     opacity: (innerTextEdit.text.length === 0) ? (glass.active ? 1.0 : 0.45) : 0.0
                     Behavior on opacity { NumberAnimation { duration: 150 } }
                 }
@@ -602,7 +602,7 @@ FocusScope {
                     width: multiFlickable.width
                     height: Math.max(multiFlickable.height, contentHeight)
                     focus: root.multiLine
-                    color: root.textColor
+                    color: ThemeBackend.neutralTextColor(root.textColor)
                     font.family: root.fontFamily
                     font.pixelSize: root.fontPixelSize
                     horizontalAlignment: I18n.textAlignment
@@ -663,7 +663,7 @@ FocusScope {
 
                     Text {
                         text: typingPop.popChar
-                        color: root.textColor
+                        color: ThemeBackend.neutralTextColor(root.textColor)
                         font.family: root.fontFamily
                         font.pixelSize: root.fontPixelSize
                     }
@@ -726,7 +726,7 @@ FocusScope {
                 text: root.showClearButton && innerInput.text.length > 0 ? "󰅖" : root.trailingIcon
                 font.family: root.iconFont
                 font.pixelSize: root.fontPixelSize
-                color: trailingMa.containsMouse ? root.textColor : root.subTextColor
+                color: ThemeBackend.neutralTextColor(trailingMa.containsMouse ? root.textColor : root.subTextColor)
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
 

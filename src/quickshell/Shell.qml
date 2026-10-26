@@ -4,6 +4,8 @@ import Quickshell.Io
 import "widgets"
 
 ShellRoot {
+    id: shell
+    readonly property bool gameMode: GameMode.enabled
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
     readonly property bool quickactionsEnabled: Config.getSetting("general", {}).quickactions !== false
     readonly property bool dockEnabled: Config.getSetting("dock", {}).enabled !== false
@@ -20,6 +22,7 @@ ShellRoot {
     }
 
     function ensureScreenshotOverlay() {
+        if (gameMode) return null;
         if (!screenshotLoader.item) screenshotLoader.active = true;
         return screenshotLoader.item;
     }
@@ -42,30 +45,38 @@ ShellRoot {
         }
     }
 
+    IpcHandler {
+        target: "coloros"
+        function status(): string {
+            return JSON.stringify({opacity:ThemeBackend.elementOpacity,blur:ThemeBackend.blurBackground,compositorBlur:ThemeBackend.compositorBlur,
+                gameMode:GameMode.enabled,reducedMotion:Motion.reduced,adaptiveBlur:SurfacePolicy.enabled,
+                light:ThemeBackend.isLight,surface:ThemeBackend.base.toString(),accent:ThemeBackend.mauve.toString()});
+        }
+    }
     Main {}
     Bar {}
     Lock {}
-    WidgetRedactor {}
-    LockRedactor {}
+    Loader { active: !shell.gameMode; sourceComponent: WidgetRedactor {} }
+    Loader { active: !shell.gameMode; sourceComponent: LockRedactor {} }
 
     Launcher {}
-    Clipboard {}    
+    Loader { active: !shell.gameMode; sourceComponent: Clipboard {} }
 
     Polkit {}
-    WellbeingLimitOverlay {}
+    Loader { active: !shell.gameMode; sourceComponent: WellbeingLimitOverlay {} }
     PopoutManager {}
 
     Loader {
-        active: dockEnabled
+        active: !shell.gameMode && dockEnabled
         sourceComponent: Dock {}
     }
 
     Loader {
-        active: !performanceMode
+        active: !shell.gameMode && !performanceMode
         sourceComponent: Idle {}
     }
     Variants {
-        model: performanceMode ? [] : Quickshell.screens
+        model: (shell.gameMode || performanceMode) ? [] : Quickshell.screens
         delegate: WidgetLoader {
             required property var modelData
             screen: modelData
@@ -73,11 +84,11 @@ ShellRoot {
         }
     }
     Loader {
-        active: !performanceMode
+        active: shell.gameMode || !performanceMode
         sourceComponent: WallpaperEngine {}
     }
     Loader {
-        active: !performanceMode && quickactionsEnabled
+        active: shell.gameMode || (!performanceMode && quickactionsEnabled)
         sourceComponent: Floating {}
     }
 
@@ -85,7 +96,16 @@ ShellRoot {
         Qt.application.organization = "serpantinum";
         Qt.application.domain = "serpantinum.org";
         Qt.application.name = "serpantinum";
-        FirstLaunch.checkFirstLaunch();
-        SysNotif.checkBattery();
+        if (!gameMode) {
+            FirstLaunch.checkFirstLaunch();
+            SysNotif.checkBattery();
+        }
+        GameMode.reapply();
+    }
+
+    Timer {
+        interval: 1500
+        running: shell.gameMode
+        onTriggered: gc()
     }
 }

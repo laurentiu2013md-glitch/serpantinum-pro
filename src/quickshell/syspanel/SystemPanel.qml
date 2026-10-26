@@ -31,12 +31,12 @@ Item {
 
     readonly property bool isLeftAnchored: barPosition === "right"
     readonly property real slideDistance: sidebarPanel.width > 0 ? sidebarPanel.width : root.s(420)
-    readonly property real rowSlideDistance: root.s(36)
+    readonly property real rowSlideDistance: root.s(32)
 
     readonly property bool isDesktop: UPower.displayDevice.ready ? !UPower.displayDevice.isLaptopBattery : SystemInfo.isDesktop
 
-    readonly property real boxRadius: Math.min(ThemeBackend.borderRadius, root.s(20))
-    readonly property real cardRadius: Math.min(ThemeBackend.borderRadius, root.s(14))
+    readonly property real boxRadius: ThemeBackend.borderRadius
+    readonly property real cardRadius: ThemeBackend.borderRadius
 
     readonly property color briColor: Qt.lighter(ThemeBackend.mauve, 1.1)
     readonly property color volColor: Qt.lighter(ThemeBackend.sapphire, 1.5)
@@ -264,28 +264,28 @@ Item {
 
     ParallelAnimation {
         id: startupSequence
-        NumberAnimation { target: root; property: "introContent"; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "introTop"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "introContent"; to: 1.0; duration: 320; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "introTop"; from: 0; to: 1.0; duration: 360; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
 
         SequentialAnimation {
-            PauseAnimation { duration: 30 }
-            NumberAnimation { target: root; property: "introSliders"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 28 }
+            NumberAnimation { target: root; property: "introSliders"; from: 0; to: 1.0; duration: 380; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 55 }
-            NumberAnimation { target: root; property: "introQuickActions"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 56 }
+            NumberAnimation { target: root; property: "introQuickActions"; from: 0; to: 1.0; duration: 400; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 80 }
-            NumberAnimation { target: root; property: "introNotifs"; from: 0; to: 1.0; duration: 330; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 84 }
+            NumberAnimation { target: root; property: "introNotifs"; from: 0; to: 1.0; duration: 400; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 105 }
-            NumberAnimation { target: root; property: "introActions"; from: 0; to: 1.0; duration: 330; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 112 }
+            NumberAnimation { target: root; property: "introActions"; from: 0; to: 1.0; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 130 }
-            NumberAnimation { target: root; property: "introCore"; from: 0; to: 1.0; duration: 340; easing.type: Easing.OutCubic }
+            PauseAnimation { duration: 140 }
+            NumberAnimation { target: root; property: "introCore"; from: 0; to: 1.0; duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
         }
     }
 
@@ -347,7 +347,7 @@ Item {
             Text {
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: root.s(32)
-                color: bRoot.iconColor
+                color: ThemeBackend.neutralTextColor(bRoot.iconColor)
                 text: root.isCharging ? "󰂄" : (root.batCapacity > 20 ? "󰁹" : "󰂃")
                 Behavior on color {
                     enabled: root.visible
@@ -365,7 +365,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Black
                     font.pixelSize: root.s(20)
-                    color: bRoot.contentTextColor
+                    color: ThemeBackend.neutralTextColor(bRoot.contentTextColor)
                     text: Math.round(root.animCapacity) + "%"
                     Behavior on color {
                         enabled: root.visible
@@ -387,7 +387,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Bold
                     font.pixelSize: root.s(10)
-                    color: bRoot.glass ? Qt.alpha(bRoot.contentTextColor, 0.75) : (bRoot.contentTextColor === ThemeBackend.crust ? Qt.alpha(ThemeBackend.crust, 0.85) : (root.isCharging ? ThemeBackend.green : ThemeBackend.subtext0))
+                    color: ThemeBackend.neutralTextColor(bRoot.glass ? Qt.alpha(bRoot.contentTextColor, 0.75) : (bRoot.contentTextColor === ThemeBackend.crust ? Qt.alpha(ThemeBackend.crust, 0.85) : (root.isCharging ? ThemeBackend.green : ThemeBackend.subtext0)))
                     text: timeString
                     Behavior on color {
                         enabled: root.visible
@@ -403,8 +403,8 @@ Item {
     Rectangle {
         id: sidebarPanel
         anchors.fill: parent
-        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
-        radius: Math.min(ThemeBackend.borderRadius, root.s(28))
+        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+        radius: ThemeBackend.borderRadius
         topLeftRadius: root.isLeftAnchored ? 0 : radius
         bottomLeftRadius: root.isLeftAnchored ? 0 : radius
         topRightRadius: root.isLeftAnchored ? radius : 0
@@ -422,12 +422,27 @@ Item {
         }
         transform: Translate { x: (root.isLeftAnchored ? -root.slideDistance : root.slideDistance) * (1.0 - root.introContent) }
 
-        Item {
+        Flickable {
+            id: panelScroll
+            objectName: "systemPanelScroll"
             anchors.fill: parent
+            contentWidth: width
+            readonly property real minimumContentHeight: userBox.Layout.preferredHeight
+                + slidersBox.Layout.preferredHeight
+                + quickActionsBox.Layout.preferredHeight + notifsBox.Layout.minimumHeight
+                + powerActionsBox.Layout.preferredHeight + batteryBox.Layout.preferredHeight
+                + systemContent.spacing * 5 + root.s(16)
+            contentHeight: Math.max(height, minimumContentHeight)
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+            ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
             ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: root.s(8)
+                id: systemContent
+                x: root.s(8)
+                y: root.s(8)
+                width: panelScroll.width - root.s(16)
+                height: panelScroll.contentHeight - root.s(16)
                 spacing: root.s(5)
 
                 Rectangle {
@@ -551,6 +566,7 @@ Item {
                 }
 
                 SystemPanelPowerActions {
+                    id: powerActionsBox
                     panel: root
                 }
 

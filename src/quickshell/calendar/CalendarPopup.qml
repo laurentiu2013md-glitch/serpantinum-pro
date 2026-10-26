@@ -463,7 +463,9 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+            border.width: 0
+            border.color: "transparent"
             clip: true
 
             WallpaperBlur {
@@ -567,7 +569,7 @@ Item {
                     }
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: window.s(520)
-                    color: window.activeWeatherHex
+                    color: ThemeBackend.neutralTextColor(window.activeWeatherHex)
                     Behavior on color { ColorAnimation { duration: 1500 } }
 
                     opacity: 0.015
@@ -684,7 +686,7 @@ Item {
                             let scaleFactor = Math.min(1.0, Math.pow(5 / len, 0.7));
                             return Math.round(Math.max(window.s(36), baseSize * scaleFactor));
                         }
-                        color: window.text
+                        color: ThemeBackend.neutralTextColor(window.text)
                         style: Text.Outline
                         styleColor: Qt.alpha(window.crust, 0.4)
                     }
@@ -695,7 +697,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.Bold
                         font.pixelSize: window.s(16)
-                        color: window.subtext0
+                        color: ThemeBackend.neutralTextColor(window.subtext0)
                         opacity: 0.9
                     }
                 }
@@ -770,8 +772,8 @@ Item {
                                         font.family: ThemeBackend.fontFamily
                                         font.weight: Font.Bold
                                         font.pixelSize: window.s(11.5)
-                                        color: (isHighlighted && !hourGlass.active) ? window.base : (hrMa.containsMouse || isHighlighted ? window.text : window.overlay1)
-                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                        color: ThemeBackend.neutralTextColor((isHighlighted && !hourGlass.active) ? window.base : (hrMa.containsMouse || isHighlighted ? window.text : window.overlay1))
+                                        Behavior on color { ColorAnimation { duration: 180 } }
                                     }
 
                                     Text {
@@ -779,7 +781,7 @@ Item {
                                         text: modelData ? (modelData.icon || (window.weatherData && window.weatherData.forecast[window.weatherView] ? window.weatherData.forecast[window.weatherView].icon : "")) : ""
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: window.s(16.5)
-                                        color: (isHighlighted && !hourGlass.active) ? window.base : (modelData ? (modelData.hex || window.text) : window.text)
+                                        color: ThemeBackend.neutralTextColor((isHighlighted && !hourGlass.active) ? window.base : (modelData ? (modelData.hex || window.text) : window.text))
                                     }
 
                                     Text {
@@ -788,7 +790,7 @@ Item {
                                         font.family: ThemeBackend.fontFamily
                                         font.weight: Font.Black
                                         font.pixelSize: window.s(12.5)
-                                        color: (isHighlighted && !hourGlass.active) ? window.base : window.text
+                                        color: ThemeBackend.neutralTextColor((isHighlighted && !hourGlass.active) ? window.base : window.text)
                                     }
                                 }
                             }
@@ -870,7 +872,7 @@ Item {
                             font.pixelSize: window.s(14)
                             fontSizeMode: Text.Fit
                             minimumPixelSize: window.s(8)
-                            color: window.text
+                            color: ThemeBackend.neutralTextColor(window.text)
                             horizontalAlignment: Text.AlignHCenter
 
                             opacity: window.calendarContentOpacity
@@ -903,7 +905,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.weight: Font.Black
                                 font.pixelSize: window.s(11.5)
-                                color: window.overlay0
+                                color: ThemeBackend.neutralTextColor(window.overlay0)
                                 horizontalAlignment: Text.AlignHCenter
                             }
                         }
@@ -982,7 +984,7 @@ Item {
                             font.pixelSize: window.s(15)
                             fontSizeMode: Text.Fit
                             minimumPixelSize: window.s(8)
-                            color: window.text
+                            color: ThemeBackend.neutralTextColor(window.text)
                         }
 
                         IconButton {
@@ -1008,7 +1010,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Black
                             font.pixelSize: window.s(68)
-                            color: window.tempGlowColor
+                            color: ThemeBackend.neutralTextColor(window.tempGlowColor)
                             style: Text.Outline
                             styleColor: window.isTempAnimating ? Qt.alpha(window.tempGlowColor, 0.5) : Qt.alpha(window.crust, 0.4)
 
@@ -1024,7 +1026,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.Bold
                             font.pixelSize: window.s(14)
-                            color: window.text
+                            color: ThemeBackend.neutralTextColor(window.text)
                             elide: Text.ElideRight
                             visible: text !== ""
                         }
@@ -1039,7 +1041,7 @@ Item {
                             font.weight: Font.Medium
                             font.pixelSize: window.s(13)
                             wrapMode: Text.WordWrap
-                            color: window.textAccent
+                            color: ThemeBackend.neutralTextColor(window.textAccent)
                             Behavior on color { ColorAnimation { duration: 1000 } }
 
                             opacity: window.weatherContentOpacity

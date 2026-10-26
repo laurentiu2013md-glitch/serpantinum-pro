@@ -71,7 +71,7 @@ Item {
             font.family: qaBtn.customFontFamily !== "" ? qaBtn.customFontFamily : ThemeBackend.iconFont
             font.pixelSize: qaBtn.customFontSize > 0 ? qaBtn.customFontSize : view.panel.s(18)
             font.weight: qaBtn.customFontSize > 0 ? Font.Bold : Font.Normal
-            color: (qaBtn.isActive && !qaGlass.active) ? ThemeBackend.crust : ((qaBtn.isActive || qaMa.containsMouse) ? ThemeBackend.text : ThemeBackend.subtext0)
+            color: ThemeBackend.neutralTextColor((qaBtn.isActive && !qaGlass.active) ? ThemeBackend.crust : ((qaBtn.isActive || qaMa.containsMouse) ? ThemeBackend.text : ThemeBackend.subtext0))
             text: qaBtn.iconText
             Behavior on color {
                 enabled: view.panel.visible
@@ -368,6 +368,23 @@ Item {
                     Networking.wifiEnabled = restoreWifi;
                     if (Bluetooth.defaultAdapter) Bluetooth.defaultAdapter.enabled = restoreBt;
                 }
+            }
+        }
+
+        QuickActionBtn {
+            id: gameModeBtn
+            objectName: "systemGameModeButton"
+            iconText: "󰊴"
+            activeColor: ThemeBackend.blue
+            isActive: GameMode.enabled
+            opacity: GameMode.busy ? 0.5 : 1
+            Accessible.role: Accessible.CheckBox
+            Accessible.name: "Game Mode"
+            Accessible.checked: GameMode.enabled
+            Accessible.onPressAction: { if (!GameMode.busy) GameMode.toggle(); }
+
+            onLeftClicked: {
+                if (!GameMode.busy) GameMode.toggle();
             }
         }
     }

@@ -353,7 +353,7 @@ Item {
                 text: "󰈷"
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: fp.glyphSize * 0.82
-                color: fp.tintGlyph ? fp.shownAccent : ThemeBackend.overlay0
+                color: ThemeBackend.neutralTextColor(fp.tintGlyph ? fp.shownAccent : ThemeBackend.overlay0)
                 opacity: fp.halted ? 0.45 : (fp.status === "ready" ? fp.breath : 0.85)
             }
 
@@ -370,7 +370,7 @@ Item {
                     y: baseGlyph.y - fillClip.y
                     text: baseGlyph.text
                     font: baseGlyph.font
-                    color: fp.shownAccent
+                    color: ThemeBackend.neutralTextColor(fp.shownAccent)
                 }
             }
 
@@ -417,7 +417,7 @@ Item {
         font.family: ThemeBackend.fontFamily
         font.pixelSize: fp.labelPixelSize
         font.weight: Font.Medium
-        color: fp.status === "ready" ? ThemeBackend.subtext0 : fp.shownAccent
+        color: ThemeBackend.neutralTextColor(fp.status === "ready" ? ThemeBackend.subtext0 : fp.shownAccent)
 
         Behavior on color { ColorAnimation { duration: 250 } }
     }

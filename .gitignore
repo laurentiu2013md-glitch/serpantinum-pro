@@ -10,3 +10,6 @@ __pycache__/
 .omc/
 
 bin/serpantinum-audio
+
+# Private local reset snapshots and saved machine state
+quickshellconf/

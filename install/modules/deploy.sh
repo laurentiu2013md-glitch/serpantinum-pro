@@ -559,6 +559,15 @@ deploy_package() {
         sudo ln -sf "$TARGET_BASE/bin/serpantinumd" /usr/local/bin/serpantinumd 2>/dev/null || true
     fi
 
+    # Install Pro tools and only this Fish function; preserve all other Fish configuration.
+    for tool in quickshell-lowram shellreset serpantinum-snapshot; do
+        ln -sf "$TARGET_BASE/bin/$tool" "$BIN_DIR/$tool"
+    done
+    if [ -f "$REPO_ROOT/config/fish/functions/shellreset.fish" ]; then
+        mkdir -p "$HOME/.config/fish/functions"
+        cp "$REPO_ROOT/config/fish/functions/shellreset.fish" "$HOME/.config/fish/functions/shellreset.fish"
+    fi
+
     install_desktop_entry "$REPO_ROOT" "$BIN_DIR"
 
     setup_pam_service

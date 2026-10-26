@@ -440,7 +440,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.Black
                         font.pixelSize: root.s(68)
-                        color: stateCache.timerRemainingMs === 0 && !root.isTimerRunning ? ThemeBackend.mauve : ThemeBackend.text
+                        color: ThemeBackend.neutralTextColor(stateCache.timerRemainingMs === 0 && !root.isTimerRunning ? ThemeBackend.mauve : ThemeBackend.text)
                         visible: !root.isTimerIdle
                     }
 
@@ -580,7 +580,7 @@ Item {
                                         anchors.fill: parent
                                         anchors.leftMargin: root.s(15); anchors.rightMargin: root.s(15)
                                         Text { text: I18n.t("quickactions.timer.stopwatch.lap", { number: trueIdx + 1 }); color: ThemeBackend.subtext0; font.family: ThemeBackend.fontFamily; font.pixelSize: root.s(12); font.bold: true; Layout.fillWidth: true }
-                                        Text { text: lapItem ? "+" + root.formatTime(lapItem.diff, true) : ""; color: ThemeBackend.mauve; font.family: ThemeBackend.fontFamily; font.pixelSize: root.s(12) }
+                                        Text { text: lapItem ? "+" + root.formatTime(lapItem.diff, true) : ""; color: ThemeBackend.neutralTextColor(ThemeBackend.mauve); font.family: ThemeBackend.fontFamily; font.pixelSize: root.s(12) }
                                         Text { text: lapItem ? root.formatTime(lapItem.total, true) : ""; color: ThemeBackend.text; font.family: ThemeBackend.fontFamily; font.pixelSize: root.s(12); font.bold: true; Layout.alignment: Qt.AlignRight }
                                     }
                                 }
@@ -697,7 +697,7 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             text: pomodoroView.getPhaseLabel() + " (" + stateCache.pomoSessionsCount + "/" + stateCache.pomoTargetSessions + ")"
                             font.family: ThemeBackend.fontFamily; font.bold: true; font.pixelSize: root.s(14)
-                            color: pomodoroView.getPhaseColor()
+                            color: ThemeBackend.neutralTextColor(pomodoroView.getPhaseColor())
                         }
 
                         Text {

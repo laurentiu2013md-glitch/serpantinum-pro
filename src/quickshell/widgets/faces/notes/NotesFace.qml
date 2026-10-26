@@ -459,7 +459,7 @@ Item {
                         text: "󰈙"
                         font.family: root.nerdFont
                         font.pixelSize: Scaler.s(36)
-                        color: ThemeBackend.surface2
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.surface2)
                         Layout.alignment: Qt.AlignHCenter
                     }
 

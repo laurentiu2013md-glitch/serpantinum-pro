@@ -98,7 +98,7 @@ Item {
                     text: Weather.currentIcon !== "" ? Weather.currentIcon : ""
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: parent.height * 0.76
-                    color: root.accentColor
+                    color: ThemeBackend.neutralTextColor(root.accentColor)
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     fontSizeMode: Text.Fit

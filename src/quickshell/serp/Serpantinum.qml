@@ -7,7 +7,7 @@ import "../"
 PanelWindow {
     id: root
 
-    WlrLayershell.namespace: "assistant-bg"
+    WlrLayershell.namespace: "assistant-bg-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Bottom
 
     focusable: false

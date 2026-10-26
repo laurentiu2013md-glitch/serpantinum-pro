@@ -40,7 +40,7 @@ RowLayout {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.DemiBold
             font.pixelSize: rootObj.s(13)
-            color: middleSection.tab.textMain
+            color: ThemeBackend.neutralTextColor(middleSection.tab.textMain)
             text: middleSection.tab.weekRangeStr
         }
 
@@ -106,7 +106,7 @@ RowLayout {
                             font.family: ThemeBackend.fontFamily
                             font.weight: Font.DemiBold
                             font.pixelSize: rootObj.s(11)
-                            color: model.isTarget ? middleSection.tab.textMain : middleSection.tab.textSub
+                            color: ThemeBackend.neutralTextColor(model.isTarget ? middleSection.tab.textMain : middleSection.tab.textSub)
                             text: middleSection.tab.formatTimeList(model.total)
                         }
 
@@ -129,7 +129,7 @@ RowLayout {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.DemiBold
                         font.pixelSize: rootObj.s(11)
-                        color: ThemeBackend.liquidGlass ? "#ffffff" : (model.isTarget ? ThemeBackend.text : ThemeBackend.overlay0)
+                        color: ThemeBackend.neutralTextColor(ThemeBackend.liquidGlass ? "#ffffff" : (model.isTarget ? ThemeBackend.text : ThemeBackend.overlay0))
                         text: model.dayName
                         Behavior on color { ColorAnimation { duration: 400 } }
                     }
@@ -170,7 +170,7 @@ RowLayout {
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.DemiBold
                     font.pixelSize: rootObj.s(13)
-                    color: middleSection.tab.textMain
+                    color: ThemeBackend.neutralTextColor(middleSection.tab.textMain)
                     text: middleSection.tab.monthNames[middleSection.tab.activeDate.getMonth()] + " " + middleSection.tab.activeDate.getFullYear()
                 }
             }

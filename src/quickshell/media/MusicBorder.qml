@@ -91,7 +91,7 @@ Item {
             NumberAnimation on rotation {
                 from: 0; to: 360; duration: 5000
                 loops: Animation.Infinite
-                running: root.active
+                running: root.active && !Motion.reduced
             }
 
             gradient: Gradient {

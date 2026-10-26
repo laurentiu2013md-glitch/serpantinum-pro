@@ -8,7 +8,27 @@
   <img src="docs/assets/banner.png" alt="Serpantinum" width="850" />
 </div>
 
+# Serpantinum Pro
+
+A ColorOS-inspired Serpantinum fork with a bouncy Dynamic Island, compact hover panels, a shared DropShelf and real Bluetooth controls. Based on [ilyamiro/serpantinum](https://github.com/ilyamiro/serpantinum), with its existing desktop tools and customization options.
+
+## What’s new in Pro
+
+- **An integrated Dynamic Island:** the center bar morphs into music, weather/calendar and Bluetooth panels within the same window.
+- **A quieter desktop:** on Hyprland, the center becomes clock-only when the pointer moves below the upper 10% of the screen. Enter that zone to restore it; open controls stay usable until you leave them.
+- **Playful motion with room for text:** bouncy transitions, padded edges, coordinated widget reveal and a small pointer-boundary buffer. Reduced motion respects the system preference and a shell setting.
+- **Your original music player, compact:** artwork, playback controls, lyrics, EQ and audio settings remain part of the real player.
+- **One shared DropShelf:** files, links and text added through the bar appear in QuickActions immediately, with previews, copy, rearrangement and removal. Hover the upper 5% of the bar’s height to reveal it. Native drag/drop preserves original files.
+- **Functional Bluetooth:** power, scanning, paired/seen devices, connect/disconnect, pairing confirmation, confirmed removal, and battery values only when BlueZ exposes them. The new panel is shared with QuickActions and uses a Material 3 switch.
+- **A consistent gray palette:** Matugen accents, light/dark surfaces and GTK/Qt palette synchronization. Fresh-install defaults use 50% shell background opacity; Hyprland supplies live blur. Game Mode can disable blur without fading text.
+- **Cleaner QuickActions corners:** rounded parent clipping and lazy-loaded modules, with state retained between visits.
+- **`shellreset` for Fish and other shells:** make a private snapshot, then restore it with integrity checks, automatic backups and rollback on ordinary restore failures.
+
+[Feature configuration, reset instructions and limitations](docs/pro-features.md)
+
 ## Previews
+
+Upstream desktop previews; Pro additions are described above.
 
 | | |
 |---|---|
@@ -20,7 +40,7 @@
 ## Installation
 
 > [!TIP]
-> Full installation and configuration instructions live at **[serpantinum.dev](https://serpantinum.dev)**.
+> Use the fork installation command below for Pro. **[serpantinum.dev](https://serpantinum.dev)** documents the upstream shell; see [Pro features](docs/pro-features.md) for this fork’s additions.
 
 > [!IMPORTANT]
 > **Migrating from v1:** All previous configuration will be backed up and unused. Configuration of compositor settings such as monitors, keybinds, and autostart is now up to you, as the project migrated from being dotfiles to being a shell.
@@ -32,13 +52,16 @@ For Arch-based distributions (including systemd, OpenRC, and other init systems)
 Use this installer:
 
 ```bash
-curl -fsSL install.serpantinum.dev | bash
+git clone https://github.com/laurentiu2013md-glitch/serpantinum-pro.git
+cd serpantinum-pro
+bash install/install.sh
 ```
 
 If this doesn't work, use:
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)"
+curl -fsSL https://raw.githubusercontent.com/laurentiu2013md-glitch/serpantinum-pro/master/install/install.sh -o /tmp/serpantinum-pro-install.sh
+REPO_SLUG=laurentiu2013md-glitch/serpantinum-pro bash /tmp/serpantinum-pro-install.sh
 ```
 
 > [!NOTE]
@@ -54,13 +77,20 @@ See the [NixOS installation guide](https://serpantinum.dev/installation/nixos) f
 
 ## Supported compositors
 
-Hyprland, Niri, Sway and Mango. The installer detects the running compositor and deploys its configuration. On Fedora, Mango is installed from the Terra repository.
+The upstream shell supports Hyprland, Niri, Sway and Mango. Pro’s global pointer-zone compression and native blur rule are Hyprland-specific; the full bar remains accessible when that IPC is unavailable. The installer detects the running compositor and deploys its configuration. On Fedora, Mango is installed from the Terra repository.
 
 ---
 
 ## Running
 
-To run the shell, launch `serpantinumd start`
+To run the shell, launch `serpantinumd start`. After configuring it, create a private reset snapshot:
+
+```bash
+serpantinum-snapshot
+shellreset --dry-run
+```
+
+Run `shellreset` to restore that snapshot, with automatic backups. The installer also provides a Fish function of the same name. Snapshot data stays on your machine.
 
 For configuration, see the [configuration guide](https://serpantinum.dev/configure).
 

@@ -1869,7 +1869,7 @@ Item {
         Behavior on anchors.topMargin { NumberAnimation { duration: 650; easing.type: Easing.OutQuint } }
         Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
         anchors.horizontalCenter: parent.horizontalCenter; z: 200; height: window.s(48); width: filterRow.width + window.s(20); radius: ThemeBackend.borderRadius
-        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+        color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null); border.width: 0; border.color: "transparent"
 
         WallpaperBlur {
             z: -1
@@ -2073,7 +2073,7 @@ Item {
                             id: filterText
                             text: modelData.label
                             anchors.centerIn: parent
-                            color: window.currentFilter === modelData.name ? ThemeBackend.text : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(window.currentFilter === modelData.name ? ThemeBackend.text : ThemeBackend.subtext0)
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: window.s(12)
                             font.bold: window.currentFilter === modelData.name

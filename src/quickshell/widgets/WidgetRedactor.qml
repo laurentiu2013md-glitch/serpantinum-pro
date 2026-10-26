@@ -127,7 +127,7 @@ Scope {
                 readonly property string safeMonitorName: (monitorName || (targetScreen ? targetScreen.name : "default")).replace(/[^a-zA-Z0-9_-]/g, "_")
                 screen: redactorWindow.targetScreen
 
-                WlrLayershell.namespace: "qs-widget-redactor-" + redactorWindow.safeMonitorName
+                WlrLayershell.namespace: "qs-widget-redactor--coloros-" + (screen ? screen.name : "default") + redactorWindow.safeMonitorName
                 WlrLayershell.layer: WlrLayer.Overlay
                 WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
@@ -2355,7 +2355,7 @@ Scope {
 
                         Rectangle {
                             anchors.fill: parent
-                            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
                             radius: ThemeBackend.borderRadius
 
                             WallpaperBlur {

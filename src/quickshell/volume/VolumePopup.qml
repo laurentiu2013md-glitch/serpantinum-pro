@@ -194,7 +194,9 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+            border.width: 0
+            border.color: "transparent"
             clip: true
 
             WallpaperBlur {
@@ -353,7 +355,7 @@ Item {
                                 font.family: ThemeBackend.fontFamily
                                 font.weight: Font.Black
                                 font.pixelSize: window.s(26)
-                                color: window.activeMute ? ThemeBackend.red : ThemeBackend.text
+                                color: ThemeBackend.neutralTextColor(window.activeMute ? ThemeBackend.red : ThemeBackend.text)
                                 text: window.activeMute ? I18n.t("volumepopup.mute") : window.activeVol + "%"
                                 Behavior on color { ColorAnimation { duration: 250 } }
                             }
@@ -385,7 +387,7 @@ Item {
                                     font.family: ThemeBackend.fontFamily
                                     font.weight: Font.Black
                                     font.pixelSize: window.s(26)
-                                    color: coreGlass.active ? ThemeBackend.text : ThemeBackend.crust
+                                    color: ThemeBackend.neutralTextColor(coreGlass.active ? ThemeBackend.text : ThemeBackend.crust)
                                     text: window.activeMute ? I18n.t("volumepopup.mute") : window.activeVol + "%"
                                 }
                             }
@@ -542,7 +544,7 @@ Item {
                             ColumnLayout {
                                 anchors.centerIn: parent
                                 spacing: window.s(8)
-                                Text { Layout.alignment: Qt.AlignHCenter; font.family: ThemeBackend.iconFont; font.pixelSize: window.s(28); color: ThemeBackend.surface2; text: "󰖁" }
+                                Text { Layout.alignment: Qt.AlignHCenter; font.family: ThemeBackend.iconFont; font.pixelSize: window.s(28); color: ThemeBackend.neutralTextColor(ThemeBackend.surface2); text: "󰖁" }
                                 Text { Layout.alignment: Qt.AlignHCenter; font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(13); color: ThemeBackend.overlay0; text: I18n.t("volumepopup.no_active_streams") }
                             }
                         }
@@ -636,8 +638,8 @@ Item {
 
                                     Text {
                                         font.family: ThemeBackend.iconFont; font.pixelSize: window.s(18)
-                                        color: isActiveNode && !delegateGlass.active ? ThemeBackend.crust : ThemeBackend.text
-                                        Behavior on color { ColorAnimation { duration: 250 } }
+                                        color: ThemeBackend.neutralTextColor(isActiveNode && !delegateGlass.active ? ThemeBackend.crust : ThemeBackend.text)
+                                        Behavior on color { ColorAnimation { duration: 200 } }
                                         text: {
                                             if (window.activeTab === "inputs") return "󰍬";
                                             if (window.activeTab === "apps") return "󰎆";
@@ -652,13 +654,13 @@ Item {
                                         Text {
                                             Layout.fillWidth: true; elide: Text.ElideRight
                                             font.family: ThemeBackend.fontFamily; font.weight: Font.Bold; font.pixelSize: window.s(13)
-                                            color: isActiveNode && !delegateGlass.active ? ThemeBackend.crust : ThemeBackend.text
+                                            color: ThemeBackend.neutralTextColor(isActiveNode && !delegateGlass.active ? ThemeBackend.crust : ThemeBackend.text)
                                             text: delegateRoot.nodeDesc
                                         }
                                         Text {
                                             Layout.fillWidth: true; elide: Text.ElideRight
                                             font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(10.5)
-                                            color: isActiveNode && !delegateGlass.active ? Qt.darker(ThemeBackend.crust, 1.5) : ThemeBackend.subtext0
+                                            color: ThemeBackend.neutralTextColor(isActiveNode && !delegateGlass.active ? Qt.darker(ThemeBackend.crust, 1.5) : ThemeBackend.subtext0)
                                             text: isActiveNode ? I18n.t("volumepopup.active_default") : delegateRoot.nodeNameStr
                                         }
                                     }

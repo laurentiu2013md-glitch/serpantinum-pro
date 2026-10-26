@@ -48,7 +48,7 @@ GuideTab {
                 text: "󰐊"
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: rootObj.s(18)
-                color: bRoot.textColor
+                color: ThemeBackend.neutralTextColor(bRoot.textColor)
                 Behavior on color { ColorAnimation { duration: 150 } }
 
                 property real charNorm: 0.15
@@ -76,7 +76,7 @@ GuideTab {
                         font.weight: Font.Bold
                         font.pixelSize: rootObj.s(14)
 
-                        color: bRoot.textColor
+                        color: ThemeBackend.neutralTextColor(bRoot.textColor)
                         Behavior on color { ColorAnimation { duration: 150 } }
 
                         property real charNorm: 0.25 + (index / 14) * 0.65
@@ -214,7 +214,7 @@ GuideTab {
                         font.family: ThemeBackend.fontFamily
                         font.weight: index < 11 ? Font.Black : Font.Bold
                         font.pixelSize: index < 11 ? rootObj.s(32) : rootObj.s(14)
-                        color: index < 11 ? ThemeBackend.text : ThemeBackend.subtext0
+                        color: ThemeBackend.neutralTextColor(index < 11 ? ThemeBackend.text : ThemeBackend.subtext0)
 
                         anchors.bottom: parent.bottom
                         anchors.bottomMargin: index < 11 ? 0 : rootObj.s(4)

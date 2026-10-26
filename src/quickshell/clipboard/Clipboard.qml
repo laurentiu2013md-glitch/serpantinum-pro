@@ -16,7 +16,7 @@ PanelWindow {
 
     screen: ClipboardController.screen
 
-    WlrLayershell.namespace: "qs-clipboard"
+    WlrLayershell.namespace: "qs-clipboard-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     focusable: clipboardWindow.isVisible
     exclusionMode: ExclusionMode.Ignore
@@ -82,7 +82,7 @@ PanelWindow {
 
     property bool isSideAttached: attachEdge === "left" || attachEdge === "right"
 
-    property real cornerRadius: ThemeBackend.borderRadius <= 16 ? ThemeBackend.borderRadius * 2 : Math.min(32, 32 - 16 * Math.exp(-(ThemeBackend.borderRadius - 16) / 12))
+    property real cornerRadius: ThemeBackend.borderRadius
     property real outerCornerRadius: cornerRadius
 
     property real baseLauncherWidth: isSideAttached ? Math.round(s(460) / 1.1) : Math.round(s(680) / 1.15)
@@ -566,8 +566,8 @@ PanelWindow {
         property real animProgress: clipboardWindow.isVisible ? 1.0 : 0.0
         Behavior on animProgress {
             NumberAnimation {
-                duration: clipboardWindow.isVisible ? 300 : 200
-                easing.type: Easing.OutCubic
+                duration: clipboardWindow.isVisible ? 360 : 220
+                easing.type: clipboardWindow.isVisible ? Easing.OutCubic : Easing.InCubic
             }
         }
 
@@ -623,7 +623,7 @@ PanelWindow {
                 if (clipboardWindow.attachEdge === "right") return 3.0;
                 return 1.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -648,7 +648,7 @@ PanelWindow {
                 if (clipboardWindow.attachEdge === "right") return 1.0;
                 return 0.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
         Rectangle {
@@ -659,7 +659,9 @@ PanelWindow {
             topRightRadius: (clipboardWindow.attachEdge === "top" || clipboardWindow.attachEdge === "right") ? 0 : clipboardWindow.cornerRadius
             bottomLeftRadius: (clipboardWindow.attachEdge === "bottom" || clipboardWindow.attachEdge === "left") ? 0 : clipboardWindow.cornerRadius
             bottomRightRadius: (clipboardWindow.attachEdge === "bottom" || clipboardWindow.attachEdge === "right") ? 0 : clipboardWindow.cornerRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+            border.width: 0
+            border.color: "transparent"
             clip: true
 
             WallpaperBlur {

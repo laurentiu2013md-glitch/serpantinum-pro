@@ -102,6 +102,7 @@ Item {
     }
 
     function refresh(showLoader) {
+        if (GameMode.enabled) return;
         if (!Caching.serpantinumDir) return;
         let shouldShowLoader = showLoader !== undefined ? !!showLoader : true;
         root._forceFetchMode = shouldShowLoader;
@@ -219,7 +220,7 @@ Item {
     Timer {
         id: refreshTimer
         interval: root.refreshInterval
-        running: true
+        running: !GameMode.enabled
         repeat: true
         triggeredOnStart: false
         onTriggered: root.refresh(false)

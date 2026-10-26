@@ -100,7 +100,7 @@ Item {
             font.pixelSize: root.s(root.isCompact ? 15 : 16)
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            color: iconMouse.containsMouse ? ThemeBackend.text : (root.isCompact ? ThemeBackend.subtext0 : ThemeBackend.overlay2)
+            color: ThemeBackend.neutralTextColor(iconMouse.containsMouse ? ThemeBackend.text : (root.isCompact ? ThemeBackend.subtext0 : ThemeBackend.overlay2))
             Behavior on color { ColorAnimation { duration: 150 } }
         }
 

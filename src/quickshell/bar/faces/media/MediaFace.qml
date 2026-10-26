@@ -124,7 +124,7 @@ Item {
     }
 
     property real targetLength: {
-        if (module && !module.moduleActive) return 0;
+        if (module && !module.moduleActive && !module.islandHeader) return 0;
         if (isVertical) return baseHeight;
         let iconW = 0;
         if (showIcon) {
@@ -213,7 +213,7 @@ Item {
                                     text: "󰎈"
                                     font.family: ThemeBackend.iconFont
                                     font.pixelSize: barWindow ? barWindow.cs(root.isCompact ? 13 : 14) : (root.isCompact ? 13 : 14)
-                                    color: root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0
+                                    color: ThemeBackend.neutralTextColor(root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0)
                                     visible: !root.hasArt
                                 }
 
@@ -279,7 +279,7 @@ Item {
                                     font.family: ThemeBackend.fontFamily
                                     font.weight: Font.Black
                                     font.pixelSize: barWindow ? barWindow.cs(root.isCompact ? 9 : 10) : (root.isCompact ? 9 : 10)
-                                    color: root.isCompact ? ThemeBackend.overlay2 : ThemeBackend.subtext0
+                                    color: ThemeBackend.neutralTextColor(root.isCompact ? ThemeBackend.overlay2 : ThemeBackend.subtext0)
                                     width: parent.width
                                     elide: Text.ElideRight
                                     visible: isMediaActive
@@ -397,7 +397,7 @@ Item {
                         text: "󰎈"
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: barWindow ? barWindow.cs(root.isCompact ? 12 : 13) : (root.isCompact ? 12 : 13)
-                        color: root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0
+                        color: ThemeBackend.neutralTextColor(root.isCompact ? ThemeBackend.text : ThemeBackend.subtext0)
                         visible: !isMediaActive || root.activeArtUrl === ""
                     }
 

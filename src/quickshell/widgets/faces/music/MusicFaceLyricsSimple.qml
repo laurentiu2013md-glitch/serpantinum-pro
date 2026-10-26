@@ -122,7 +122,7 @@ Item {
         font.family: (typeof ThemeBackend !== "undefined" && ThemeBackend.fontFamily) ? ThemeBackend.fontFamily : "sans-serif"
         font.weight: Font.DemiBold
         font.pixelSize: Scaler.s(12)
-        color: (typeof ThemeBackend !== "undefined" && ThemeBackend.subtext0) ? ThemeBackend.subtext0 : "#a6adc8"
+        color: ThemeBackend.neutralTextColor((typeof ThemeBackend !== "undefined" && ThemeBackend.subtext0) ? ThemeBackend.subtext0 : "#a6adc8")
 
         layer.enabled: true
         layer.effect: MultiEffect {

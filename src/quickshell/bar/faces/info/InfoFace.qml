@@ -187,7 +187,7 @@ Item {
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.isVertical ? (barWindow ? barWindow.cs(root.isCompact ? 11 : 12) : (root.isCompact ? 11 : 12)) : (barWindow ? barWindow.cs(root.isCompact ? 13 : 14) : (root.isCompact ? 13 : 14))
                     font.weight: Font.Bold
-                    color: root.isCompact ? Qt.lighter(ThemeBackend.red, 1.08) : ThemeBackend.red
+                    color: ThemeBackend.neutralTextColor(root.isCompact ? Qt.lighter(ThemeBackend.red, 1.08) : ThemeBackend.red)
                 }
             }
 
@@ -214,7 +214,7 @@ Item {
                             text: timerItem.modelData.icon
                             font.family: ThemeBackend.iconFont
                             font.pixelSize: root.isVertical ? (barWindow ? barWindow.cs(root.isCompact ? 10 : 11) : (root.isCompact ? 10 : 11)) : (barWindow ? barWindow.cs(root.isCompact ? 11 : 12) : (root.isCompact ? 11 : 12))
-                            color: root.isCompact ? Qt.lighter(timerItem.entryColor, 1.08) : timerItem.entryColor
+                            color: ThemeBackend.neutralTextColor(root.isCompact ? Qt.lighter(timerItem.entryColor, 1.08) : timerItem.entryColor)
                             Behavior on color { ColorAnimation { duration: 250 } }
                         }
 
@@ -223,7 +223,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.isVertical ? (barWindow ? barWindow.cs(root.isCompact ? 11 : 12) : (root.isCompact ? 11 : 12)) : (barWindow ? barWindow.cs(root.isCompact ? 13 : 14) : (root.isCompact ? 13 : 14))
                             font.weight: Font.Bold
-                            color: root.isCompact ? Qt.lighter(timerItem.entryColor, 1.08) : timerItem.entryColor
+                            color: ThemeBackend.neutralTextColor(root.isCompact ? Qt.lighter(timerItem.entryColor, 1.08) : timerItem.entryColor)
                             Behavior on color { ColorAnimation { duration: 250 } }
                         }
                     }

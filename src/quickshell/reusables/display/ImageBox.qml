@@ -11,7 +11,7 @@ Item {
     implicitHeight: size
 
     property int size: 44
-    property int cornerRadius: 12
+    property int cornerRadius: ThemeBackend.borderRadius
     property int imageRadius: -1
 
     property string source: ""

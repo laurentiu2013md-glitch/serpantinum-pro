@@ -195,7 +195,7 @@ Item {
 
                 Text {
                     text: "L  " + Math.round((balanceSlider.value > 0 ? 1 - balanceSlider.value : 1) * 100) + "%"
-                    color: ThemeBackend.subtext0 || "#a6adc8"
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.subtext0 || "#a6adc8")
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.s(11.5)
                     font.bold: true
@@ -217,7 +217,7 @@ Item {
                                 : (balanceSlider.value < 0
                                     ? (typeof I18n !== "undefined" ? I18n.t("music.audio.left_favored", "Left favored") : "Left favored")
                                     : (typeof I18n !== "undefined" ? I18n.t("music.audio.right_favored", "Right favored") : "Right favored"))))
-                    color: ThemeBackend.mauve || "#cba6f7"
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.mauve || "#cba6f7")
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.s(11.5)
                     font.bold: true
@@ -227,7 +227,7 @@ Item {
 
                 Text {
                     text: Math.round((balanceSlider.value < 0 ? 1 + balanceSlider.value : 1) * 100) + "%  R"
-                    color: ThemeBackend.subtext0 || "#a6adc8"
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.subtext0 || "#a6adc8")
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.s(11.5)
                     font.bold: true

@@ -72,7 +72,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 14 : 15) : 15
                 font.weight: Font.Black
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue)
             }
 
             Text {
@@ -83,7 +83,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 9 : 10) : 10
                 font.weight: Font.Bold
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.subtext0, 1.08) : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.subtext0, 1.08) : ThemeBackend.subtext0)
             }
         }
     }
@@ -101,7 +101,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 13 : 14) : 14
                 font.weight: Font.Black
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue)
             }
 
             Text {
@@ -111,7 +111,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 13 : 14) : 14
                 font.weight: Font.Black
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.sapphire, 1.1) : ThemeBackend.sapphire
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.sapphire, 1.1) : ThemeBackend.sapphire)
             }
 
             Text {
@@ -121,7 +121,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 11 : 12) : 12
                 font.weight: Font.Bold
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.teal, 1.1) : ThemeBackend.teal)
             }
 
             Text {
@@ -166,7 +166,7 @@ Item {
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 9 : 10) : 10
                 font.weight: Font.Bold
-                color: (widget && widget.isCompact) ? Qt.lighter(ThemeBackend.subtext0, 1.08) : ThemeBackend.subtext0
+                color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.subtext0, 1.08) : ThemeBackend.subtext0)
             }
         }
     }

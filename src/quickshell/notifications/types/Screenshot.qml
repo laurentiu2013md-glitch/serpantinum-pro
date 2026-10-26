@@ -104,7 +104,7 @@ Notification {
             text: "󰄀"
             font.family: ThemeBackend.iconFont
             font.pixelSize: s(24)
-            color: faceRoot.accentColor
+            color: ThemeBackend.neutralTextColor(faceRoot.accentColor)
         }
     ]
 
@@ -116,7 +116,7 @@ Notification {
             font.family: ThemeBackend.fontFamily
             font.weight: Font.Bold
             font.pixelSize: s(11)
-            color: faceRoot.bodyText
+            color: ThemeBackend.neutralTextColor(faceRoot.bodyText)
             elide: Text.ElideRight
         }
     ]

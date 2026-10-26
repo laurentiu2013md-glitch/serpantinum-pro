@@ -74,8 +74,8 @@ Item {
         property real actualStart: targetStart
         property real actualEnd: targetEnd
 
-        Behavior on actualStart { NumberAnimation { id: startAnim; duration: 380; easing.type: Easing.OutQuint } }
-        Behavior on actualEnd { NumberAnimation { id: endAnim; duration: 380; easing.type: Easing.OutQuint } }
+        Behavior on actualStart { NumberAnimation { id: startAnim; duration: 420; easing.type: Easing.OutQuint } }
+        Behavior on actualEnd { NumberAnimation { id: endAnim; duration: 420; easing.type: Easing.OutQuint } }
 
         readonly property bool isMoving: Math.abs(actualStart - targetStart) > 0.5 || Math.abs(actualEnd - targetEnd) > 0.5
         property real lift: (pillsGlass.active && isMoving) ? 1.0 : 0.0
@@ -124,11 +124,11 @@ Item {
 
                 Behavior on width {
                     enabled: !pillsFaceRoot.isVertical
-                    NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+                    NumberAnimation { duration: 420; easing.type: Easing.OutQuint }
                 }
                 Behavior on height {
                     enabled: pillsFaceRoot.isVertical
-                    NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+                    NumberAnimation { duration: 420; easing.type: Easing.OutQuint }
                 }
 
                 Rectangle {
@@ -149,7 +149,7 @@ Item {
 
                     Behavior on color { ColorAnimation { duration: 250 } }
 
-                    scale: wsPillMouse.pressed ? 0.88 : (wsPillMouse.containsMouse ? 1.08 : 1.0)
+                    scale: wsPillMouse.pressed ? 0.95 : (wsPillMouse.containsMouse ? 1.04 : 1.0)
                     Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
                 }
 

@@ -376,7 +376,7 @@ Item {
                                 let t = I18n.t("quickactions.notes.selected_count", { count: root.selectedCount });
                                 return (t !== "quickactions.notes.selected_count") ? t : (root.selectedCount + " selected");
                             }
-                            color: ThemeBackend.mauve
+                            color: ThemeBackend.neutralTextColor(ThemeBackend.mauve)
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.s(13)
                             font.bold: true
@@ -537,7 +537,7 @@ Item {
                                             anchors.centerIn: parent
                                             font.family: root.nerdFont
                                             font.pixelSize: root.s(14)
-                                            color: (noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext0)
+                                            color: ThemeBackend.neutralTextColor((noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext0))
                                             text: "󰈙"
 
                                             Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
@@ -552,7 +552,7 @@ Item {
 
                                     Text {
                                         text: modelData.title || I18n.t("quickactions.notes.new_note_title")
-                                        color: (noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : ThemeBackend.text
+                                        color: ThemeBackend.neutralTextColor((noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : ThemeBackend.text)
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: root.s(12)
                                         font.weight: noteDelegateWrapper.isSelected ? Font.Bold : Font.Medium
@@ -567,7 +567,7 @@ Item {
                                             let c = (modelData.content || "").replace(/\n/g, " ").trim();
                                             return c.length > 0 ? c : "...";
                                         }
-                                        color: (noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext0)
+                                        color: ThemeBackend.neutralTextColor((noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext0))
                                         opacity: noteDelegateWrapper.isSelected ? 0.9 : 0.85
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: root.s(10)
@@ -585,7 +585,7 @@ Item {
 
                                     Text {
                                         text: root.formatRelativeTime(modelData.updatedAt)
-                                        color: (noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext1)
+                                        color: ThemeBackend.neutralTextColor((noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext1))
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: root.s(10)
 
@@ -703,7 +703,7 @@ Item {
                             text: "󰈙"
                             font.family: root.nerdFont
                             font.pixelSize: root.s(36)
-                            color: ThemeBackend.surface2
+                            color: ThemeBackend.neutralTextColor(ThemeBackend.surface2)
                             Layout.alignment: Qt.AlignHCenter
                         }
 

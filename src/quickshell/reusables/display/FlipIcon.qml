@@ -10,7 +10,7 @@ Item {
     implicitHeight: size
 
     property int size: 44
-    property int cornerRadius: 12
+    property int cornerRadius: ThemeBackend.borderRadius
 
     property color accentColor: "#89b4fa"
     property color textColor: "#11111b"

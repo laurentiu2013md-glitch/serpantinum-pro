@@ -728,6 +728,9 @@ Item {
         }
     }
 
+    // Standalone Swiftly owns the stack window. Keep its original widget
+    // records hidden below so the same Music/Notes stack is never drawn twice.
+
     Instantiator {
         id: widgetInstantiator
         model: widgetsModel
@@ -735,6 +738,7 @@ Item {
             screen: loaderRoot.screen
             isRedacting: loaderRoot.isRedacting
             visible: !loaderRoot.isRedacting && !(model.isRemoving || false)
+                && !SwiftlyController.stackForWidget(model.wId, loaderRoot.monitorName)
             wId: model.wId
             wType: model.wType
             wVariant: model.wVariant
@@ -749,3 +753,7 @@ Item {
         }
     }
 }
+
+// Swiftly upstream e65b5fb
+
+// Swiftly upstream 3ac6623

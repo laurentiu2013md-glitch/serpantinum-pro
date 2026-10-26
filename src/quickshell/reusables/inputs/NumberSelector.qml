@@ -37,7 +37,7 @@ Item {
     property color activeTextColor: ThemeBackend.crust
     property color errorColor: ThemeBackend.red
 
-    property int cornerRadius: 10
+    property int cornerRadius: ThemeBackend.borderRadius
     property int horizontalPadding: 4
     property int verticalPadding: 4
     property int buttonSize: root.height - (root.verticalPadding * 2)
@@ -424,7 +424,7 @@ Item {
                 font.family: root.fontFamily
                 font.weight: Font.Bold
                 font.pixelSize: root.fontPixelSize
-                color: root.textColor
+                color: ThemeBackend.neutralTextColor(root.textColor)
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
@@ -507,7 +507,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: model.char
-                            color: root.accentColor
+                            color: ThemeBackend.neutralTextColor(root.accentColor)
                             font.family: root.fontFamily
                             font.weight: Font.Bold
                             font.pixelSize: root.fontPixelSize

@@ -721,7 +721,7 @@ Item {
                     Layout.fillWidth: true
                     text: I18n.t("quickactions.calculator.copied")
                     visible: root.copiedFlash
-                    color: ThemeBackend.blue
+                    color: ThemeBackend.neutralTextColor(ThemeBackend.blue)
                     font.family: ThemeBackend.fontFamily
                     font.pixelSize: root.s(12)
                     font.bold: true
@@ -896,7 +896,7 @@ Item {
                                 text: root.convResultText !== "" ? root.convResultText : "0"
                                 elide: Text.ElideRight
                                 verticalAlignment: Text.AlignVCenter
-                                color: resultCopyMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text
+                                color: ThemeBackend.neutralTextColor(resultCopyMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text)
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: Math.round(root.s(24))
                                 font.bold: true
@@ -947,7 +947,7 @@ Item {
                             text: root.convStatus
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
-                            color: root.ratesStatus === "error" ? ThemeBackend.red : ThemeBackend.subtext0
+                            color: ThemeBackend.neutralTextColor(root.ratesStatus === "error" ? ThemeBackend.red : ThemeBackend.subtext0)
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: root.s(11)
                         }
@@ -1052,7 +1052,7 @@ Item {
                                     text: historyRow.entry ? historyRow.entry.expr : ""
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
-                                    color: exprMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text
+                                    color: ThemeBackend.neutralTextColor(exprMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text)
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: root.s(15)
                                 }
@@ -1092,7 +1092,7 @@ Item {
                                     horizontalAlignment: Text.AlignRight
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideLeft
-                                    color: resultMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text
+                                    color: ThemeBackend.neutralTextColor(resultMouse.containsMouse ? ThemeBackend.blue : ThemeBackend.text)
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: root.s(16)
                                     font.bold: true
@@ -1135,7 +1135,7 @@ Item {
                         elide: Text.ElideLeft
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: root.s(15)
-                        color: root.errorCode !== "" ? ThemeBackend.red : ThemeBackend.subtext0
+                        color: ThemeBackend.neutralTextColor(root.errorCode !== "" ? ThemeBackend.red : ThemeBackend.subtext0)
                     }
 
                     RowLayout {

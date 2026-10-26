@@ -114,7 +114,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.pixelSize: rootObj.s(13)
                         font.bold: true
-                        color: details.tab.textMain
+                        color: ThemeBackend.neutralTextColor(details.tab.textMain)
                     }
                 }
 
@@ -128,7 +128,7 @@ Item {
                         font.family: ThemeBackend.fontFamily
                         font.weight: Font.DemiBold
                         font.pixelSize: rootObj.s(13)
-                        color: details.tab.textMain
+                        color: ThemeBackend.neutralTextColor(details.tab.textMain)
                         text: model.name
                         elide: Text.ElideRight
                     }

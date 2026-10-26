@@ -18,7 +18,7 @@ PanelWindow {
 
     screen: LauncherController.screen
 
-    WlrLayershell.namespace: "qs-applauncher"
+    WlrLayershell.namespace: "qs-applauncher-coloros-" + (screen ? screen.name : "default")
     WlrLayershell.layer: WlrLayer.Overlay
     focusable: launcherWindow.isVisible
     exclusionMode: ExclusionMode.Ignore
@@ -95,11 +95,11 @@ PanelWindow {
     function getItemProgress(idx) {
         if (introItems >= 1.0) return 1.0;
         if (introItems <= 0.0) return 0.0;
-        let start = Math.min(idx, 10) * 0.04;
+        let start = Math.min(idx, 7) * 0.055;
         let p = Math.min(1.0, Math.max(0.0, (introItems - start) / 0.42));
         if (p <= 0.0) return 0.0;
         if (p >= 1.0) return 1.0;
-        let c1 = 0.85;
+        let c1 = 1.1;
         let c3 = c1 + 1;
         return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2);
     }
@@ -107,7 +107,7 @@ PanelWindow {
     function getItemOpacity(idx) {
         if (introItems >= 1.0) return 1.0;
         if (introItems <= 0.0) return 0.0;
-        let start = Math.min(idx, 10) * 0.04;
+        let start = Math.min(idx, 7) * 0.055;
         let p = Math.min(1.0, Math.max(0.0, (introItems - start) / 0.28));
         return p;
     }
@@ -126,7 +126,7 @@ PanelWindow {
             property: "introItems"
             from: 0.0
             to: 1.0
-            duration: 520
+            duration: 480
             easing.type: Easing.Linear
         }
     }
@@ -229,6 +229,7 @@ PanelWindow {
     property string terminalCommand: (rawLauncherSettings && rawLauncherSettings.terminalCommand !== undefined) ? rawLauncherSettings.terminalCommand : "kitty -e"
     property string searchProvider: (rawLauncherSettings && rawLauncherSettings.searchProvider !== undefined) ? rawLauncherSettings.searchProvider : SearchProviders.DEFAULT_ID
     property bool smartRanking: (rawLauncherSettings && rawLauncherSettings.smartRanking !== undefined) ? rawLauncherSettings.smartRanking : true
+    property var pinnedApps: (rawLauncherSettings && Array.isArray(rawLauncherSettings.pinnedApps)) ? rawLauncherSettings.pinnedApps : []
 
     onSmartRankingChanged: {
         if (launcherWindow.isVisible) {
@@ -318,7 +319,7 @@ PanelWindow {
         LauncherController.hide();
     }
 
-    property real cornerRadius: ThemeBackend.borderRadius <= 16 ? ThemeBackend.borderRadius * 2 : Math.min(32, 32 - 16 * Math.exp(-(ThemeBackend.borderRadius - 16) / 12))
+    property real cornerRadius: ThemeBackend.borderRadius
     property real outerCornerRadius: cornerRadius
 
     property real baseLauncherWidth: s(customWidth)
@@ -631,6 +632,15 @@ PanelWindow {
         return null;
     }
 
+    function pinnedAppIndex(desktopId) {
+        let id = (desktopId || "").toLowerCase().replace(/\.desktop$/, "");
+        for (let i = 0; i < pinnedApps.length; i++) {
+            let pinnedId = String(pinnedApps[i]).toLowerCase().replace(/\.desktop$/, "");
+            if (id === pinnedId) return i;
+        }
+        return pinnedApps.length;
+    }
+
     function loadApps() {
         let arr = [];
 
@@ -714,6 +724,8 @@ PanelWindow {
         }
 
         arr.sort(function(a, b) {
+            let pinOrder = launcherWindow.pinnedAppIndex(a.desktop_id) - launcherWindow.pinnedAppIndex(b.desktop_id);
+            if (pinOrder !== 0) return pinOrder;
             if (launcherWindow.smartRanking && a.score !== b.score) {
                 return b.score - a.score;
             }
@@ -1027,6 +1039,12 @@ PanelWindow {
 
         if (q.length > 0) {
             filtered.sort(function(a, b) {
+                // Keep command and calculator results ahead of app matches.
+                if (!!a.desktop_id !== !!b.desktop_id) return a.desktop_id ? 1 : -1;
+                if (a.desktop_id && b.desktop_id) {
+                    let pinOrder = launcherWindow.pinnedAppIndex(a.desktop_id) - launcherWindow.pinnedAppIndex(b.desktop_id);
+                    if (pinOrder !== 0) return pinOrder;
+                }
                 if (a.score !== b.score) {
                     return b.score - a.score;
                 }
@@ -1174,9 +1192,8 @@ PanelWindow {
         property real animProgress: launcherWindow.isVisible ? 1.0 : 0.0
         Behavior on animProgress {
             NumberAnimation {
-                duration: launcherWindow.isVisible ? (launcherWindow.isCentered ? 420 : 340) : (launcherWindow.isCentered ? 200 : 150)
-                easing.type: launcherWindow.isVisible ? Easing.OutBack : Easing.InQuad
-                easing.overshoot: launcherWindow.isVisible ? 1.28 : 1.0
+                duration: launcherWindow.isVisible ? 360 : 220
+                easing.type: launcherWindow.isVisible ? Easing.OutCubic : Easing.InCubic
             }
         }
 
@@ -1225,6 +1242,14 @@ PanelWindow {
                  : ((launcherWindow.isVisible || animProgress > 0.001) ? 1.0 : 0.0)
 
         transformOrigin: Item.Center
+        scale: launcherWindow.isCentered && !launcherWindow.isVisible ? 0.94 : 1.0
+        Behavior on scale {
+            NumberAnimation {
+                duration: launcherWindow.isVisible ? 420 : 220
+                easing.type: launcherWindow.isVisible ? Easing.OutBack : Easing.InCubic
+                easing.overshoot: 1.15
+            }
+        }
 
         GlassFillets {
             id: launcherFillets
@@ -1257,7 +1282,7 @@ PanelWindow {
                 if (launcherWindow.attachEdge === "right") return 3.0;
                 return 1.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -1282,7 +1307,7 @@ PanelWindow {
                 if (launcherWindow.attachEdge === "right") return 1.0;
                 return 0.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -1295,7 +1320,9 @@ PanelWindow {
             topRightRadius: (flatCorners && (launcherWindow.attachEdge === "top" || launcherWindow.attachEdge === "right")) ? 0 : container.dynamicCornerRadius
             bottomLeftRadius: (flatCorners && (launcherWindow.attachEdge === "bottom" || launcherWindow.attachEdge === "left")) ? 0 : container.dynamicCornerRadius
             bottomRightRadius: (flatCorners && (launcherWindow.attachEdge === "bottom" || launcherWindow.attachEdge === "right")) ? 0 : container.dynamicCornerRadius
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
+            border.width: 0
+            border.color: launcherWindow.isCentered ? Qt.alpha(ThemeBackend.surface2, 0.6) : "transparent"
             clip: true
 
             WallpaperBlur {
@@ -1727,7 +1754,7 @@ PanelWindow {
                                 anchors.fill: parent
 
                                 scale: ma.pressed ? 0.98 : 1.0
-                                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
+                                Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack; easing.overshoot: 1.15 } }
 
                                 Rectangle {
                                     anchors.fill: parent
@@ -1856,7 +1883,7 @@ PanelWindow {
                                                 }
                                                 font.family: ThemeBackend.fontFamily
                                                 font.pixelSize: launcherWindow.s(16)
-                                                color: delegateRoot.isSelected ? ThemeBackend.mauve : ThemeBackend.subtext0
+                                                color: ThemeBackend.neutralTextColor(delegateRoot.isSelected ? ThemeBackend.mauve : ThemeBackend.subtext0)
                                                 verticalAlignment: Text.AlignVCenter
                                                 horizontalAlignment: Text.AlignHCenter
 
@@ -1877,7 +1904,7 @@ PanelWindow {
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: launcherWindow.s(12)
                                             font.weight: delegateRoot.isSelected ? Font.Bold : Font.Medium
-                                            color: delegateRoot.isSelected ? (ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.text
+                                            color: ThemeBackend.neutralTextColor(delegateRoot.isSelected ? (ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.text)
                                             horizontalAlignment: I18n.textAlignment
                                             elide: Text.ElideRight
                                             verticalAlignment: Text.AlignVCenter
@@ -1893,7 +1920,7 @@ PanelWindow {
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: launcherWindow.s(10)
                                             font.weight: Font.Normal
-                                            color: delegateRoot.isSelected ? (ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0
+                                            color: ThemeBackend.neutralTextColor(delegateRoot.isSelected ? (ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0)
                                             horizontalAlignment: I18n.textAlignment
                                             opacity: delegateRoot.isSelected ? 0.9 : 0.85
                                             elide: Text.ElideRight
@@ -2042,7 +2069,7 @@ PanelWindow {
 
                                 scale: emojiMa.pressed ? 0.92 : (emojiDelegateRoot.isSelected ? 1.04 : (emojiMa.containsMouse ? 1.02 : 1.0))
                                 Behavior on scale {
-                                    NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 1.25 }
+                                    NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
                                 }
 
                                 Rectangle {
@@ -2090,7 +2117,7 @@ PanelWindow {
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: launcherWindow.s(9)
                                         font.weight: emojiDelegateRoot.isSelected ? Font.Bold : Font.Normal
-                                        color: emojiDelegateRoot.isSelected ? ((emojiGlass.active || emojiDelegateRoot.lensHandled) ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0
+                                        color: ThemeBackend.neutralTextColor(emojiDelegateRoot.isSelected ? ((emojiGlass.active || emojiDelegateRoot.lensHandled) ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.subtext0)
                                         elide: Text.ElideRight
                                         horizontalAlignment: Text.AlignHCenter
                                         maximumLineCount: 1
