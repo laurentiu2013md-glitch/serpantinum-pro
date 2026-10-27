@@ -67,7 +67,7 @@ Item {
 
             Text {
                 id: timeText
-                anchors.left: parent.left
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: widget ? widget.timeStr : (typeof DateTime !== "undefined" ? DateTime.time : "12:00")
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 14 : 15) : 15
@@ -78,7 +78,7 @@ Item {
             Text {
                 id: dateText
                 visible: widget ? widget.showDate : true
-                anchors.left: parent.left
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: widget ? widget.dateStr : (typeof DateTime !== "undefined" ? DateTime.fullDate : "Mon, Jan 1")
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: widget ? widget.s(widget.isCompact ? 9 : 10) : 10

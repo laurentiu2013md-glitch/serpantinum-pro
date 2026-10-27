@@ -34,9 +34,9 @@ Item {
     property color _text: "#cdd6f4"
     property color _subtext0: "#a6adc8"
     property color _subtext1: "#bac2de"
-    readonly property color text: liquidGlass ? "#ffffff" : _text
-    readonly property color subtext0: liquidGlass ? "#ffffff" : _subtext0
-    readonly property color subtext1: liquidGlass ? "#ffffff" : _subtext1
+    readonly property color text: (!isLight || liquidGlass) ? "#ffffff" : _text
+    readonly property color subtext0: (!isLight || liquidGlass) ? "#ffffff" : _subtext0
+    readonly property color subtext1: (!isLight || liquidGlass) ? "#ffffff" : _subtext1
     property color surface0: "#313244"
     property color surface1: "#45475a"
     property color surface2: "#585b70"
@@ -255,6 +255,7 @@ Item {
 
     // Keep neutral and white text unchanged; render chromatic labels in pure black.
     function neutralTextColor(value) {
+        if (!root.isLight) return Qt.rgba(1, 1, 1, 1);
         const c = Qt.color(value);
         const chroma = Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b);
         return chroma > 0.06 ? Qt.rgba(0, 0, 0, 1) : c;

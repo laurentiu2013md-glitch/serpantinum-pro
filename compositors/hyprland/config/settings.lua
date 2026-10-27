@@ -55,3 +55,12 @@ hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 5, bezier =
 
 -- Real blur for the shell’s integrated ColorOS surfaces.
 hl.layer_rule({ name = "coloros-native-blur", order = 110, match = { namespace = ".*-coloros-.*" }, blur = true, blur_popups = true, ignore_alpha = 0.01 })
+
+-- Keep Nautilus alpha available to native blur; Game Mode controls global blur.
+hl.window_rule({
+    name = "nautilus-kitty-glass",
+    match = { class = "^org[.]gnome[.]Nautilus$" },
+    no_blur = false,
+    force_rgbx = false,
+    xray = false,
+})

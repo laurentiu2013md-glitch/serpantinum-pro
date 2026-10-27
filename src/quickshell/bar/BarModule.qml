@@ -73,8 +73,10 @@ Rectangle {
 
     x: targetX
     Behavior on x {
-        enabled: barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled)
-        NumberAnimation { duration: root.islandHeader ? Motion.duration(430) : Motion.duration(320); easing.type: root.islandHeader ? Easing.OutBack : Easing.OutCubic; easing.overshoot: 0.65 }
+        enabled: !Motion.reduced && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled))
+        animation: root.islandHeader ? headerSpring : layoutSlide
+        property SpringAnimation headerSpring: SpringAnimation { spring: 3.2; damping: 0.28; mass: 1; epsilon: 0.25 }
+        property NumberAnimation layoutSlide: NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
     }
 
     y: isVertical ? targetY : (barWindow ? barWindow.baseOffsetY + (barWindow.barHeight - height) / 2 : 0)
@@ -96,6 +98,7 @@ Rectangle {
     }
 
     radius: ThemeBackend.borderRadius
+    border.width: 0
     color: isGrouped || pillGlass.active ? "transparent" : (isSolid ? (distinctPills ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), root.barOpacity) : "transparent") : Qt.alpha(ThemeBackend.base, root.barOpacity))
     clip: true
 
@@ -124,7 +127,7 @@ Rectangle {
     opacity: effectiveVisible ? revealOpacity : 0.0
     visible: false
     function updateVisible() {
-        visible = opacity > 0 && (isVertical ? targetHeight : targetWidth) > 0;
+        visible = (islandHeader || opacity > 0) && (isVertical ? targetHeight : targetWidth) > 0;
     }
     onOpacityChanged: updateVisible()
     onTargetWidthChanged: updateVisible()
@@ -133,6 +136,7 @@ Rectangle {
     enabled: moduleActive
 
     Behavior on opacity {
+        enabled: !root.islandHeader || !root.moduleActive
         NumberAnimation { duration: Motion.duration(root.islandHeader && !root.moduleActive ? 60 : 150); easing.type: Easing.OutCubic }
     }
 

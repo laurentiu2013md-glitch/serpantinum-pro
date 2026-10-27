@@ -1,0 +1,35 @@
+@import 'nautilus-colors.css';
+/* Nautilus-only glass; shared foreground roles follow light/dark Matugen palettes. */
+window.nautilus-window {
+  font-family: "Google Sans";
+  font-size: 11pt;
+  background-color: @nautilus_bg;
+  backdrop-filter: blur(16px);
+  color: @nautilus_fg;
+}
+/* Clear libadwaita's nested solid fills so the compositor can blur behind the root. */
+.nautilus-window .background,
+.nautilus-window .view,
+.nautilus-window .nautilus-grid-view,
+.nautilus-window .nautilus-list-view,
+.nautilus-window scrolledwindow,
+.nautilus-window scrolledwindow > viewport,
+.nautilus-window .navigation-sidebar,
+.nautilus-window .sidebar-pane,
+.nautilus-window .content-pane {
+  background-color: transparent;
+  color: @nautilus_fg;
+}
+.nautilus-window headerbar {
+  background-color: alpha(@nautilus_bg, 0.25);
+  color: @nautilus_fg;
+  border-bottom: 1px solid @borders;
+}
+.nautilus-window label,
+.nautilus-window entry { color: @nautilus_fg; }
+.nautilus-window .navigation-sidebar row { border-radius: 12px; margin: 3px 8px; padding: 5px 8px; }
+.nautilus-window .navigation-sidebar row:selected,
+.nautilus-window .nautilus-grid-view > child:selected { background-color: @accent_bg_color; color: @accent_fg_color; }
+.nautilus-window .nautilus-grid-view > child,
+.nautilus-window .nautilus-path-bar button { border-radius: 12px; }
+.nautilus-window popover > contents { border-radius: 16px; }

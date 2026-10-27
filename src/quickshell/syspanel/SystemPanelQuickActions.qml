@@ -384,8 +384,6 @@ Item {
             Accessible.name: isActive ? "Dark mode; switch to light" : "Light mode; switch to dark"
             Accessible.checked: isActive
             Accessible.onPressAction: { if (!Matugen.isRunning) Matugen.toggleMode(); }
-            ToolTip.visible: isHovered
-            ToolTip.text: Matugen.isRunning ? "Generating Matugen palette…" : isActive ? "Switch to light mode" : "Switch to dark mode"
             onLeftClicked: { if (!Matugen.isRunning) Matugen.toggleMode(); }
         }
 

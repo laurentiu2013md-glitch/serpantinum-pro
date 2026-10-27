@@ -13,8 +13,9 @@ def main():
     light=sum(int(raw[i:i+2],16)*w for i,w in [(1,.2126),(3,.7152),(5,.0722)])>153
     n=dict(zip(['base','mantle','crust','surface0','surface1','surface2','text','subtext0'],
         ['#e6e8ec','#dde0e5','#d4d8df','#f0f1f4','#d7dce3','#c3cbd5','#1b1f28','#505866'] if light else
-        ['#252830','#20232a','#191c22','#30343e','#3d4350','#505967','#f1f3f7','#bbc2cf']))
+        ['#252830','#20232a','#191c22','#30343e','#3d4350','#505967','#ffffff','#ffffff']))
     accent=c.get('mauve',c.get('blue','#725188'));onaccent='#ffffff' if sum(int(accent[i:i+2],16)*w for i,w in [(1,.2126),(3,.7152),(5,.0722)])<140 else '#181b22'
+    if not light: onaccent='#ffffff'
     defs={'accent_color':accent,'accent_bg_color':accent,'accent_fg_color':onaccent,
         'window_bg_color':n['base'],'window_fg_color':n['text'],'view_bg_color':n['surface0'],'view_fg_color':n['text'],
         'headerbar_bg_color':n['mantle'],'headerbar_fg_color':n['text'],'headerbar_backdrop_color':n['base'],
@@ -39,7 +40,7 @@ def main():
         settings['Settings']['gtk-application-prefer-dark-theme']='false' if light else 'true'
         import io
         out=io.StringIO();settings.write(out,space_around_delimiters=False);write(directory/'settings.ini',out.getvalue())
-    palette=[n['text'],n['surface0'],n['surface0'],n['surface2'],n['surface1'],n['mantle'],n['text'],n['text'],n['text'],n['surface0'],n['base'],n['mantle'],accent,onaccent,accent,c.get('pink',accent),n['surface0'],n['text'],n['surface0'],n['text'],'#80000000']
+    palette=[n['text'],n['surface0'],n['surface0'],n['surface2'],n['surface1'],n['mantle'],n['text'],n['text'],n['text'],n['surface0'],n['base'],n['mantle'],accent,onaccent,accent,c.get('pink',accent),n['surface0'],n['text'],n['surface0'],n['text'],('#80000000' if light else '#ffffffff')]
     rgba=lambda value: '#ff'+value[1:] if len(value)==7 else value
     colors=', '.join(map(rgba,palette));disabled=palette.copy()
     for i in [0,6,8,13,19]:disabled[i]=n['subtext0']
@@ -49,6 +50,33 @@ def main():
     qt['Appearance'].update({'style':'Breeze','custom_palette':'true','color_scheme_path':str(schemefile),'icon_theme':'Serpantinum-Matugen','standard_dialogs':'default'})
     import io
     out=io.StringIO();qt.write(out,space_around_delimiters=False);write(config,out.getvalue())
+    # Nautilus uses Kitty's configured gray and native background opacity.
+    import re
+    kitty=HOME/'.config/kitty'
+    kittycolors=(kitty/'colors.conf').read_text() if (kitty/'colors.conf').exists() else ''
+    kittyconfig=(kitty/'kitty.conf').read_text() if (kitty/'kitty.conf').exists() else ''
+    bg=re.search(r'^background\s+(#[0-9a-fA-F]{6})\b',kittycolors,re.M)
+    opacity=re.search(r'^background_opacity\s+([0-9.]+)',kittyconfig,re.M)
+    gray=bg.group(1) if bg else '#b3b3b3'
+    amount=max(0,min(1,float(opacity.group(1)))) if opacity else .5
+    foreground='#101010' if light else '#ffffff'
+    write(HOME/'.config/gtk-4.0/nautilus-colors.css',
+        '/* Match Kitty gray/opacity; keep dark-mode labels white. */\n'
+        +f'@define-color nautilus_bg alpha({gray}, {amount});\n'
+        +f'@define-color nautilus_fg {foreground};\n')
+    stylesheet=Path(__file__).with_name('nautilus.css')
+    if stylesheet.exists():
+        write(HOME/'.config/gtk-4.0/coloros-nautilus.css',stylesheet.read_text())
+        usercss=HOME/'.config/gtk-4.0/gtk.css'
+        original=usercss.read_text() if usercss.exists() else ''
+        line="@import 'coloros-nautilus.css';"
+        if line not in original:write(usercss,original.rstrip()+'\n'+line+'\n')
+    # Keep terminal text white in dark mode without changing its gray background.
+    if kittyconfig:
+        line='include ~/.config/kitty/coloros-text.conf'
+        if line not in kittyconfig: write(kitty/'kitty.conf',kittyconfig.rstrip()+'\n'+line+'\n')
+        write(kitty/'coloros-text.conf','foreground '+foreground+'\n')
+        subprocess.run(['pkill','-SIGUSR1','-x','kitty'],capture_output=True)
     # GNOME's preference is also consumed by libadwaita and portals.
     subprocess.run(['gsettings','set','org.gnome.desktop.interface','color-scheme','prefer-light' if light else 'prefer-dark'],capture_output=True)
     print(json.dumps({'mode':'light' if light else 'dark','accent':accent,'gtk':[3,4],'qt6':'Breeze/qt6ct'}))

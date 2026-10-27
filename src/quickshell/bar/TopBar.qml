@@ -19,14 +19,39 @@ Item {
         && Config.getSetting("coloros", {}).clockOnlyAway !== false
     property var barWindow
 
-    readonly property real islandExpansion: visible ? islandPreview.expansionHeight : 0
+    readonly property real islandExpansion: visible ? islandPreview.height : 0
+    function headerOpacity(item) {
+        if (clockOnly) return 0;
+        const left = cFinalX + (cWidthTarget - islandPreview.surfaceWidth) / 2;
+        const right = left + islandPreview.surfaceWidth;
+        const room = Math.min(item.x - left, right - item.x - item.width);
+        const edgeReveal = Math.max(0, Math.min(1, (room + 2) / 12));
+        if (!timeDateWidget) return edgeReveal;
+        // Group padding permits four pixels of ordinary module overlap.
+        const overlap = Math.min(item.x + item.width, timeDateWidget.x + timeDateWidget.width)
+            - Math.max(item.x, timeDateWidget.x);
+        return edgeReveal * Math.max(0, Math.min(1, 5 - overlap));
+    }
+    function headerPillGeometry() {
+        for (let i = 0; i < groupBgRepeater.count; ++i) {
+            const pill = groupBgRepeater.itemAt(i);
+            if (pill && pill.isCenterGroup) return {x:pill.x,width:pill.width};
+        }
+        return {x:islandPreview.x,width:islandPreview.width};
+    }
+    function headerGeometry() {
+        return flatCenterArr.map(id => {
+            const item = getModuleItem(id);
+            return item ? {id:id,x:item.x,targetX:item.targetX,width:item.width,opacity:item.opacity} : {id:id};
+        });
+    }
     readonly property alias islandBody: islandPreview
     readonly property real islandMaximumHeight: islandPreview.maximumHeight
     IslandPreview {
         id: islandPreview
         barWindow: contentWrapper.barWindow
         // A small inset protects header text from the closing bounce undershoot.
-        collapsedWidth: contentWrapper.cWidthTarget + (barWindow ? barWindow.s(24) : 24)
+        collapsedWidth: (contentWrapper.clockOnly ? contentWrapper.wTimedate + contentWrapper.groupPad * 2 : contentWrapper.cWidthTarget) + (barWindow ? barWindow.s(40) : 40)
         x: contentWrapper.cFinalX + (contentWrapper.cWidthTarget - width) / 2
         y: barWindow ? (contentWrapper.barAtBottom
             ? barWindow.baseOffsetY - height
@@ -279,7 +304,6 @@ Item {
 
     function isModuleActive(moduleId) {
         let norm = BarModuleRegistry.normalizeId(moduleId);
-        if (clockOnly && flatCenterArr.indexOf(norm) !== -1 && norm !== "timedate") return false;
         let checkFlat = arr => {
             for (let i = 0; i < arr.length; i++) {
                 if (BarModuleRegistry.normalizeId(arr[i]) === norm) return true;
@@ -623,6 +647,8 @@ Item {
         topRightRadius: isFill ? (contentWrapper.barAtBottom ? contentWrapper.fillFarRadius : 0) : radius
         bottomLeftRadius: isFill ? (contentWrapper.barAtBottom ? 0 : contentWrapper.fillFarRadius) : radius
         bottomRightRadius: isFill ? (contentWrapper.barAtBottom ? 0 : contentWrapper.fillFarRadius) : radius
+        border.width: (isSolid || isFill) ? 0 : 1
+        border.color: (isSolid || isFill) ? "transparent" : Qt.alpha(ThemeBackend.surface0, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         visible: (isSolid || isFill) && (barWindow ? !barWindow.positionChanging : true)
         opacity: visible ? 1.0 : 0.0
 
@@ -830,7 +856,7 @@ Item {
 
             property var metrics: getGroupMetrics()
 
-            x: isCenterGroup ? metrics.x + (metrics.w - islandPreview.surfaceWidth) / 2 : metrics.x
+            x: isCenterGroup ? islandPreview.x : metrics.x
             height: metrics.h + expansion
             y: barWindow ? (barWindow.baseOffsetY + (barWindow.barHeight - metrics.h) / 2
                 - (contentWrapper.barAtBottom ? expansion : 0)) : 0
@@ -842,6 +868,7 @@ Item {
                 ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
                 : Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0))
             radius: ThemeBackend.borderRadius
+            border.width: 0
             property Item blurSurface: groupBlur
 
             WallpaperBlur {
@@ -891,14 +918,15 @@ Item {
             isSolid: contentWrapper.isSolid || contentWrapper.isFill
             distinctPills: contentWrapper.distinctPills
             islandHeader: contentWrapper.flatCenterArr.indexOf(modelData) !== -1
-            // Reveal secondary text after the surface has room for its natural width.
-            revealOpacity: islandHeader && modelData !== "timedate"
-                ? (contentWrapper.clockOnly ? 0 : Math.max(0, Math.min(1,
-                    (islandPreview.surfaceWidth / Math.max(1, islandPreview.collapsedWidth) - 0.96) / 0.04))) : 1
+            // Reveal each module as the actual surface and moving clock clear its bounds.
+            revealOpacity: islandHeader && modelData !== "timedate" ? contentWrapper.headerOpacity(barMod) : 1
             moduleActive: contentWrapper.isModuleActive(modelData)
+            enabled: moduleActive && !(islandHeader && contentWrapper.clockOnly && modelData !== "timedate")
             isGrouped: contentWrapper.isModuleGrouped(modelData)
             providedBackdrop: { void groupBgRepeater.count; void contentWrapper.groupRev; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
-            targetX: contentWrapper.getModuleX(modelData, contentWrapper.layoutState)
+            targetX: islandHeader && modelData === "timedate" && contentWrapper.clockOnly
+                ? contentWrapper.cFinalX + (contentWrapper.cWidthTarget - targetWidth) / 2
+                : contentWrapper.getModuleX(modelData, contentWrapper.layoutState)
             suppressAnimation: contentWrapper.suppressAnimation
             layoutAnimationsEnabled: contentWrapper.layoutAnimationsEnabled
             isRightAligned: (modelData === "tray") ? contentWrapper.trayAlignRight : false

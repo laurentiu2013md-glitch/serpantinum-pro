@@ -12,7 +12,7 @@ Item {
     id: preview
     IpcHandler {
         target: "island-" + (preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : "default")
-        function state(): string { return JSON.stringify({opened:preview.opened,kind:preview.kind,clockOnly:preview.parent.clockOnly,temporary:preview.temporaryActive,event:preview.eventTitle,dnd:Config.getSetting("notifications", {}).dnd,cursor:Quickshell.cursorScreen ? Quickshell.cursorScreen.name : "",screen:preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : ""}); }
+        function state(): string { return JSON.stringify({opened:preview.opened,kind:preview.kind,clockOnly:preview.parent.clockOnly,modules:preview.parent.headerGeometry(),pill:preview.parent.headerPillGeometry(),width:preview.surfaceWidth,targetWidth:preview.opened ? Math.max(preview.collapsedWidth,preview.s(600)) : preview.collapsedWidth,height:preview.expansionHeight,targetHeight:preview.opened ? preview.contentHeight : 0,contentOpacity:preview.contentOpacity,temporary:preview.temporaryActive,event:preview.eventTitle,dnd:Config.getSetting("notifications", {}).dnd,cursor:Quickshell.cursorScreen ? Quickshell.cursorScreen.name : "",screen:preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : ""}); }
     }
     property var barWindow
     property string kind: ""
@@ -22,7 +22,11 @@ Item {
     readonly property real maximumHeight: s(550)
     readonly property real revealProgress: Math.min(1, expansionHeight / Math.max(1, contentHeight))
     property real surfaceWidth: opened ? Math.max(collapsedWidth, s(600)) : collapsedWidth
-    Behavior on surfaceWidth { NumberAnimation { duration: Motion.duration(430); easing.type: Easing.OutBack; easing.overshoot: preview.opened ? 1.15 : 0.65 } }
+    // Springs carry motion through interruptions instead of restarting an easing curve.
+    Behavior on surfaceWidth {
+        enabled: !Motion.reduced
+        SpringAnimation { spring: 3.2; damping: 0.28; mass: 1; epsilon: 0.25 }
+    }
     property bool opened: false
     property bool triggerHovered: false
     property bool triggerDragging: false
@@ -79,8 +83,13 @@ Item {
         pendingKind = type;
         openTimer.stop();
         closeTimer.stop();
-        if (opened && kind !== type) modeTransition.restart();
-        else { kind = type; opened = true; revealContent.restart(); }
+        if (opened && kind !== type) { revealContent.stop(); modeTransition.restart(); }
+        else {
+            modeTransition.stop();
+            const wasOpened = opened;
+            kind = type; opened = true;
+            if (!wasOpened || contentOpacity < 1) revealContent.restart();
+        }
     }
     function requestClose() { closeTimer.restart(); }
     onTriggerHoveredChanged: { if (triggerHovered) closeTimer.stop(); else closeTimer.restart(); }
@@ -130,19 +139,14 @@ Item {
         id: openTimer
         interval: 140
         onTriggered: {
-            if (preview.opened && preview.kind !== preview.pendingKind) modeTransition.restart();
-            else {
-                preview.kind = preview.pendingKind;
-                preview.opened = true;
-                revealContent.restart();
-            }
+            if (preview.opened && preview.kind !== preview.pendingKind) { revealContent.stop(); modeTransition.restart(); }
+            else preview.show(preview.pendingKind);
         }
     }
-    SequentialAnimation {
+    NumberAnimation {
         id: revealContent
-        NumberAnimation { target: preview; property: "contentOpacity"; to: 0; duration: 0 }
-        PauseAnimation { duration: Motion.duration(70) }
-        NumberAnimation { target: preview; property: "contentOpacity"; to: 1; duration: Motion.menu; easing.type: Easing.OutCubic }
+        target: preview; property: "contentOpacity"; to: 1
+        duration: Motion.menu; easing.type: Easing.OutCubic
     }
     SequentialAnimation {
         id: modeTransition
@@ -157,8 +161,11 @@ Item {
     }
     readonly property real contentHeight: s(kind === "music" ? 510 : kind === "shelf" ? 330 : (kind === "bluetooth" || kind === "network") ? 470 : kind === "event" ? (eventUid >= 0 ? 170 : 110) : 420)
     property real expansionHeight: opened ? contentHeight : 0
-    Behavior on expansionHeight { NumberAnimation { duration: Motion.duration(preview.opened ? 450 : 340); easing.type: Easing.OutBack; easing.overshoot: preview.opened ? 0.85 : 0.45 } }
-    height: expansionHeight
+    Behavior on expansionHeight {
+        enabled: !Motion.reduced
+        SpringAnimation { spring: 3.2; damping: 0.28; mass: 1; epsilon: 0.25 }
+    }
+    height: Math.max(0, expansionHeight)
     visible: expansionHeight > 0.1
     clip: true
     HoverHandler {

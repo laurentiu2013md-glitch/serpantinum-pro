@@ -16,13 +16,13 @@ A ColorOS-inspired Serpantinum fork with a bouncy Dynamic Island, compact hover 
 
 - **An integrated Dynamic Island:** the center bar morphs into music, weather/calendar and Bluetooth panels within the same window.
 - **A quieter desktop:** on Hyprland, the center becomes clock-only when the pointer moves below the upper 10% of the screen. Enter that zone to restore it; open controls stay usable until you leave them.
-- **Playful motion with room for text:** bouncy transitions, padded edges, coordinated widget reveal and a small pointer-boundary buffer. Reduced motion respects the system preference and a shell setting.
+- **Playful motion with room for text:** interruptible spring transitions, stable module spacing, padded edges, coordinated widget reveal and a small pointer-boundary buffer. Reduced motion respects the system preference and a shell setting.
 - **Your original music player, compact:** artwork, playback controls, lyrics, EQ and audio settings remain part of the real player.
 - **One shared DropShelf:** files, links and text added through the bar appear in QuickActions immediately, with previews, copy, rearrangement and removal. Hover the upper 5% of the bar’s height to reveal it. Native drag/drop preserves original files.
 - **Network controls on hover:** a compact Wi-Fi/Ethernet panel shares Bluetooth’s layout, Material switch and integrated island, with scanning, saved networks and password entry.
 - **One-tap Matugen light/dark mode:** a matching button beside Game Mode regenerates the palette from your wallpaper.
 - **Functional Bluetooth:** power, scanning, paired/seen devices, connect/disconnect, pairing confirmation, confirmed removal, and battery values only when BlueZ exposes them. The new panel is shared with QuickActions and uses a Material 3 switch.
-- **A consistent gray palette:** Matugen accents, light/dark surfaces and GTK/Qt palette synchronization. Fresh-install defaults use 50% shell background opacity; Hyprland supplies live blur. Game Mode can disable blur without fading text.
+- **A consistent gray palette:** Matugen accents, light/dark surfaces and GTK/Qt palette synchronization. Fresh-install defaults use 50% shell background opacity; Hyprland supplies live blur. Dark-mode text is white. Nautilus follows Kitty’s background gray and opacity, with native blur normally and blur disabled in Game Mode.
 - **Cleaner QuickActions corners:** rounded parent clipping and lazy-loaded modules, with state retained between visits.
 - **`shellreset` for Fish and other shells:** make a private snapshot, then restore it with integrity checks, automatic backups and rollback on ordinary restore failures.
 
