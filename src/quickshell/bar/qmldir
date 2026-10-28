@@ -5,3 +5,6 @@ BarModule 1.0 BarModule.qml
 singleton BarModuleRegistry 1.0 BarModuleRegistry.qml
 
 IslandPreview 1.0 IslandPreview.qml
+
+WeatherSky 1.0 WeatherSky.qml
+IslandOsd 1.0 IslandOsd.qml

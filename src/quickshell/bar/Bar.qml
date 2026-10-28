@@ -147,6 +147,7 @@ Variants {
 
             property bool isRevealed: {
                 if (shouldHideForRedact) return false;
+                if (contentWrapper && contentWrapper.islandBody.opened) return true;
                 if (!autohide) return true;
                 if (barHover.hovered) return true;
                 if (hideTimer.running) return true;
@@ -374,7 +375,7 @@ Variants {
                 }
                 transform: Translate {
                     x: verticalWrapper.hideOffsetX
-                    Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                    Behavior on x { NumberAnimation { duration: Motion.duration(300); easing.type: Easing.OutQuint } }
                 }
             }
 

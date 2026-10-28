@@ -93,42 +93,16 @@ Item {
 
     property real wavePhase: 0.8
 
-    Timer {
-        id: waveSettleTimer
-        interval: root.isCharging ? 30000 : 1800
-        repeat: false
-        onTriggered: {
-            if (!root.isActivelyCharging) waveAnimation.stop();
-        }
-    }
-
+    // A single binding owns the loop so state changes cannot restart it in Game Mode.
     NumberAnimation {
         id: waveAnimation
         target: root
         property: "wavePhase"
         from: 0
         to: Math.PI * 2
-        duration: root.isCharging ? 1200 : 2200
+        duration: 2200
         loops: Animation.Infinite
-        running: root.visible && (!root.isDesktop) && root.batStyle !== "text" && (typeof batPill !== "undefined" && batPill ? (batPill.fillRatio > 0.0 && batPill.fillRatio < 1.0) : false) && root.isActivelyCharging
-    }
-
-    onIsChargingChanged: {
-        if (isCharging && visible && !isDesktop && root.batStyle !== "text" && typeof batPill !== "undefined" && batPill && batPill.fillRatio > 0.0 && batPill.fillRatio < 1.0) {
-            waveAnimation.start();
-            waveSettleTimer.restart();
-        } else if (!isCharging) {
-            waveSettleTimer.restart();
-        }
-    }
-
-    onVisibleChanged: {
-        if (!visible) {
-            waveAnimation.stop();
-            waveSettleTimer.stop();
-        } else if (isActivelyCharging && !isDesktop && root.batStyle !== "text" && typeof batPill !== "undefined" && batPill && batPill.fillRatio > 0.0 && batPill.fillRatio < 1.0) {
-            waveAnimation.start();
-        }
+        running: root.visible && root.showLayout && !root.isDesktop && root.isCharging && root.batCap < 100 && !Motion.reduced
     }
 
     property color batDynamicColor: {
@@ -218,6 +192,20 @@ Item {
         onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle system"])
     }
 
+    // Decorative liquid sits beneath the existing text without adding another box.
+    FluidWave {
+        anchors.fill: parent
+        visible: root.batStyle === "text" && !root.isDesktop && root.isCharging && root.batCap < 100 && root.showLayout && !Motion.reduced
+        radius: root.module ? root.module.radius : ThemeBackend.borderRadius
+        fillLevel: Math.max(0, Math.min(1, root.batCap / 100))
+        waveAmp: Math.min(width * 0.35, width * Math.min(fillLevel, 1 - fillLevel))
+        phase: root.wavePhase
+        vertical: 0.0
+        color1: "#8dffb3"
+        color2: "#36d975"
+        opacity: 0.50
+    }
+
     AxisFlow {
         id: textLayout
         vertical: root.isVertical
@@ -227,7 +215,7 @@ Item {
         anchors.centerIn: parent
         spacing: root.isVertical ? s(root.isCompact ? 2 : 3) : (root.isDesktop ? 0 : s(root.isCompact ? 5 : 6))
         opacity: root.showLayout ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
 
         Item {
             visible: root.effectiveShowIcon
@@ -312,12 +300,6 @@ Item {
 
                 readonly property real maxWaveAmp: root.isCharging ? root.s(4.5) : root.s(2.5)
                 readonly property real waveAmp: (fillRatio < 0.99 && fillRatio > 0.01) ? maxWaveAmp * Math.sin(fillRatio * Math.PI) : 0
-                onFillRatioChanged: {
-                    if (root.visible && (!root.isDesktop) && fillRatio > 0.0 && fillRatio < 1.0) {
-                        if (!waveAnimation.running) waveAnimation.start();
-                        if (!root.isActivelyCharging) waveSettleTimer.restart();
-                    }
-                }
 
                 property color baseAccentColor: root.batDynamicColor
                 property color accentColor: batMouseArea.pressed ? Qt.darker(baseAccentColor, 1.15) : (batMouseArea.containsMouse ? Qt.lighter(baseAccentColor, 1.08) : baseAccentColor)
@@ -354,6 +336,9 @@ Item {
                 color: batPillGlass.active ? "transparent" : (batMouseArea.pressed ? Qt.darker(baseColor, 1.15) : (batMouseArea.containsMouse ? Qt.lighter(baseColor, 1.08) : baseColor))
                 Behavior on color { ColorAnimation { duration: 150 } }
                 property color baseBorderColor: root.isCompact ? ThemeBackend.surface2 : ThemeBackend.surface1
+                border.color: batMouseArea.containsMouse ? ThemeBackend.surface2 : baseBorderColor
+                Behavior on border.color { ColorAnimation { duration: 150 } }
+                border.width: ThemeBackend.liquidGlass ? 0 : 1
 
                 GlassFill {
                     id: batPillGlass
@@ -362,7 +347,7 @@ Item {
                     tintColor: parent.baseColor
                     tintAmount: 0.3
                     press: batMouseArea.pressed ? 1 : (batMouseArea.containsMouse ? 0.25 : 0)
-                    Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on press { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
                 }
                 clip: true
 
@@ -377,7 +362,7 @@ Item {
                     y: batPill.initAnimTrigger ? 0 : s(15)
                     Behavior on y { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } }
                 }
-                Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
 
                 FluidWave {
                     id: pillWave
@@ -385,12 +370,12 @@ Item {
                     visible: !root.isDesktop && batPill.fillRatio > 0.001
                     radius: batPill.radius
                     fillLevel: batPill.fillRatio
-                    waveAmp: (batPill.fillRatio < 0.99 && batPill.waveAmp > 0) ? Math.min(batPill.waveAmp, Math.min(width * batPill.fillRatio, width * (1.0 - batPill.fillRatio))) : 0
+                    waveAmp: Motion.reduced ? 0 : (batPill.fillRatio < 0.99 && batPill.waveAmp > 0) ? Math.min(batPill.waveAmp, Math.min(width * batPill.fillRatio, width * (1.0 - batPill.fillRatio))) : 0
                     phase: root.wavePhase
                     vertical: 0.0
                     color1: (root.batStyle === "minimal") ? root.calmBatFillColor : Qt.lighter(batPill.accentColor, 1.20)
                     color2: (root.batStyle === "minimal") ? root.calmBatFillColor : batPill.accentColor
-                    opacity: batPillGlass.active ? 0.0 : 1.0
+                    opacity: batPillGlass.active ? (root.isCharging && root.batCap < 100 && !Motion.reduced ? 0.50 : 0.0) : 1.0
                 }
 
                 Row {
@@ -477,7 +462,7 @@ Item {
                     width: s(root.isCompact ? 3 : 4)
                     height: Math.round(root.pillHeight * 0.38)
                     radius: s(1.5)
-                    color: batPill.baseBorderColor
+                    color: batPill.border.color
                 }
             }
         }
@@ -503,7 +488,7 @@ Item {
                     width: Math.round(batBtn.width * 0.38)
                     height: s(root.isCompact ? 2.5 : 3)
                     radius: s(1)
-                    color: batBtn.baseBorderColor
+                    color: batBtn.border.color
                 }
             }
 
@@ -526,9 +511,12 @@ Item {
                     tintColor: parent.baseColor
                     tintAmount: 0.3
                     press: sideBatMouseArea.pressed ? 1 : (sideBatMouseArea.containsMouse ? 0.25 : 0)
-                    Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on press { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
                 }
                 property color baseBorderColor: root.isCompact ? ThemeBackend.surface2 : ThemeBackend.surface1
+                border.color: sideBatMouseArea.containsMouse ? ThemeBackend.surface2 : baseBorderColor
+                Behavior on border.color { ColorAnimation { duration: 150 } }
+                border.width: ThemeBackend.liquidGlass ? 0 : 1
                 clip: true
 
                 scale: sideBatMouseArea.pressed ? 0.94 : (sideBatMouseArea.containsMouse ? 1.04 : 1.0)
@@ -548,12 +536,6 @@ Item {
                 readonly property real maxWaveAmp: root.isCharging ? root.s(4.5) : root.s(2.5)
                 readonly property real waveAmp: (fillRatio < 0.99 && fillRatio > 0.01) ? maxWaveAmp * Math.sin(fillRatio * Math.PI) : 0
 
-                onFillRatioChanged: {
-                    if (root.visible && (!root.isDesktop) && fillRatio > 0.0 && fillRatio < 1.0) {
-                        if (!waveAnimation.running) waveAnimation.start();
-                        if (!root.isActivelyCharging) waveSettleTimer.restart();
-                    }
-                }
 
                 Timer {
                     running: !root.isPreview && (!module || module.moduleActive) && root.showLayout && !batBtn.initAnimTrigger
@@ -566,7 +548,7 @@ Item {
                     x: batBtn.initAnimTrigger ? 0 : s(15)
                     Behavior on x { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } }
                 }
-                Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
 
                 FluidWave {
                     id: sideBatWave
@@ -574,12 +556,12 @@ Item {
                     visible: !root.isDesktop && batBtn.fillRatio > 0.001
                     radius: batBtn.radius
                     fillLevel: batBtn.fillRatio
-                    waveAmp: (batBtn.fillRatio < 0.99 && batBtn.waveAmp > 0) ? Math.min(batBtn.waveAmp, Math.min(height * batBtn.fillRatio, height * (1.0 - batBtn.fillRatio))) : 0
+                    waveAmp: Motion.reduced ? 0 : (batBtn.fillRatio < 0.99 && batBtn.waveAmp > 0) ? Math.min(batBtn.waveAmp, Math.min(height * batBtn.fillRatio, height * (1.0 - batBtn.fillRatio))) : 0
                     phase: root.wavePhase
                     vertical: 1.0
                     color1: (root.batStyle === "minimal") ? root.calmBatFillColor : Qt.lighter(batBtn.accentColor, 1.20)
                     color2: (root.batStyle === "minimal") ? root.calmBatFillColor : batBtn.accentColor
-                    opacity: batBtnGlass.active ? 0.0 : 1.0
+                    opacity: batBtnGlass.active ? (root.isCharging && root.batCap < 100 && !Motion.reduced ? 0.50 : 0.0) : 1.0
                 }
 
                 Item {

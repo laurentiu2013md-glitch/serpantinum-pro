@@ -6,7 +6,7 @@ import "../../"
 QtObject {
     id: motion
     property bool systemReduced: false
-    readonly property bool reduced: systemReduced || Config.getSetting("coloros", {}).reducedMotion === true
+    readonly property bool reduced: GameMode.enabled || systemReduced || Config.getSetting("coloros", {}).reducedMotion === true
     readonly property int press: reduced ? 0 : 110
     readonly property int hover: reduced ? 0 : 150
     readonly property int toggle: reduced ? 0 : 220

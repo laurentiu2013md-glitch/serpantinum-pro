@@ -22,10 +22,10 @@ Item {
     property bool blurBackground: false
     property string blurStyle: "blur"
     readonly property real liquidGlassOpacity: 0.1
-    readonly property bool glassActive: blurBackground && elementOpacity < 0.999
-    readonly property bool liquidGlass: blurBackground && blurStyle === "liquid"
+    readonly property bool glassActive: !GameMode.enabled && blurBackground && elementOpacity < 0.999
+    readonly property bool liquidGlass: !GameMode.enabled && blurBackground && blurStyle === "liquid"
     // Hyprland blurs the live scene behind translucent shell surfaces.
-    readonly property bool compositorBlur: blurBackground && !liquidGlass && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
+    readonly property bool compositorBlur: !GameMode.enabled && blurBackground && !liquidGlass && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
 
     property color base: "#1e1e2e"
     readonly property bool isLight: (0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b) > 0.6

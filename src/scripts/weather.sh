@@ -332,6 +332,9 @@ get_data() {
         unit_sym: $unit_sym,
         current_temp: fmt_t($root.current.temperature_2m),
         current_temp_formatted: (fmt_t($root.current.temperature_2m) + $unit_sym),
+        current_code: $c_code,
+        current_desc: $c_map.desc,
+        is_day: $c_day,
         current_icon: $c_map.icon,
         current_hex: $c_map.hex,
         forecast: $forecast

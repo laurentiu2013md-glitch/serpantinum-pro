@@ -17,6 +17,9 @@ A ColorOS-inspired Serpantinum fork with a bouncy Dynamic Island, compact hover 
 - **An integrated Dynamic Island:** the center bar morphs into music, weather/calendar and Bluetooth panels within the same window.
 - **A quieter desktop:** on Hyprland, the center becomes clock-only when the pointer moves below the upper 10% of the screen. Enter that zone to restore it; open controls stay usable until you leave them.
 - **Playful motion with room for text:** interruptible spring transitions, stable module spacing, padded edges, coordinated widget reveal and a small pointer-boundary buffer. Reduced motion respects the system preference and a shell setting.
+- **A sky that follows the weather:** animated clouds, sun/moon, rain, snow and fog inside the weather/calendar island; reduced motion pauses it and Game Mode stays plain.
+- **Charging with a green wave:** a horizontal liquid animation follows the battery percentage, stays aligned with the battery pill and disappears at 100%.
+- **OSDs inside the island:** volume, brightness, microphone, lock keys and airplane-mode feedback share its surface and restore the previous panel afterward.
 - **Your original music player, compact:** artwork, playback controls, lyrics, EQ and audio settings remain part of the real player.
 - **One shared DropShelf:** files, links and text added through the bar appear in QuickActions immediately, with previews, copy, rearrangement and removal. Hover the upper 5% of the bar’s height to reveal it. Native drag/drop preserves original files.
 - **Network controls on hover:** a compact Wi-Fi/Ethernet panel shares Bluetooth’s layout, Material switch and integrated island, with scanning, saved networks and password entry.

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
@@ -118,7 +119,7 @@ Item {
 
     Behavior on fillAttachProgress {
         enabled: contentWrapper.layoutAnimationsEnabled
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
     }
 
     property bool fillDetached: isFill && !!barWindow && !barWindow.fillAttached
@@ -626,13 +627,13 @@ Item {
         y: contentWrapper.hideOffsetY
         Behavior on y {
             enabled: barWindow ? !barWindow.positionChanging : true
-            NumberAnimation { duration: barWindow && barWindow.isRevealed ? 420 : 220; easing.type: barWindow && barWindow.isRevealed ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.15 }
+            NumberAnimation { duration: Motion.duration(barWindow && barWindow.isRevealed ? 420 : 220); easing.type: barWindow && barWindow.isRevealed ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.15 }
         }
     }
 
     Behavior on opacity {
         enabled: barWindow ? (!barWindow.positionChanging && barWindow.startupCascadeFinished) : true
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
     }
 
     Rectangle {
@@ -665,17 +666,17 @@ Item {
 
         Behavior on x {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
         }
 
         Behavior on width {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
         }
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
         }
     }
 
@@ -697,7 +698,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 80; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(80); easing.type: Easing.OutCubic }
         }
     }
 
@@ -719,7 +720,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 80; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(80); easing.type: Easing.OutCubic }
         }
     }
 
@@ -742,7 +743,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
         }
     }
 
@@ -765,7 +766,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
         }
     }
 
@@ -795,7 +796,7 @@ Item {
 
             Behavior on opacity {
                 enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-                NumberAnimation { duration: 80; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.duration(80); easing.type: Easing.OutCubic }
             }
         }
     }
@@ -813,7 +814,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
         }
     }
 
@@ -864,12 +865,25 @@ Item {
             visible: metrics.v && (barWindow ? !barWindow.positionChanging : true) && width > 0 && (!contentWrapper.isSolid || contentWrapper.distinctPills)
             opacity: visible ? 1.0 : 0.0
 
-            color: (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
+            color: (isCenterGroup && islandPreview.weatherBackdropActive) ? "transparent" : (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
                 ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
                 : Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0))
             radius: ThemeBackend.borderRadius
             border.width: 0
             property Item blurSurface: groupBlur
+            ClippingRectangle {
+                anchors.fill: parent
+                radius: parent.radius
+                color: "transparent"
+                visible: groupBgRect.isCenterGroup && islandPreview.weatherBackdropActive
+                Loader {
+                    anchors.fill: parent
+                    active: parent.visible
+                    sourceComponent: WeatherSky {
+                        backgroundOpacity: (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 0.5
+                    }
+                }
+            }
 
             WallpaperBlur {
                 id: groupBlur
@@ -892,17 +906,17 @@ Item {
 
             Behavior on x {
                 enabled: !groupBgRect.isCenterGroup && contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
             }
 
             Behavior on width {
                 enabled: !groupBgRect.isCenterGroup && contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
             }
 
             Behavior on opacity {
                 enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutCubic }
             }
         }
     }

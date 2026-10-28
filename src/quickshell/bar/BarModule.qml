@@ -82,19 +82,19 @@ Rectangle {
     y: isVertical ? targetY : (barWindow ? barWindow.baseOffsetY + (barWindow.barHeight - height) / 2 : 0)
     Behavior on y {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled))
-        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
     }
 
     width: isVertical ? thickness : targetWidth
     Behavior on width {
         enabled: !root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
     }
 
     height: isVertical ? targetHeight : thickness
     Behavior on height {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 320; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.duration(320); easing.type: Easing.OutCubic }
     }
 
     radius: ThemeBackend.borderRadius

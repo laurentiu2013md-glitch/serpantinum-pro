@@ -12,9 +12,28 @@ Item {
     id: preview
     IpcHandler {
         target: "island-" + (preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : "default")
-        function state(): string { return JSON.stringify({opened:preview.opened,kind:preview.kind,clockOnly:preview.parent.clockOnly,modules:preview.parent.headerGeometry(),pill:preview.parent.headerPillGeometry(),width:preview.surfaceWidth,targetWidth:preview.opened ? Math.max(preview.collapsedWidth,preview.s(600)) : preview.collapsedWidth,height:preview.expansionHeight,targetHeight:preview.opened ? preview.contentHeight : 0,contentOpacity:preview.contentOpacity,temporary:preview.temporaryActive,event:preview.eventTitle,dnd:Config.getSetting("notifications", {}).dnd,cursor:Quickshell.cursorScreen ? Quickshell.cursorScreen.name : "",screen:preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : ""}); }
+        function state(): string { return JSON.stringify({opened:preview.opened,kind:preview.kind,clockOnly:preview.parent.clockOnly,modules:preview.parent.headerGeometry(),pill:preview.parent.headerPillGeometry(),width:preview.surfaceWidth,targetWidth:preview.opened ? Math.max(preview.collapsedWidth,preview.s(600)) : preview.collapsedWidth,height:preview.expansionHeight,targetHeight:preview.opened ? preview.contentHeight : 0,contentOpacity:preview.contentOpacity,temporary:preview.temporaryActive,osd:preview.osdHere,hovered:panelHover.hovered,sourceHovered:preview.sourceHovered,weatherSky:preview.weatherBackdropActive,event:preview.eventTitle,dnd:Config.getSetting("notifications", {}).dnd,cursor:Quickshell.cursorScreen ? Quickshell.cursorScreen.name : "",screen:preview.barWindow && preview.barWindow.screen ? preview.barWindow.screen.name : ""}); }
     }
     property var barWindow
+    readonly property bool weatherBackdropActive: kind === "calendar" && !GameMode.enabled && (opened || expansionHeight > 0.5)
+    readonly property bool osdHere: OsdController.isVisible && OsdController.screen === (barWindow ? barWindow.screen : null)
+    function receiveOsd() {
+        if (temporaryActive || triggerDragging || shelfDragging) return;
+        if (opened && (panelHover.hovered || sourceHovered || kind === "bluetooth" || kind === "network" || kind === "shelf")) return;
+        restoreKind = kind; restoreOpened = opened;
+        temporaryActive = true;
+        show("osd");
+    }
+    function restoreTemporary() {
+        temporaryActive = false;
+        if (restoreOpened) show(restoreKind);
+        else opened = false;
+    }
+    onOsdHereChanged: {
+        if (!osdHere && temporaryActive && (kind === "osd" || pendingKind === "osd")) {
+            modeTransition.stop(); revealContent.stop(); restoreTemporary();
+        }
+    }
     property string kind: ""
     property string pendingKind: ""
     property real contentOpacity: 0
@@ -43,6 +62,7 @@ Item {
         eventUid = uid === undefined ? -1 : uid;
         eventTitle = title; eventDetail = detail; eventPriority = priority;
         eventTimer.interval = timeout;
+        if (temporaryActive && kind === "osd" && priority >= 60) show("event");
         if (!temporaryActive && !(opened && (panelHover.hovered || sourceHovered || (kind === "bluetooth" || kind === "network")))) {
             restoreKind = kind; restoreOpened = opened;
             temporaryActive = true; show("event");
@@ -54,9 +74,8 @@ Item {
         onTriggered: {
             preview.eventPriority = 0;
             if (preview.temporaryActive) {
-                preview.temporaryActive = false;
-                if (preview.restoreOpened) preview.show(preview.restoreKind);
-                else preview.opened = false;
+                if (preview.osdHere) preview.show("osd");
+                else preview.restoreTemporary();
             }
         }
     }
@@ -97,11 +116,15 @@ Item {
     onShelfDraggingChanged: { if (shelfDragging) closeTimer.stop(); else closeTimer.restart(); }
     Connections {
         target: IslandController
+        function onOsdRequested(targetScreen) {
+            if (preview.barWindow && targetScreen === preview.barWindow.screen) preview.receiveOsd();
+        }
         function onTemporary(targetScreen, title, detail, priority, timeout) {
             if (preview.barWindow && targetScreen === preview.barWindow.screen) preview.receiveEvent(title, detail, priority, timeout);
         }
         function onRequested(targetScreen, type, action) {
             if (!preview.barWindow || targetScreen !== preview.barWindow.screen) return;
+            if (preview.temporaryActive) { preview.temporaryActive = false; eventTimer.stop(); preview.eventPriority = 0; }
             const mode = type === "calendar" ? "calendar" : type;
             if (action === "close" || (action === "toggle" && preview.opened && preview.kind === mode)) preview.opened = false;
             else preview.show(mode);
@@ -159,7 +182,7 @@ Item {
         interval: 350
         onTriggered: if (!preview.temporaryActive && !preview.sourceHovered && !panelHover.hovered && !preview.triggerHovered && !preview.triggerDragging && !bodyDrop.containsDrag && !preview.shelfDragging) preview.opened = false
     }
-    readonly property real contentHeight: s(kind === "music" ? 510 : kind === "shelf" ? 330 : (kind === "bluetooth" || kind === "network") ? 470 : kind === "event" ? (eventUid >= 0 ? 170 : 110) : 420)
+    readonly property real contentHeight: s(kind === "osd" ? 106 : kind === "music" ? 510 : kind === "shelf" ? 330 : (kind === "bluetooth" || kind === "network") ? 470 : kind === "event" ? (eventUid >= 0 ? 170 : 110) : 420)
     property real expansionHeight: opened ? contentHeight : 0
     Behavior on expansionHeight {
         enabled: !Motion.reduced
@@ -228,9 +251,24 @@ Item {
             width: parent.width - preview.s(40); height: preview.s(42)
             radius: ThemeBackend.smallRadius
             color: ThemeBackend.surface0
-            visible: eventTimer.running && preview.kind !== "event"
+            visible: eventTimer.running && preview.kind !== "event" && preview.kind !== "osd" && !preview.osdHere
             z: 100
             LabelText { anchors.fill: parent; anchors.margins: 10; text: preview.eventTitle + " · " + preview.eventDetail; verticalAlignment: Text.AlignVCenter }
+        }
+        IslandOsd {
+            anchors.fill: parent
+            anchors.leftMargin: preview.s(18); anchors.rightMargin: preview.s(18)
+            visible: preview.kind === "osd"
+        }
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom; anchors.bottomMargin: preview.s(8)
+            width: parent.width - preview.s(32); height: preview.s(76)
+            radius: ThemeBackend.borderRadius
+            color: Qt.alpha(ThemeBackend.base, .92)
+            visible: preview.osdHere && preview.kind !== "osd"
+            z: 101
+            IslandOsd { anchors.fill: parent; compact: true }
         }
         NetworkPanel {
             anchors.fill: parent
@@ -259,7 +297,7 @@ Item {
     }
     component LabelText: Text {
         textFormat: Text.PlainText
-        color: ThemeBackend.text
+        color: preview.weatherBackdropActive ? "#ffffff" : ThemeBackend.text
         font.family: ThemeBackend.fontFamily
         font.pixelSize: preview.s(13)
         elide: Text.ElideRight
@@ -274,13 +312,13 @@ Item {
             text: control.text
             font.family: ThemeBackend.iconFont
             font.pixelSize: preview.s(control.primary ? 22 : 18)
-            color: control.primary ? ThemeBackend.base : ThemeBackend.text
+            color: preview.weatherBackdropActive ? "#ffffff" : control.primary ? ThemeBackend.base : ThemeBackend.text
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
         background: Rectangle {
             radius: height / 2
-            color: control.primary ? ThemeBackend.mauve : Qt.alpha(ThemeBackend.text, control.hovered ? 0.14 : 0.06)
+            color: preview.weatherBackdropActive ? Qt.alpha("#ffffff", control.hovered ? .22 : .1) : control.primary ? ThemeBackend.mauve : Qt.alpha(ThemeBackend.text, control.hovered ? 0.14 : 0.06)
         }
     }
     Component {
@@ -295,11 +333,11 @@ Item {
                     Layout.fillWidth: true
                     spacing: preview.s(2)
                     LabelText { Layout.fillWidth: true; text: Weather.currentTempFormatted; font.pixelSize: preview.s(24); font.weight: Font.DemiBold }
-                    LabelText { Layout.fillWidth: true; text: preview.forecast.length ? preview.forecast[0].desc : (Weather.isLoading ? "Loading weather…" : "Weather unavailable"); opacity: 0.6; font.pixelSize: preview.s(12) }
+                    LabelText { Layout.fillWidth: true; text: Weather.data.current_desc || (preview.forecast.length ? preview.forecast[0].desc : (Weather.isLoading ? "Loading weather…" : "Weather unavailable")); opacity: 0.6; font.pixelSize: preview.s(12) }
                 }
                 LabelText { text: preview.forecast.length ? "H " + Math.round(Number(preview.forecast[0].max)) + "°  L " + Math.round(Number(preview.forecast[0].min)) + "°" : ""; opacity: 0.6; font.pixelSize: preview.s(12) }
             }
-            Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(ThemeBackend.text, 0.1) }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(preview.weatherBackdropActive ? "#ffffff" : ThemeBackend.text, 0.12) }
             RowLayout {
                 LabelText { Layout.fillWidth: true; text: Qt.formatDate(preview.month, "MMMM yyyy"); font.pixelSize: preview.s(17); font.weight: Font.DemiBold }
                 Control { text: "‹"; onClicked: preview.shiftMonth(-1); Accessible.name: "Previous month" }
@@ -325,18 +363,18 @@ Item {
                         Layout.fillHeight: true
                         Layout.minimumHeight: preview.s(27)
                         radius: preview.s(10)
-                        color: isToday ? ThemeBackend.mauve : "transparent"
+                        color: isToday ? (preview.weatherBackdropActive ? Qt.alpha("#ffffff", .22) : ThemeBackend.mauve) : "transparent"
                         LabelText {
                             anchors.centerIn: parent
                             text: parent.day.getDate()
-                            color: parent.isToday ? ThemeBackend.base : ThemeBackend.text
+                            color: preview.weatherBackdropActive ? "#ffffff" : parent.isToday ? ThemeBackend.base : ThemeBackend.text
                             opacity: parent.day.getMonth() === preview.month.getMonth() ? 1 : 0.25
                             font.weight: parent.isToday ? Font.Bold : Font.Normal
                         }
                     }
                 }
             }
-            Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(ThemeBackend.text, 0.1) }
+            Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(preview.weatherBackdropActive ? "#ffffff" : ThemeBackend.text, 0.12) }
             Row {
                 Layout.fillWidth: true
                 Repeater {

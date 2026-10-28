@@ -126,7 +126,7 @@ Item {
         stdout: SplitParser {
             onRead: data => {
                 let line = data.trim();
-                if (!line) return;
+                if (!line || !controller.kbInitialized) return;
 
                 let parts = line.split(/\s+/);
                 if (parts.length >= 2) {
@@ -207,19 +207,20 @@ Item {
     }
 
     function show(k, v, scr) {
-        controller.kind = k || "volume";
+        const kind = k || "volume";
+        if (["volume", "brightness", "mic", "capslock", "numlock", "airplane"].indexOf(kind) === -1) return;
+        const settings = Config.getSetting("osd", {});
+        const option = kind === "capslock" ? "showCapsLock" : kind === "numlock" ? "showNumLock" : kind === "airplane" ? "showAirplane" : "";
+        if (option && settings[option] === false) return;
+        controller.kind = kind;
         if (controller.kind === "brightness" && v !== undefined) {
             controller.briVal = parseInt(v) || 0;
         } else if (v !== undefined) {
             controller.stateVal = v.toString();
         }
-        if (scr !== undefined && scr !== null) {
-            controller.screen = scr;
-        }
+        controller.screen = scr || Quickshell.cursorScreen || Quickshell.screens[0];
         controller.isVisible = true;
-        if (controller.kind === "volume" || controller.kind === "brightness") {
-            IslandController.notify(controller.kind === "volume" ? "Volume" : "Brightness", controller.kind === "volume" ? (controller.sysMuted ? "Muted" : controller.sysVolume + "%") : controller.briVal + "%", 60, 1400, controller.screen);
-        }
+        IslandController.showOsd(controller.screen);
         hideTimer.restart();
     }
 
@@ -229,6 +230,9 @@ Item {
 
     IpcHandler {
         target: "osd"
+        function hide(): void { controller.hide(); }
+        function state(): string { return JSON.stringify({visible:controller.isVisible,kind:controller.kind,value:controller.kind === "brightness" ? controller.briVal : controller.kind === "mic" ? controller.sysMicVolume : controller.sysVolume,state:controller.stateVal}); }
+        function showState(kind: string, value: string): void { controller.show(kind, value); }
 
         function show(kind: string): void {
             controller.show(kind);

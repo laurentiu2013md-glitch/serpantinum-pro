@@ -91,3 +91,17 @@ Island width, expansion height and clock movement use interruptible Qt springs. 
 The Matugen mode button has no hover tooltip. Dark-mode shell text and synchronized GTK/Qt foregrounds are white. The palette helper installs a Nautilus-scoped stylesheet, reads the background gray from `~/.config/kitty/colors.conf` and opacity from `kitty.conf` (fallback `#b3b3b3` / 50%), and keeps the terminal foreground white in dark mode. Application content and ANSI escape colors can override foreground roles. Reopen Nautilus after the stylesheet is first installed. Native `backdrop-filter` support requires a recent GTK build; verified locally with GTK 51.1 and Hyprland 0.56.2. Game Mode disables compositor blur and restores the prior blur state on exit.
 
 Live validation covers repeated panel opening, panel switching, rapid animation reversals, clock-only restoration, and sampled header geometry during expansion/collapse. Snapshot/reset tests run against temporary homes; desktop theme generation is checked in isolation.
+
+## Animated weather and island OSD
+
+The weather/calendar island has a procedural sky in normal mode: drifting cloud layers, stars and a moon at night, a sun by day, and rain, snow, fog or storms selected from the current WMO weather code. The provider saves the current code, description and day/night flag, with icon/time fallbacks for older cache files. The canvas repaints at 20 Hz only while visible. System reduced motion freezes the scene; Game Mode uses the plain surface. The background uses the configured bar opacity and retains compositor blur.
+
+Volume, brightness, microphone, Caps Lock, Num Lock and airplane-mode feedback share the island. Audio and brightness retain their real values and controls; the lock/airplane display preferences are respected. A short OSD temporarily expands the island, then restores the previous panel. While a panel is being used, the OSD appears inside it. The old standalone OSD window is no longer instantiated.
+
+Game Mode also activates the shared reduced-motion policy: island springs, fades and bar transitions stop while compositor blur, shadows and animations are disabled. Normal mode restores the configured effects and opacity.
+
+The moon is composited separately at 98% opacity, with a white surface, soft lunar shading and a stronger halo; the sky itself retains the configured background opacity. Thin drifting cloud bands and occasional shooting stars add depth to clear/cloudy night scenes.
+
+The daytime sun is twice the original size and peeks beyond the right edge of the weather surface. The night moon keeps its inset position.
+
+The charging island has a horizontal green liquid wave beneath its existing battery text. Its fill follows the displayed percentage, its bounds and corners match the battery pill, and it disappears at 100%. Unplugging, reduced motion and Game Mode stop the animation.
