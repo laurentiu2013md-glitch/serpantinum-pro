@@ -10,7 +10,7 @@
 
 # Serpantinum Pro
 
-A ColorOS-inspired Serpantinum fork with a bouncy Dynamic Island, compact hover panels, a shared DropShelf and real Bluetooth controls. Based on [ilyamiro/serpantinum](https://github.com/ilyamiro/serpantinum), with its existing desktop tools and customization options.
+A Serpantinum fork with a bouncy Dynamic Island, compact hover panels, and a DropShelf. Based on [ilyamiro/serpantinum](https://github.com/ilyamiro/serpantinum), with its existing desktop tools and customization options.
 
 ## What’s new in Pro
 
