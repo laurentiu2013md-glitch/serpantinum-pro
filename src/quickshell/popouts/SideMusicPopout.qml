@@ -341,6 +341,8 @@ PanelWindow {
             anchors.fill: parent
             color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null)
             radius: sideMusicPopout.cornerRadius
+            border.width: 0
+            border.color: "transparent"
             clip: true
 
             WallpaperBlur {

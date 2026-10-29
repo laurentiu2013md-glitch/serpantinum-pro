@@ -198,7 +198,7 @@ PanelWindow {
     Behavior on menuHeight {
         enabled: trayMenuWindow.isVisible && menuContainer.animProgress > 0.95
         NumberAnimation {
-            duration: 250
+            duration: 220
             easing.type: Easing.OutCubic
         }
     }
@@ -420,6 +420,8 @@ PanelWindow {
                 topRightRadius: (flatCorners && (trayMenuWindow.isSideBar ? trayMenuWindow.alignRight : !trayMenuWindow.alignBottom)) ? 0 : trayMenuWindow.cornerRadius
                 bottomLeftRadius: (flatCorners && (trayMenuWindow.isSideBar ? !trayMenuWindow.alignRight : trayMenuWindow.alignBottom)) ? 0 : trayMenuWindow.cornerRadius
                 bottomRightRadius: (flatCorners && (trayMenuWindow.isSideBar ? trayMenuWindow.alignRight : trayMenuWindow.alignBottom)) ? 0 : trayMenuWindow.cornerRadius
+                border.width: 0
+                border.color: "transparent"
                 clip: true
 
                 WallpaperBlur {
@@ -720,6 +722,8 @@ PanelWindow {
                     bottomLeftRadius: submenuPopout.expandRight ? 0 : trayMenuWindow.cornerRadius
                     topRightRadius: !submenuPopout.expandRight ? 0 : trayMenuWindow.cornerRadius
                     bottomRightRadius: !submenuPopout.expandRight ? 0 : trayMenuWindow.cornerRadius
+                    border.width: 0
+                    border.color: "transparent"
                     clip: true
 
                     WallpaperBlur {

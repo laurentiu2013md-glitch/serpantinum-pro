@@ -104,6 +104,8 @@ PanelWindow {
         implicitHeight: cardLayout.implicitHeight + (polkitWindow.s(18) * 2)
         color: ThemeBackend.base
         radius: polkitWindow.crLarge
+        border.color: ThemeBackend.surface0
+        border.width: 1
 
         layer.enabled: true
         layer.effect: MultiEffect {
@@ -202,6 +204,8 @@ PanelWindow {
                 implicitHeight: errorText.implicitHeight + polkitWindow.s(12)
                 radius: polkitWindow.crSmall
                 color: Qt.alpha(ThemeBackend.red, 0.12)
+                border.color: Qt.alpha(ThemeBackend.red, 0.4)
+                border.width: 1
                 visible: PolkitService.errorMessage !== ""
 
                 RowLayout {

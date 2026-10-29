@@ -294,7 +294,7 @@ FocusScope {
             target: lockScreenRoot
             property: "centerReveal"
             to: 1.0
-            duration: 150
+            duration: 180
             easing.type: Easing.OutBack
             easing.overshoot: 1.2
         }
@@ -302,7 +302,7 @@ FocusScope {
             target: lockScreenRoot
             property: "wingsReveal"
             to: 1.0
-            duration: 250
+            duration: 220
             easing.type: Easing.OutBack
             easing.overshoot: 1.12
         }
@@ -352,7 +352,7 @@ FocusScope {
                 target: lockScreenRoot
                 property: "foldScaleX"
                 to: 0.0
-                duration: 250
+                duration: 220
                 easing.type: Easing.InBack
                 easing.overshoot: 1.3
             }
@@ -360,7 +360,7 @@ FocusScope {
                 target: lockScreenRoot
                 property: "foldScaleY"
                 to: 0.0
-                duration: 250
+                duration: 220
                 easing.type: Easing.InBack
                 easing.overshoot: 1.3
             }
@@ -368,14 +368,14 @@ FocusScope {
                 target: lockScreenRoot
                 property: "centerReveal"
                 to: 0.0
-                duration: 250
+                duration: 200
                 easing.type: Easing.InQuad
             }
             NumberAnimation {
                 target: lockScreenRoot
                 property: "contentReveal"
                 to: 0.0
-                duration: 250
+                duration: 220
                 easing.type: Easing.InQuad
             }
             NumberAnimation {
@@ -577,13 +577,13 @@ FocusScope {
             }
 
             SequentialAnimation {
-                PauseAnimation { duration: 250 }
+                PauseAnimation { duration: 200 }
                 NumberAnimation {
                     target: lockScreenRoot
                     property: "contentReveal"
                     from: 0.0
                     to: 1.0
-                    duration: 250
+                    duration: 200
                     easing.type: Easing.OutCubic
                 }
             }

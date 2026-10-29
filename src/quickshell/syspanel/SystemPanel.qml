@@ -302,13 +302,13 @@ Item {
     SequentialAnimation {
         id: closeSequence
         ParallelAnimation {
-            NumberAnimation { target: root; property: "introContent"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introTop"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introSliders"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introQuickActions"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introNotifs"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introActions"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introCore"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introContent"; to: 0.0; duration: 260; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introTop"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introSliders"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introQuickActions"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introNotifs"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introActions"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introCore"; to: 0.0; duration: 220; easing.type: Easing.InCubic }
         }
         ScriptAction {
             script: {
@@ -332,6 +332,11 @@ Item {
         event.accepted = true;
     }
 
+    readonly property var healthBattery: UPower.devices.values.find(device => device.isLaptopBattery && device.healthSupported) || UPower.displayDevice
+    IpcHandler {
+        target: "batteryDetails"
+        function state(): string { return JSON.stringify({ready:UPower.displayDevice.ready,watts:UPower.displayDevice.changeRate,health:root.healthBattery.healthPercentage,healthSupported:root.healthBattery.healthSupported,timeToEmpty:UPower.displayDevice.timeToEmpty,timeToFull:UPower.displayDevice.timeToFull}); }
+    }
     component BatteryContent : Item {
         id: bRoot
         property color contentTextColor: ThemeBackend.text
@@ -374,6 +379,7 @@ Item {
                 }
 
                 Text {
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
                     property string timeString: {
                         if (root.batStatus === "Fully Charged") return I18n.t("syspanel.battery.fully_charged");
                         if (root.batStatus === "Charging") {
@@ -386,17 +392,25 @@ Item {
 
                     font.family: ThemeBackend.fontFamily
                     font.weight: Font.Bold
-                    font.pixelSize: root.s(10)
+                    font.pixelSize: root.s(11)
                     color: ThemeBackend.neutralTextColor(bRoot.glass ? Qt.alpha(bRoot.contentTextColor, 0.75) : (bRoot.contentTextColor === ThemeBackend.crust ? Qt.alpha(ThemeBackend.crust, 0.85) : (root.isCharging ? ThemeBackend.green : ThemeBackend.subtext0)))
                     text: timeString
                     Behavior on color {
                         enabled: root.visible
-                        ColorAnimation { duration: 250 }
+                        ColorAnimation { duration: 300 }
                     }
+                }
+                Text {
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    font.family: ThemeBackend.fontFamily
+                    font.pixelSize: root.s(11)
+                    color: bRoot.contentTextColor
+                    text: !UPower.displayDevice.ready ? "" :
+                        (Math.abs(UPower.displayDevice.changeRate) > 0 ? "Power · " + Math.abs(UPower.displayDevice.changeRate).toFixed(1) + " W " + (root.isCharging ? "charging" : "draw") : "Power · Not reported") +
+                        (root.healthBattery.healthSupported ? "\nHealth · " + root.healthBattery.healthPercentage.toFixed(1) + "% health" : "\nHealth · Not reported")
                 }
             }
 
-            Item { Layout.fillWidth: true }
         }
     }
 
@@ -409,6 +423,7 @@ Item {
         bottomLeftRadius: root.isLeftAnchored ? 0 : radius
         topRightRadius: root.isLeftAnchored ? radius : 0
         bottomRightRadius: root.isLeftAnchored ? radius : 0
+        border.width: 0
         clip: true
         opacity: root.introContent
 
@@ -573,7 +588,7 @@ Item {
                 Rectangle {
                     id: batteryBox
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.isDesktop ? root.s(52) : root.s(72)
+                    Layout.preferredHeight: root.isDesktop ? root.s(52) : root.s(112)
                     Layout.maximumHeight: Layout.preferredHeight
                     radius: root.isDesktop ? root.s(15) : root.boxRadius
                     color: (root.isDesktop || batteryGlass.active) ? "transparent" : ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))

@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Hyprland
 import "../../"
 
@@ -92,4 +93,9 @@ Item {
             show(resolved);
         }
     }
+    IpcHandler {
+        target: "clipboardHistory"
+        function state(): string { return JSON.stringify({visible:controller.isVisible,screen:controller.screen ? controller.screen.name : ""}); }
+    }
+
 }

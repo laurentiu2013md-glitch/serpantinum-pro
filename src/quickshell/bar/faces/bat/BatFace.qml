@@ -91,6 +91,22 @@ Item {
     readonly property string batStatus: isPreview ? "Discharging" : (UPower.displayDevice.ready ? (UPower.displayDevice.state === UPowerDeviceState.FullyCharged ? "Full" : (UPower.displayDevice.state === UPowerDeviceState.Charging ? "Charging" : "Unknown")) : "Unknown")
     readonly property string batIcon: isDesktop ? "󰐥" : (isCharging ? "󰂄" : (batCap > 20 ? "󰁹" : "󰂃"))
 
+    property bool observedBelowFull: false
+    Component.onCompleted: observedBelowFull = !isPreview && UPower.displayDevice.ready && batCap < 100
+    property real completionGlow: 0
+    onBatCapChanged: {
+        if (!root.isPreview && UPower.displayDevice.ready && batCap < 100) observedBelowFull = true;
+        else if (batCap >= 100 && observedBelowFull) {
+            observedBelowFull = false;
+            if (isCharging && visible && !Motion.reduced && Config.getSetting("coloros", {}).chargingPulse !== false) completionPulse.restart();
+        }
+    }
+    NumberAnimation { id: completionPulse; target: root; property: "completionGlow"; from: .48; to: 0; duration: 1100; easing.type: Easing.OutCubic }
+    Connections { target: Motion; function onReducedChanged() { if (Motion.reduced) { completionPulse.stop(); root.completionGlow = 0; } } }
+    Rectangle {
+        anchors.fill: parent; radius: root.module ? root.module.radius : ThemeBackend.borderRadius
+        color: "#36d975"; opacity: root.completionGlow
+    }
     property real wavePhase: 0.8
 
     // A single binding owns the loop so state changes cannot restart it in Game Mode.
@@ -105,29 +121,33 @@ Item {
         running: root.visible && root.showLayout && !root.isDesktop && root.isCharging && root.batCap < 100 && !Motion.reduced
     }
 
-    property color batDynamicColor: {
-        if (isDesktop) return ThemeBackend.red;
-        if (isCharging) return isVertical ? ThemeBackend.green : Qt.lighter(ThemeBackend.green, 1.15);
-        if (batCap <= 15) return ThemeBackend.red;
-        if (batCap <= 25) return ThemeBackend.peach;
-        return ThemeBackend.teal;
+    function blendBatteryColor(a,b,t) {
+        t=Math.max(0,Math.min(1,t));
+        return Qt.rgba(a.r+(b.r-a.r)*t,a.g+(b.g-a.g)*t,a.b+(b.b-a.b)*t,1);
     }
-
-    property color calmBatFillColor: {
-        if (isDesktop) return ThemeBackend.subtext0;
-        if (isCharging) return ThemeBackend.green;
-        if (batCap <= 15) return ThemeBackend.red;
-        if (batCap <= 25) return ThemeBackend.peach;
-        return ThemeBackend.teal;
+    readonly property color healthyLevelColor: "#74d79a"
+    readonly property color warningLevelColor: "#f2b95b"
+    readonly property color criticalLevelColor: "#ee6b72"
+    readonly property color targetLevelColor: {
+        if (Config.getSetting("coloros",{}).lowBatteryColors === false)
+            return batCap <= 15 ? ThemeBackend.red : batCap <= 25 ? ThemeBackend.peach : ThemeBackend.teal;
+        if (batCap >= 35) return healthyLevelColor;
+        if (batCap > 20) return blendBatteryColor(warningLevelColor,healthyLevelColor,(batCap-20)/15);
+        if (batCap > 10) return blendBatteryColor(criticalLevelColor,warningLevelColor,(batCap-10)/10);
+        return criticalLevelColor;
     }
-
-    property color calmBatBorderColor: {
-        if (isDesktop) return ThemeBackend.subtext0;
-        if (isCharging) return ThemeBackend.green;
-        if (batCap <= 15) return ThemeBackend.red;
-        if (batCap <= 25) return ThemeBackend.peach;
-        return ThemeBackend.subtext0;
+    property color levelColor: targetLevelColor
+    Behavior on levelColor { ColorAnimation { duration: Motion.duration(650) } }
+    Rectangle {
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        anchors.leftMargin: root.s(9); anchors.rightMargin: root.s(9); anchors.bottomMargin: root.s(5)
+        height: root.s(3); radius: height/2; color: root.levelColor
+        opacity: !root.isDesktop && !root.isCharging && Config.getSetting("coloros",{}).lowBatteryColors !== false ? Math.max(0,Math.min(1,(40-root.batCap)/15)) : 0
+        Behavior on opacity { NumberAnimation { duration: Motion.duration(650) } }
     }
+    property color batDynamicColor: isDesktop ? ThemeBackend.red : isCharging ? (isVertical ? ThemeBackend.green : Qt.lighter(ThemeBackend.green,1.15)) : levelColor
+    property color calmBatFillColor: isDesktop ? ThemeBackend.subtext0 : isCharging ? ThemeBackend.green : levelColor
+    property color calmBatBorderColor: isDesktop ? ThemeBackend.subtext0 : isCharging ? ThemeBackend.green : levelColor
 
     property bool showLayout: (!barWindow || isPreview) ? true : false
     readonly property var batPill: pillLoader.item ? pillLoader.item.pill : null
@@ -189,7 +209,7 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         enabled: root.batStyle === "text" && !root.isPreview
-        onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle system"])
+        onClicked: IslandController.request("battery", "keyboard")
     }
 
     // Decorative liquid sits beneath the existing text without adding another box.
@@ -274,7 +294,7 @@ Item {
                 textFontSize: s(root.isCompact ? 11 : 12)
                 accentColor: Qt.lighter(ThemeBackend.surface0, root.isCompact && !root.lockLook ? 1.18 : 1.28)
                 textColor: root.lockLook ? root.lockBatColor : root.batDynamicColor
-                onClicked: if (!root.isPreview) Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle system"])
+                onClicked: if (!root.isPreview) IslandController.request("battery", "keyboard")
             }
         }
     }
@@ -446,7 +466,7 @@ Item {
                     hoverEnabled: true
                     enabled: !root.isPreview
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle system"])
+                    onClicked: IslandController.request("battery", "keyboard")
                 }
             }
 
@@ -606,7 +626,7 @@ Item {
                     hoverEnabled: true
                     enabled: !root.isPreview
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle system"])
+                    onClicked: IslandController.request("battery", "keyboard")
                 }
             }
         }

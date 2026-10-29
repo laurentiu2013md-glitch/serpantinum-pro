@@ -10,7 +10,6 @@ import Quickshell.Io
 import "../"
 import "../reusables"
 import "../WindowRegistry.js" as WindowRegistry
-import "./EmojiData.js" as EmojiData
 import "./SearchProviders.js" as SearchProviders
 
 PanelWindow {
@@ -149,8 +148,8 @@ PanelWindow {
     Connections {
         target: (typeof Config !== "undefined") ? Config : null
         function onSettingsLoaded() {
-            LauncherController.hide();
             launcherWindow.configRevision++;
+            if (launcherWindow.isVisible) { launcherWindow.loadApps(); launcherWindow.executeFilter(searchInput.text); }
         }
     }
 
@@ -344,7 +343,7 @@ PanelWindow {
     property real animatedLauncherHeight: targetLauncherHeight
     Behavior on animatedLauncherHeight {
         NumberAnimation {
-            duration: 250
+            duration: 300
             easing.type: Easing.OutCubic
         }
     }
@@ -632,6 +631,40 @@ PanelWindow {
         return null;
     }
 
+    IpcHandler {
+        target: "launcherView"
+        function state(): string {
+            let rows=[];
+            for (let i=0;i<appModel.count;i++) { const item=appModel.get(i); rows.push({name:item.name,id:item.desktop_id,pinned:launcherWindow.isPinned(item.desktop_id)}); }
+            return JSON.stringify({visible:launcherWindow.visible,collection:launcherWindow.appCollection,pins:launcherWindow.pinnedApps,recent:launcherWindow.recentApps,selected:appList.currentIndex,rows:rows});
+        }
+    }
+    property string appCollection: "all"
+    onAppCollectionChanged: filterApps(searchInput.text)
+    readonly property var recentApps: Config.getSetting("launcher", {}).recentApps || []
+    function normalizedId(id) { return String(id || "").toLowerCase().replace(/\.desktop$/, ""); }
+    function isPinned(id) { return pinnedApps.some(item => normalizedId(item) === normalizedId(id)); }
+    function recentIndex(id) {
+        const index = recentApps.findIndex(item => normalizedId(item) === normalizedId(id));
+        return index < 0 ? 9999 : index;
+    }
+    function togglePin(id) {
+        if (!id || String(id).startsWith("qs-widget-")) return;
+        const settings = Config.getSetting("launcher", {});
+        const pins = (settings.pinnedApps || []).filter(item => normalizedId(item) !== normalizedId(id));
+        if (!isPinned(id)) pins.push(id);
+        settings.pinnedApps = pins;
+        Config.setSetting("launcher", settings);
+        loadApps(); filterApps(searchInput.text);
+    }
+    Shortcut {
+        sequence: "Ctrl+P"; enabled: launcherWindow.visible && launcherWindow.currentTabIndex === 0
+        onActivated: if (appList.currentIndex >= 0) launcherWindow.togglePin(appModel.get(appList.currentIndex).desktop_id)
+    }
+    Shortcut { sequence: "Ctrl+1"; enabled: launcherWindow.visible; onActivated: { launcherWindow.currentTabIndex = 0; launcherWindow.appCollection = "all"; } }
+    Shortcut { sequence: "Ctrl+2"; enabled: launcherWindow.visible; onActivated: { launcherWindow.currentTabIndex = 0; launcherWindow.appCollection = "favorites"; } }
+    Shortcut { sequence: "Ctrl+3"; enabled: launcherWindow.visible; onActivated: { launcherWindow.currentTabIndex = 0; launcherWindow.appCollection = "recent"; } }
+
     function pinnedAppIndex(desktopId) {
         let id = (desktopId || "").toLowerCase().replace(/\.desktop$/, "");
         for (let i = 0; i < pinnedApps.length; i++) {
@@ -673,6 +706,7 @@ PanelWindow {
                 arr.push({
                     name: e.name,
                     description: e.comment || "",
+                    searchTerms: [e.genericName || ""].concat(e.keywords || []).join(" ").toLowerCase(),
                     desktop_id: e.id,
                     icon: e.icon || "",
                     fontIcon: "",
@@ -690,37 +724,6 @@ PanelWindow {
                     isDir: false
                 });
             }
-        }
-
-        let widgetList = (typeof WindowRegistry !== "undefined" && WindowRegistry.getWidgetLauncherEntries)
-            ? WindowRegistry.getWidgetLauncherEntries(typeof I18n !== "undefined" ? I18n : null)
-            : [];
-
-        for (let j = 0; j < widgetList.length; j++) {
-            let w = widgetList[j];
-            let wScore = 0;
-            if (launcherWindow.smartRanking) {
-                wScore = (usageRanks.launch && (usageRanks.launch[w.id] || usageRanks.launch[w.name] || usageRanks.launch["qs-widget-" + w.id])) || 0;
-            }
-            arr.push({
-                name: w.name,
-                description: w.description || "",
-                desktop_id: "qs-widget-" + w.id,
-                icon: w.icon || "",
-                fontIcon: w.fontIcon || "",
-                score: wScore,
-                isCommand: false,
-                command: "",
-                isCalc: false,
-                isSearch: false,
-                searchUrl: "",
-                calcResult: "",
-                isWidget: true,
-                widgetTarget: w.id,
-                isFile: false,
-                filePath: "",
-                isDir: false
-            });
         }
 
         arr.sort(function(a, b) {
@@ -767,11 +770,26 @@ PanelWindow {
         emojiDebounceTimer.restart();
     }
 
+    property var emojiSearch: null
+
+    function ensureEmojiSearch() {
+        if (!emojiSearch) {
+            let component = Qt.createComponent(Qt.resolvedUrl("EmojiSearch.qml"));
+            if (component.status === Component.Ready) {
+                emojiSearch = component.createObject(launcherWindow);
+            } else {
+                console.warn("Failed to load emoji search:", component.errorString());
+            }
+        }
+        return emojiSearch;
+    }
+
     function executeEmojiFilter(query) {
         launcherWindow.isKeyboardNav = false;
         if (keyboardNavTimer.running) keyboardNavTimer.stop();
 
-        let results = EmojiData.search(query ? query.trim() : "", 150);
+        let search = ensureEmojiSearch();
+        let results = search ? search.search(query ? query.trim() : "", 150) : [];
         applyEmojiModelItems(results);
     }
 
@@ -987,8 +1005,11 @@ PanelWindow {
 
         for (let i = 0; i < allApps.length; i++) {
             let app = allApps[i];
+            if (launcherWindow.appCollection === "favorites" && !launcherWindow.isPinned(app.desktop_id)) continue;
+            if (launcherWindow.appCollection === "recent" && launcherWindow.recentIndex(app.desktop_id) === 9999) continue;
             let nameLower = app.name ? app.name.toLowerCase() : "";
             let descLower = app.description ? app.description.toLowerCase() : "";
+            let termsLower = app.searchTerms || "";
 
             let matchQuality = 0;
             let matches = false;
@@ -1007,6 +1028,9 @@ PanelWindow {
                     matches = true;
                 } else if (descLower.includes(q)) {
                     matchQuality = 5000;
+                    matches = true;
+                } else if (termsLower.includes(q)) {
+                    matchQuality = 3000;
                     matches = true;
                 } else if (isSubsequence(q, nameLower)) {
                     matchQuality = 1000;
@@ -1052,6 +1076,13 @@ PanelWindow {
             });
         }
 
+        if (q.length === 0) filtered.sort((a,b) => {
+            if (launcherWindow.appCollection !== "recent") {
+                const pins = launcherWindow.pinnedAppIndex(a.desktop_id) - launcherWindow.pinnedAppIndex(b.desktop_id);
+                if (pins !== 0) return pins;
+            }
+            return launcherWindow.recentIndex(a.desktop_id) - launcherWindow.recentIndex(b.desktop_id) || b.score - a.score || a.name.localeCompare(b.name);
+        });
         applyModelItems(filtered);
     }
 
@@ -1134,6 +1165,9 @@ PanelWindow {
     function launchApp(appName, desktopId) {
         let entry = DesktopEntries.byId(desktopId);
         if (entry) {
+            const settings = Config.getSetting("launcher", {});
+            settings.recentApps = [desktopId].concat((settings.recentApps || []).filter(id => normalizedId(id) !== normalizedId(desktopId))).slice(0, 15);
+            Config.setSetting("launcher", settings);
             entry.execute();
         }
         if (Caching.qsDir) {
@@ -1504,14 +1538,28 @@ PanelWindow {
                     }
                 }
 
+                Switch {
+                    id: appCollections
+                    visible: launcherWindow.currentTabIndex === 0
+                    anchors.left: parent.left; anchors.right: parent.right
+                    y: contentContainer.isSearchAtBottom ? tabSwitch.y - height - launcherWindow.s(6) : tabSwitch.y + tabSwitch.height + launcherWindow.s(6)
+                    height: visible ? launcherWindow.s(28) : 0
+                    options: ["All", "Favorites", "Recent"]
+                    currentIndex: ["all", "favorites", "recent"].indexOf(launcherWindow.appCollection)
+                    onValueChanged: (index, value) => launcherWindow.appCollection = ["all", "favorites", "recent"][index]
+                    fontPixelSize: launcherWindow.s(11)
+                    baseColor: ThemeBackend.surface0; accentColor: ThemeBackend.mauve
+                    textColor: ThemeBackend.text; activeTextColor: ThemeBackend.crust
+                }
+
                 Item {
                     id: listContainer
                     z: 1
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    y: contentContainer.isSearchAtBottom ? 0 : (tabSwitch.y + tabSwitch.height + launcherWindow.s(8))
+                    y: contentContainer.isSearchAtBottom ? 0 : ((appCollections.visible ? appCollections.y + appCollections.height : tabSwitch.y + tabSwitch.height) + launcherWindow.s(8))
                     height: contentContainer.isSearchAtBottom
-                            ? Math.max(0, tabSwitch.y - launcherWindow.s(8))
+                            ? Math.max(0, (appCollections.visible ? appCollections.y : tabSwitch.y) - launcherWindow.s(8))
                             : Math.max(0, parent.height - y)
                     clip: true
 
@@ -1523,7 +1571,7 @@ PanelWindow {
                         id: scrollAnim
                         target: appList
                         property: "contentY"
-                        duration: 250
+                        duration: 260
                         easing.type: Easing.OutCubic
                     }
 
@@ -1538,7 +1586,7 @@ PanelWindow {
 
                         readonly property bool isMoving: Math.abs(morphHighlight.y - morphHighlight.targetY) > 0.5
                         property real lift: (highlightLayerGlass.active && isMoving) ? 1.0 : 0.0
-                        Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                        Behavior on lift { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
                         transform: Scale {
                             origin.x: highlightGlassLayer.width / 2
                             origin.y: highlightGlassLayer.height / 2
@@ -1725,7 +1773,7 @@ PanelWindow {
                             Behavior on y {
                                 enabled: launcherWindow.isKeyboardNav
                                 NumberAnimation {
-                                    duration: 250
+                                    duration: 260
                                     easing.type: Easing.OutCubic
                                 }
                             }
@@ -1783,10 +1831,10 @@ PanelWindow {
                                     spacing: launcherWindow.s(10)
 
                                     Behavior on anchors.leftMargin {
-                                        NumberAnimation { duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
+                                        NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
                                     }
                                     Behavior on anchors.rightMargin {
-                                        NumberAnimation { duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
+                                        NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
                                     }
 
                                     Item {
@@ -1900,6 +1948,7 @@ PanelWindow {
                                         Text {
                                             id: delegateText
                                             Layout.fillWidth: true
+                                            Layout.rightMargin: launcherWindow.s(34)
                                             text: model.name
                                             font.family: ThemeBackend.fontFamily
                                             font.pixelSize: launcherWindow.s(12)
@@ -1915,6 +1964,7 @@ PanelWindow {
                                         Text {
                                             id: delegateDesc
                                             Layout.fillWidth: true
+                                            Layout.rightMargin: launcherWindow.s(34)
                                             visible: model.description !== undefined && model.description !== null && model.description !== ""
                                             text: model.description || ""
                                             font.family: ThemeBackend.fontFamily
@@ -1929,6 +1979,27 @@ PanelWindow {
                                             Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
                                         }
                                     }
+                                }
+
+                                ToolButton {
+                                    id: favoriteButton
+                                    anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                                    width: launcherWindow.s(36); height: launcherWindow.s(36); z: 3
+                                    visible: !!model.desktop_id && !model.isWidget && launcherWindow.currentTabIndex === 0
+                                    text: ""
+                                    opacity: launcherWindow.isPinned(model.desktop_id) ? 1 : .55
+                                    font.family: ThemeBackend.iconFont
+                                    Accessible.name: launcherWindow.isPinned(model.desktop_id) ? "Unpin " + model.name : "Pin " + model.name + " to favorites"
+                                    background: Item {}
+                                    contentItem: Text {
+                                        text: favoriteButton.text
+                                        font.family: ThemeBackend.iconFont
+                                        font.pixelSize: launcherWindow.s(16)
+                                        color: ThemeBackend.neutralTextColor(delegateRoot.isSelected ? (ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.crust) : ThemeBackend.text)
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                    onClicked: launcherWindow.togglePin(model.desktop_id)
                                 }
 
                                 MouseArea {
@@ -2044,7 +2115,7 @@ PanelWindow {
                             id: emojiScrollAnim
                             target: emojiGrid
                             property: "contentY"
-                            duration: 250
+                            duration: 220
                             easing.type: Easing.OutCubic
                         }
 
@@ -2079,6 +2150,7 @@ PanelWindow {
                                     color: (emojiGlass.active || emojiDelegateRoot.lensHandled) ? "transparent" : (emojiDelegateRoot.isSelected
                                            ? ThemeBackend.mauve
                                            : (emojiMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.7) : Qt.alpha(ThemeBackend.surface0, 0.45)))
+                                    border.width: (emojiDelegateRoot.isSelected || ThemeBackend.liquidGlass) ? 0 : 1
 
                                     GlassFill {
                                         id: emojiGlass
@@ -2091,9 +2163,10 @@ PanelWindow {
                                         tintAmount: emojiDelegateRoot.isSelected ? 0 : 0.25
                                         press: emojiMa.pressed ? 0.8 : (emojiDelegateRoot.isSelected ? 0.6 : (emojiMa.containsMouse ? 0.25 : 0))
                                     }
+                                    border.color: emojiDelegateRoot.isSelected ? "transparent" : Qt.alpha(ThemeBackend.surface2, 0.3)
 
                                     Behavior on color {
-                                        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                        ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
                                     }
                                 }
 
@@ -2123,7 +2196,7 @@ PanelWindow {
                                         maximumLineCount: 1
 
                                         Behavior on color {
-                                            ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                            ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
                                         }
                                     }
                                 }

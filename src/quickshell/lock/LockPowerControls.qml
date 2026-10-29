@@ -23,7 +23,7 @@ Item {
 
         opacity: screenRoot.inputActive ? 1.0 : 0.0
         visible: opacity > 0.01
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
 
         WallpaperBlur {
             z: -1
@@ -75,6 +75,8 @@ Item {
         opacity: screenRoot.powerMenuOpen ? 1.0 : 0.0
 
         color: Qt.rgba(ThemeBackend.surface0.r, ThemeBackend.surface0.g, ThemeBackend.surface0.b, 0.45 * ThemeBackend.elementOpacity)
+        border.color: Qt.rgba(ThemeBackend.surface1.r, ThemeBackend.surface1.g, ThemeBackend.surface1.b, 0.4)
+        border.width: 1
 
         WallpaperBlur {
             z: -1
@@ -93,7 +95,7 @@ Item {
         }
         Behavior on opacity {
             NumberAnimation {
-                duration: 250
+                duration: 220
                 easing.type: Easing.OutCubic
             }
         }

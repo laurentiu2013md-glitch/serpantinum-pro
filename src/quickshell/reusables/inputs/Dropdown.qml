@@ -62,7 +62,6 @@ Item {
     property int visibleCount: 0
 
     readonly property Item glassBackdrop: glass.backdrop
-    readonly property bool popupHovered: listHover.hovered
     property bool isHoveredOrHighlighted: (btnMa.containsMouse || root.action_highlight) && root.enabled
     readonly property real charSlotStep: globalCharMetrics.width + root.charSpacing
     property real scrollOffset: 0
@@ -754,58 +753,19 @@ Item {
             readonly property color accentColor: root.accentColor
             readonly property color textColor: root.textColor
             property Item hoverItem: null
-            property bool scrolling: false
             implicitHeight: Math.min(contentHeight, 250)
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             spacing: 2
             model: root.filteredOptions
 
-            Timer {
-                id: scrollSettleTimer
-                interval: 200
-                onTriggered: listView.scrolling = false
-            }
-
-            function refreshHover() {
-                if (!listHover.hovered || !visible) {
-                    hoverItem = null;
-                    return;
-                }
-                const px = contentX + cursorX;
-                const py = contentY + cursorY;
-                hoverItem = itemAt(px, py) || itemAt(px, py - spacing);
-            }
-
-            function scheduleHoverRefresh() {
-                Qt.callLater(refreshHover);
-            }
-
-            onCountChanged: scheduleHoverRefresh()
-            onScrollingChanged: scheduleHoverRefresh()
-            onContentYChanged: {
-                scrolling = true;
-                scrollSettleTimer.restart();
-                refreshHover();
-                scheduleHoverRefresh();
-            }
-
-            property real cursorX: 0
-            property real cursorY: 0
-            onCursorXChanged: refreshHover()
-            onCursorYChanged: refreshHover()
-
             HoverHandler {
                 id: listHover
-                parent: listView
-                onHoveredChanged: listView.refreshHover()
             }
 
             GlassLens {
                 id: hoverLens
-                parent: listView.contentItem
                 z: 0
-                instant: listView.scrolling
                 targetX: listView.hoverItem ? listView.hoverItem.x : 0
                 targetY: listView.hoverItem ? listView.hoverItem.y : 0
                 targetWidth: listView.hoverItem ? listView.hoverItem.width : 0
@@ -895,7 +855,6 @@ Item {
                     if (root.isEditing || (root.isOpen && index >= root.visibleCount)) {
                         delegateRect.shown = true;
                     }
-                    listView.scheduleHoverRefresh();
                 }
 
                 opacity: (root.isEditing || shown) ? 1.0 : 0.0
@@ -910,6 +869,17 @@ Item {
 
                 scale: itemMa.pressed ? 0.96 : ((itemMa.containsMouse && !hoverLens.glassActive) ? 1.02 : 1.0)
                 Behavior on scale { NumberAnimation { duration: Motion.duration(250); easing.type: Easing.OutQuint } }
+
+                Connections {
+                    target: itemMa
+                    function onContainsMouseChanged() {
+                        if (itemMa.containsMouse) {
+                            listView.hoverItem = delegateRect;
+                        } else if (listView.hoverItem === delegateRect) {
+                            listView.hoverItem = null;
+                        }
+                    }
+                }
 
                 Component.onDestruction: {
                     if (listView.hoverItem === delegateRect) listView.hoverItem = null;
@@ -962,15 +932,6 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
 
-                    function trackCursor(mouse) {
-                        const p = itemMa.mapToItem(listView, mouse.x, mouse.y);
-                        listView.cursorX = p.x;
-                        listView.cursorY = p.y;
-                    }
-
-                    onPositionChanged: (mouse) => trackCursor(mouse)
-                    onEntered: listView.scheduleHoverRefresh()
-
                     onClicked: {
                         let selectedVal = modelData;
                         let rIdx = root.options.indexOf(selectedVal);
@@ -997,6 +958,8 @@ Item {
         anchors.margins: -2
         radius: (typeof root.cornerRadius === "number" ? root.cornerRadius : 10) + 2
         color: "transparent"
+        border.width: 2
+        border.color: Qt.alpha(ThemeBackend.mauve, 0.8)
         visible: root.activeFocus
         z: 100
     }

@@ -149,6 +149,8 @@ Item {
         anchors.fill: parent
         radius: root.cardRadius
         color: "transparent"
+        border.width: 1
+        border.color: root.borderColor
     }
 
     FluidWave {

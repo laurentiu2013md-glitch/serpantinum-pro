@@ -89,12 +89,12 @@ Item {
     }
 
     function updateNest() {
-        root.nestLevel = Nesting.nestLevel(root, root.backdrop ? root.backdrop.parent : null, false);
+        root.nestLevel = Math.max(root.backdrop ? 1 : 0, Nesting.nestLevel(root, root.backdrop ? root.backdrop.parent : null, false));
     }
 
     function register() {
         unregister();
-        if (root.active && root.backdrop) {
+        if (root.active && root.backdrop && root.nestLevel === 0) {
             root.backdrop.consumers++;
             root.registeredBackdrop = root.backdrop;
         }
@@ -259,17 +259,36 @@ Item {
         }
     }
 
+    // Controls on glass use a thin material fill, not a second refracting lens.
+    Rectangle {
+        anchors.fill: parent
+        visible: root.active && root.nestLevel >= 1
+        radius: Math.min(root.radius, Math.min(width, height) / 2)
+        color: Qt.alpha(root.tintColor, Math.min(0.48, Math.max(0.09, root.tintAmount * 0.6 + root.press * 0.08)))
+        border.width: 1
+        border.color: Qt.alpha("#ffffff", 0.12 + root.press * 0.12)
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.alpha("#ffffff", 0.10 + root.press * 0.06) }
+                GradientStop { position: 0.55; color: "transparent" }
+                GradientStop { position: 1; color: Qt.alpha("#ffffff", 0.025) }
+            }
+        }
+    }
+
     Item {
         id: glassFrame
         anchors.centerIn: parent
         width: (root.turns % 2 === 0 ? root.width : root.height) + root.pad * 2
         height: (root.turns % 2 === 0 ? root.height : root.width) + root.pad * 2
         rotation: root.turns * 90
-        visible: root.active
+        visible: root.active && root.nestLevel === 0
 
         Loader {
             anchors.fill: parent
-            active: root.active
+            active: root.active && root.nestLevel === 0
             sourceComponent: Component {
                 LiquidGlass {
                     anchors.fill: parent

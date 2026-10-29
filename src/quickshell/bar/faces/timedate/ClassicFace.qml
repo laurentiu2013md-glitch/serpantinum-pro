@@ -70,7 +70,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: widget ? widget.timeStr : (typeof DateTime !== "undefined" ? DateTime.time : "12:00")
                 font.family: ThemeBackend.fontFamily
-                font.pixelSize: widget ? widget.s(widget.isCompact ? 14 : 15) : 15
+                font.pixelSize: widget ? widget.s(widget.headerClock ? 18 : widget.isCompact ? 14 : 15) : 15
                 font.weight: Font.Black
                 color: ThemeBackend.neutralTextColor((widget && widget.isCompact) ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue)
             }

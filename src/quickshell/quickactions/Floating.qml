@@ -1,4 +1,6 @@
 import QtQuick
+import QtQuick.Window
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell
@@ -19,11 +21,31 @@ Variants {
 
             WlrLayershell.namespace: "qs-floating-overlay-coloros-" + (screen ? screen.name : "default")
             WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: shouldHaveKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: keyboardActive && isSidebarVisible ? WlrKeyboardFocus.Exclusive : (shouldHaveKeyboardFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None)
             exclusionMode: ExclusionMode.Ignore
             color: "transparent"
+            visible: surfaceNeeded
 
-            readonly property bool shouldHaveKeyboardFocus: isSidebarVisible && (isExpanded || hasInputFocus)
+            readonly property real screenWidth: (screen && screen.width > 0) ? screen.width : width
+            readonly property real screenHeight: (screen && screen.height > 0) ? screen.height : height
+
+            readonly property bool surfaceActive: isSidebarVisible || isPeekVisible || isPinned || isExpanded
+                || visibleProgress > 0.001 || expandProgress > 0.001
+                || pendingMode !== "" || edgeTransitionTimer.running || teleportTimer.running
+            readonly property bool surfaceNeeded: surfaceActive || surfaceLingerTimer.running
+
+            onSurfaceActiveChanged: {
+                if (!surfaceActive) surfaceLingerTimer.restart();
+            }
+
+            Timer {
+                id: surfaceLingerTimer
+                interval: 2000
+            }
+
+            property bool keyboardActive: false
+
+            readonly property bool shouldHaveKeyboardFocus: isSidebarVisible
 
             readonly property bool hasInputFocus: {
                 let loader = (typeof moduleRepeater !== "undefined" && activeIndex >= 0 && activeIndex < moduleRepeater.count)
@@ -40,23 +62,6 @@ Variants {
                 if (hasInputFocus) {
                     hideTimer.stop();
                     floatingWidget.useGraceTimer = false;
-                }
-            }
-
-            readonly property bool isPopupHovered: {
-                let loader = (typeof moduleRepeater !== "undefined" && activeIndex >= 0 && activeIndex < moduleRepeater.count)
-                    ? moduleRepeater.itemAt(activeIndex)
-                    : null;
-                let mod = (loader && loader.status === Loader.Ready && loader.item) ? loader.item : null;
-                return !!(mod && mod.hasHoveredPopup !== undefined && mod.hasHoveredPopup);
-            }
-
-            onIsPopupHoveredChanged: {
-                if (isPopupHovered) {
-                    floatingWidget.useGraceTimer = false;
-                    hideTimer.stop();
-                } else {
-                    floatingWidget.kickTimer();
                 }
             }
 
@@ -81,8 +86,16 @@ Variants {
                 }
             }
 
+            property bool modulesWarm: false
+
+            onIsPeekVisibleChanged: {
+                if (isPeekVisible) modulesWarm = true;
+            }
+
             onIsSidebarVisibleChanged: {
+                if (!isSidebarVisible) keyboardActive = false;
                 if (isSidebarVisible) {
+                    modulesWarm = true;
                     SysData.prewarm();
                     grabKeyboardFocus();
                     Qt.callLater(grabKeyboardFocus);
@@ -96,9 +109,9 @@ Variants {
 
             property real barInset: barAutohide ? 0 : s(48)
             property real topBound: barPosition === "top" ? barInset : 0
-            property real bottomBound: floatingWidget.height - (barPosition === "bottom" ? barInset : 0)
+            property real bottomBound: floatingWidget.screenHeight - (barPosition === "bottom" ? barInset : 0)
             property real leftBound: barPosition === "left" ? barInset : 0
-            property real rightBound: floatingWidget.width - (barPosition === "right" ? barInset : 0)
+            property real rightBound: floatingWidget.screenWidth - (barPosition === "right" ? barInset : 0)
 
             property real edgeHitSize: Math.max(2, Math.round(s(3)))
 
@@ -158,11 +171,11 @@ Variants {
                 return baseLen * 1.2;
             }
 
-            property real dockHStart: Math.max(leftBound, Math.round((floatingWidget.width - dockLength) / 2))
-            property real dockHEnd: Math.min(rightBound, Math.round((floatingWidget.width + dockLength) / 2))
+            property real dockHStart: Math.max(leftBound, Math.round((floatingWidget.screenWidth - dockLength) / 2))
+            property real dockHEnd: Math.min(rightBound, Math.round((floatingWidget.screenWidth + dockLength) / 2))
 
-            property real dockVStart: Math.max(topBound, Math.round((floatingWidget.height - dockLength) / 2))
-            property real dockVEnd: Math.min(bottomBound, Math.round((floatingWidget.height + dockLength) / 2))
+            property real dockVStart: Math.max(topBound, Math.round((floatingWidget.screenHeight - dockLength) / 2))
+            property real dockVEnd: Math.min(bottomBound, Math.round((floatingWidget.screenHeight + dockLength) / 2))
 
             readonly property bool isDockOnTop: isDockActive && dockPosition === "top"
             readonly property real topEdgeA_x: leftBound
@@ -191,7 +204,65 @@ Variants {
             readonly property bool isAnyEdgeHovered: topEdgeA.containsMouse || topEdgeB.containsMouse ||
                                                      bottomEdgeA.containsMouse || bottomEdgeB.containsMouse ||
                                                      leftEdgeA.containsMouse || leftEdgeB.containsMouse ||
-                                                     rightEdgeA.containsMouse || rightEdgeB.containsMouse
+                                                     rightEdgeA.containsMouse || rightEdgeB.containsMouse ||
+                                                     topTrigger.hovered || bottomTrigger.hovered ||
+                                                     leftTrigger.hovered || rightTrigger.hovered
+
+            FloatingEdgeTrigger {
+                id: topTrigger
+                screen: floatingWidget.screen
+                host: floatingWidget
+                edge: "top"
+                visible: !floatingWidget.visible && (lengthA > 0 || lengthB > 0)
+                inset: floatingWidget.topBound
+                thickness: floatingWidget.edgeHitSize
+                startA: floatingWidget.topEdgeA_x
+                lengthA: floatingWidget.topEdgeA_w
+                startB: floatingWidget.topEdgeB_x
+                lengthB: floatingWidget.topEdgeB_w
+            }
+
+            FloatingEdgeTrigger {
+                id: bottomTrigger
+                screen: floatingWidget.screen
+                host: floatingWidget
+                edge: "bottom"
+                visible: !floatingWidget.visible && (lengthA > 0 || lengthB > 0)
+                inset: floatingWidget.screenHeight - floatingWidget.bottomBound
+                thickness: floatingWidget.edgeHitSize
+                startA: floatingWidget.bottomEdgeA_x
+                lengthA: floatingWidget.bottomEdgeA_w
+                startB: floatingWidget.bottomEdgeB_x
+                lengthB: floatingWidget.bottomEdgeB_w
+            }
+
+            FloatingEdgeTrigger {
+                id: leftTrigger
+                screen: floatingWidget.screen
+                host: floatingWidget
+                edge: "left"
+                visible: !floatingWidget.visible && (lengthA > 0 || lengthB > 0)
+                inset: floatingWidget.leftBound
+                thickness: floatingWidget.edgeHitSize
+                startA: floatingWidget.leftEdgeA_y
+                lengthA: floatingWidget.leftEdgeA_h
+                startB: floatingWidget.leftEdgeB_y
+                lengthB: floatingWidget.leftEdgeB_h
+            }
+
+            FloatingEdgeTrigger {
+                id: rightTrigger
+                screen: floatingWidget.screen
+                host: floatingWidget
+                edge: "right"
+                visible: !floatingWidget.visible && (lengthA > 0 || lengthB > 0)
+                inset: floatingWidget.screenWidth - floatingWidget.rightBound
+                thickness: floatingWidget.edgeHitSize
+                startA: floatingWidget.rightEdgeA_y
+                lengthA: floatingWidget.rightEdgeA_h
+                startB: floatingWidget.rightEdgeB_y
+                lengthB: floatingWidget.rightEdgeB_h
+            }
 
             function handleEdgeEntered(edge, mousePos) {
                 SysData.prewarm();
@@ -276,6 +347,43 @@ Variants {
                 }
             }
 
+            readonly property var focusedItem: focusTracker.Window.window ? focusTracker.Window.window.activeFocusItem : null
+            function controls() {
+                const loader = moduleRepeater.itemAt(activeIndex);
+                let result = [];
+                function visit(item) {
+                    if (!item || !item.visible || !item.enabled) return;
+                    if (item.activeFocusOnTab) { result.push(item); return; }
+                    for (const child of item.children || []) visit(child);
+                }
+                if (loader && loader.item && isExpanded) visit(loader.item);
+                return result;
+            }
+            function focusControl(direction) {
+                const items = controls();
+                if (!items.length) return;
+                let current = focusedItem;
+                let index = -1;
+                while (current && index < 0) { index = items.indexOf(current); current = current.parent; }
+                items[index < 0 ? (direction > 0 ? 0 : items.length - 1) : (index + direction + items.length) % items.length].forceActiveFocus(Qt.TabFocusReason);
+                hideTimer.stop();
+            }
+            Rectangle {
+                parent: floatingWidget.focusedItem && floatingWidget.focusedItem !== focusTracker ? floatingWidget.focusedItem : null
+                anchors.fill: parent; anchors.margins: -2
+                visible: floatingWidget.keyboardActive && parent !== null
+                color: "transparent"; radius: 10; border.width: 2; border.color: ThemeBackend.primary; z: 1000
+            }
+            Instantiator {
+                model: floatingWidget.tabCount
+                delegate: Shortcut {
+                    required property int index
+                    sequence: "Ctrl+" + (index + 1)
+                    enabled: floatingWidget.isSidebarVisible
+                    onActivated: { floatingWidget.activeIndex = index; floatingWidget.isExpanded = true; focusTracker.forceActiveFocus(); }
+                }
+            }
+
             function cycleTab(direction) {
                 let step = activeEdge === "top" ? -direction : direction;
                 activeIndex = (activeIndex + step + tabCount) % tabCount;
@@ -287,13 +395,13 @@ Variants {
                 focus: true
                 Keys.onTabPressed: event => {
                     if (!floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Tab")) {
-                        floatingWidget.cycleTab(1);
+                        floatingWidget.focusControl(1);
                         event.accepted = true;
                     }
                 }
                 Keys.onBacktabPressed: event => {
                     if (!floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Backtab")) {
-                        floatingWidget.cycleTab(-1);
+                        floatingWidget.focusControl(-1);
                         event.accepted = true;
                     }
                 }
@@ -483,6 +591,7 @@ Variants {
             }
 
             function showTab(key, fallbackIndex) {
+                keyboardActive = true;
                 let tabIndex = fallbackIndex;
                 for (let i = 0; i < floatingWidget.tabModules.length; i++) {
                     if (floatingWidget.tabModules[i].indexOf(key) !== -1) {
@@ -492,7 +601,7 @@ Variants {
                 }
                 floatingWidget.activeIndex = tabIndex;
                 let sideEdge = (floatingWidget.barPosition === "left") ? "right" : "left";
-                let centerPos = floatingWidget.height / 2;
+                let centerPos = floatingWidget.screenHeight / 2;
                 floatingWidget.useGraceTimer = true;
                 floatingWidget.showSidebar(sideEdge, centerPos, true);
                 hideTimer.restart();
@@ -524,7 +633,6 @@ Variants {
                         (typeof peekMouse !== "undefined" && (peekMouse.containsMouse || peekMouse.pressed)) ||
                         (typeof pinMouse !== "undefined" && pinMouse.containsMouse) ||
                         (typeof expandMouse !== "undefined" && expandMouse.containsMouse) ||
-                        floatingWidget.isPopupHovered ||
                         floatingWidget.hoveredBars > 0) {
                         return;
                     }
@@ -532,49 +640,49 @@ Variants {
                 }
             }
 
-            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Tab"); sequence: "Tab"; onActivated: floatingWidget.cycleTab(1) }
+            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Tab"); sequence: "Tab"; onActivated: floatingWidget.focusControl(1) }
             Shortcut {
                 enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Backtab")
                 sequence: "Backtab"
-                onActivated: floatingWidget.cycleTab(-1)
-                onActivatedAmbiguously: floatingWidget.cycleTab(-1)
+                onActivated: floatingWidget.focusControl(-1)
+                onActivatedAmbiguously: floatingWidget.focusControl(-1)
             }
-            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Return"); sequence: "Return"; onActivated: { floatingWidget.isExpanded = !floatingWidget.isExpanded; floatingWidget.kickTimer(); } }
-            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Enter"); sequence: "Enter"; onActivated: { floatingWidget.isExpanded = !floatingWidget.isExpanded; floatingWidget.kickTimer(); } }
+            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Return") && focusTracker.activeFocus; sequence: "Return"; onActivated: { floatingWidget.isExpanded = !floatingWidget.isExpanded; floatingWidget.kickTimer(); } }
+            Shortcut { enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Enter") && focusTracker.activeFocus; sequence: "Enter"; onActivated: { floatingWidget.isExpanded = !floatingWidget.isExpanded; floatingWidget.kickTimer(); } }
 
             Shortcut {
-                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top") && !floatingWidget.childIntercepts("Left")
+                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Left") && focusTracker.activeFocus
                 sequence: "Left"
                 onActivated: {
                     let step = floatingWidget.activeEdge === "top" ? 1 : -1;
-                    floatingWidget.activeIndex = Math.max(0, Math.min(floatingWidget.tabCount - 1, floatingWidget.activeIndex + step));
+                    floatingWidget.activeIndex = (floatingWidget.activeIndex + step + floatingWidget.tabCount) % floatingWidget.tabCount;
                     floatingWidget.kickTimer();
                 }
             }
             Shortcut {
-                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top") && !floatingWidget.childIntercepts("Right")
+                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Right") && focusTracker.activeFocus
                 sequence: "Right"
                 onActivated: {
                     let step = floatingWidget.activeEdge === "top" ? -1 : 1;
-                    floatingWidget.activeIndex = Math.max(0, Math.min(floatingWidget.tabCount - 1, floatingWidget.activeIndex + step));
+                    floatingWidget.activeIndex = (floatingWidget.activeIndex + step + floatingWidget.tabCount) % floatingWidget.tabCount;
                     floatingWidget.kickTimer();
                 }
             }
             Shortcut {
-                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right") && !floatingWidget.childIntercepts("Up")
+                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Up") && focusTracker.activeFocus
                 sequence: "Up"
                 onActivated: {
                     let step = floatingWidget.activeEdge === "right" ? 1 : -1;
-                    floatingWidget.activeIndex = Math.max(0, Math.min(floatingWidget.tabCount - 1, floatingWidget.activeIndex + step));
+                    floatingWidget.activeIndex = (floatingWidget.activeIndex + step + floatingWidget.tabCount) % floatingWidget.tabCount;
                     floatingWidget.kickTimer();
                 }
             }
             Shortcut {
-                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right") && !floatingWidget.childIntercepts("Down")
+                enabled: floatingWidget.isSidebarVisible && !floatingWidget.hasInputFocus && !floatingWidget.childIntercepts("Down") && focusTracker.activeFocus
                 sequence: "Down"
                 onActivated: {
                     let step = floatingWidget.activeEdge === "right" ? -1 : 1;
-                    floatingWidget.activeIndex = Math.max(0, Math.min(floatingWidget.tabCount - 1, floatingWidget.activeIndex + step));
+                    floatingWidget.activeIndex = (floatingWidget.activeIndex + step + floatingWidget.tabCount) % floatingWidget.tabCount;
                     floatingWidget.kickTimer();
                 }
             }
@@ -583,16 +691,17 @@ Variants {
                 enabled: floatingWidget.isSidebarVisible && !floatingWidget.childIntercepts("Escape")
                 sequence: "Escape"
                 onActivated: {
-                    if (floatingWidget.hasInputFocus) {
+                    if (floatingWidget.hasInputFocus || !focusTracker.activeFocus) {
                         floatingWidget.unfocusAllInputs();
                         return;
                     }
                     if (floatingWidget.isExpanded) {
                         floatingWidget.isExpanded = false;
                         floatingWidget.kickTimer();
-                    } else if (!floatingWidget.isPinned) {
+                    } else if (floatingWidget.keyboardActive || !floatingWidget.isPinned) {
                         floatingWidget.isSidebarVisible = false;
                         floatingWidget.isPeekVisible = true;
+                        floatingWidget.isPinned = false;
                         peekHideTimer.restart();
                     }
                 }
@@ -616,6 +725,15 @@ Variants {
             function s(val) {
                 let res = Scaler.s(val);
                 return isNaN(res) ? val : res;
+            }
+
+            IpcHandler {
+                target: "quickactions-" + (floatingWidget.screen ? floatingWidget.screen.name : "default")
+                function state(): string {
+                    return JSON.stringify({visible: floatingWidget.isSidebarVisible, expanded: floatingWidget.isExpanded,
+                        index: floatingWidget.activeIndex, tool: floatingWidget.tabModules[floatingWidget.activeIndex],
+                        focusedControl: floatingWidget.focusedItem && floatingWidget.focusedItem !== focusTracker ? String(floatingWidget.focusedItem) : "", controls: floatingWidget.controls().length, inputFocus: floatingWidget.hasInputFocus});
+                }
             }
 
             property int activeIndex: 0
@@ -890,7 +1008,7 @@ Variants {
             property bool disableAnim: true
 
             property string activeEdge: barPosition === "left" ? "right" : "left"
-            property real currentPos: (activeEdge === "left" || activeEdge === "right") ? (floatingWidget.height / 2) : (floatingWidget.width / 2)
+            property real currentPos: (activeEdge === "left" || activeEdge === "right") ? (floatingWidget.screenHeight / 2) : (floatingWidget.screenWidth / 2)
 
             property real baseSidebarH: {
                 let count = floatingWidget.tabCount;
@@ -1320,12 +1438,12 @@ Variants {
                 y: floatingWidget.sidebarTargetY
 
                 Behavior on x {
-                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top"))
+                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible)
                     NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo }
                 }
 
                 Behavior on y {
-                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right"))
+                    enabled: !Motion.reduced && !GameMode.enabled && (!floatingWidget.disableAnim && floatingWidget.isSidebarVisible)
                     NumberAnimation { duration: Motion.morph; easing.type: Easing.OutExpo }
                 }
 
@@ -1448,7 +1566,7 @@ Variants {
                                 else if (wheel.angleDelta.y < 0) step = (floatingWidget.activeEdge === "right" || floatingWidget.activeEdge === "top") ? -1 : 1;
 
                                 if (step !== 0) {
-                                    floatingWidget.activeIndex = Math.max(0, Math.min(floatingWidget.tabCount - 1, floatingWidget.activeIndex + step));
+                                    floatingWidget.activeIndex = (floatingWidget.activeIndex + step + floatingWidget.tabCount) % floatingWidget.tabCount;
                                 }
                             }
                         }
@@ -1471,6 +1589,8 @@ Variants {
                             // Match the 4px inset inside the shared panel curve.
                             radius: Math.max(0, Math.min(floatingWidget.containerRadius - floatingWidget.s(4), Math.min(width, height) / 2))
                             color: blockGlass.active ? "transparent" : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.05)
+                            border.width: 0
+                            border.color: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.08)
                             clip: true
 
                             GlassFill {
@@ -1512,6 +1632,7 @@ Variants {
                             }
                         }
 
+
                         Repeater {
                             id: moduleRepeater
                             model: floatingWidget.tabModules
@@ -1519,7 +1640,7 @@ Variants {
                             delegate: Loader {
                                 id: contentLoader
                                 property bool retained: false
-                                active: retained || (floatingWidget.isExpanded && index === floatingWidget.activeIndex)
+                                active: retained || String(modelData).endsWith("/Timer.qml") || (floatingWidget.isExpanded && index === floatingWidget.activeIndex)
                                 z: 10
                                 anchors.fill: parent
                                 anchors.topMargin: floatingWidget.s(4)
@@ -1527,9 +1648,11 @@ Variants {
                                 anchors.leftMargin: floatingWidget.s(4)
                                 anchors.rightMargin: floatingWidget.s(4)
 
+                                readonly property bool isEager: modelData.indexOf("Timer") !== -1
+
                                 visible: index === floatingWidget.activeIndex && floatingWidget.expandProgress > 0.01
                                 source: modelData
-                                asynchronous: false
+                                asynchronous: !isEager
 
                                 property var scaleFunc: floatingWidget.s
                                 property var mochaColors: ThemeBackend
@@ -1718,6 +1841,10 @@ Variants {
                                             : (pinMouse.containsMouse
                                                 ? Qt.rgba(ThemeBackend.mauve.r, ThemeBackend.mauve.g, ThemeBackend.mauve.b, 0.25)
                                                 : "transparent"))
+                                    border.width: floatingWidget.s(2)
+                                    border.color: floatingWidget.isPinned
+                                        ? ThemeBackend.mauve
+                                        : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
 
                                     Behavior on color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }
                                     Behavior on border.color { enabled: !GameMode.enabled; ColorAnimation { duration: 200 } }

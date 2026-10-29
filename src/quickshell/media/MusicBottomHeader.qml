@@ -17,13 +17,14 @@ RowLayout {
     Switch {
         id: bottomSectionSwitch
         Layout.preferredHeight: root.s(26)
-        Layout.preferredWidth: root.s(224)
-        Layout.minimumWidth: root.s(168)
-        Layout.maximumWidth: root.s(224)
+        Layout.preferredWidth: root.s(300)
+        Layout.minimumWidth: root.s(230)
+        Layout.maximumWidth: root.s(300)
         implicitHeight: root.s(26)
-        implicitWidth: root.s(224)
+        implicitWidth: root.s(300)
         options: [
             typeof I18n !== "undefined" ? I18n.t("music.equalizer", "Equalizer") : "Equalizer",
+            "Spotify",
             typeof I18n !== "undefined" ? I18n.t("music.audio.title", "Audio") : "Audio",
             typeof I18n !== "undefined" ? I18n.t("music.lyrics", "Lyrics") : "Lyrics"
         ]
@@ -35,25 +36,25 @@ RowLayout {
         cornerRadius: ThemeBackend.borderRadius
         fontPixelSize: root.s(11.5)
         onCurrentIndexChanged: {
-            if (currentIndex !== 1 && root.audioTestRunning) {
+            if (root.active && !Motion.reduced && currentIndex !== root.spotifyTab) root.registerCava();
+            else root.unregisterCava();
+            if (currentIndex !== root.audioTab && root.audioTestRunning) {
                 root.toggleAudioTest();
             }
             root.updateLyricsSubscription();
-            if (currentIndex === 2) {
-                root.toEqAnim.stop();
-                root.toAudioAnim.stop();
+            root.toEqAnim.stop();
+            root.toSpotifyAnim.stop();
+            root.toAudioAnim.stop();
+            root.toLyricsAnim.stop();
+            root.restoreLastSavedEqualizer();
+            if (currentIndex === root.lyricsTab) {
                 root.toLyricsAnim.restart();
-                root.restoreLastSavedEqualizer();
-            } else if (currentIndex === 1) {
-                root.toEqAnim.stop();
-                root.toLyricsAnim.stop();
+            } else if (currentIndex === root.audioTab) {
                 root.toAudioAnim.restart();
                 root.playAudioIntro();
-                root.restoreLastSavedEqualizer();
+            } else if (currentIndex === root.spotifyTab) {
+                root.toSpotifyAnim.restart();
             } else {
-                root.toLyricsAnim.stop();
-                root.toAudioAnim.stop();
-                root.restoreLastSavedEqualizer();
                 root.toEqAnim.restart();
             }
         }
@@ -92,19 +93,20 @@ RowLayout {
 
     ClickButton {
         id: actionBtn
+        visible: bottomSectionSwitch.currentIndex !== root.spotifyTab
         Layout.preferredHeight: root.s(26)
         Layout.preferredWidth: root.actionBtnCurrentWidth
         implicitWidth: root.actionBtnCurrentWidth
         cornerRadius: ThemeBackend.borderRadius
         horizontalPadding: root.s(12)
-        buttonIcon: bottomSectionSwitch.currentIndex === 2
+        buttonIcon: bottomSectionSwitch.currentIndex === root.lyricsTab
             ? "󰈔"
-            : (bottomSectionSwitch.currentIndex === 1 ? "󰑐" : "")
+            : (bottomSectionSwitch.currentIndex === root.audioTab ? "󰑐" : "")
         buttonText: {
-            if (bottomSectionSwitch.currentIndex === 2) {
+            if (bottomSectionSwitch.currentIndex === root.lyricsTab) {
                 return typeof I18n !== "undefined" ? I18n.t("music.select_local_file", "Select file") : "Select file";
             }
-            if (bottomSectionSwitch.currentIndex === 1) {
+            if (bottomSectionSwitch.currentIndex === root.audioTab) {
                 return typeof I18n !== "undefined" ? I18n.t("music.audio.reset", "Reset") : "Reset";
             }
             return root.eqData && root.eqData.pending ? I18n.t("music.eq.apply") : I18n.t("music.eq.saved");
@@ -112,36 +114,36 @@ RowLayout {
         textFontSize: root.s(11.5)
         iconFontSize: root.s(13)
         accentColor: {
-            if (bottomSectionSwitch.currentIndex !== 0) {
+            if (bottomSectionSwitch.currentIndex !== root.equalizerTab) {
                 return ThemeBackend.surface0 || "#313244";
             }
             return root.eqData && root.eqData.pending ? (ThemeBackend.mauve || "#cba6f7") : (ThemeBackend.surface0 || "#313244");
         }
         bgOpacity: ThemeBackend.elementOpacity
         textColor: {
-            if (bottomSectionSwitch.currentIndex !== 0) {
+            if (bottomSectionSwitch.currentIndex !== root.equalizerTab) {
                 return ThemeBackend.text || "#cdd6f4";
             }
             return root.eqData && root.eqData.pending ? (ThemeBackend.base || "#1e1e2e") : (ThemeBackend.text || "#cdd6f4");
         }
-        enabled: bottomSectionSwitch.currentIndex === 2
+        enabled: bottomSectionSwitch.currentIndex === root.lyricsTab
             ? (root.hasTargetPlayer && !Lyrics.loading)
-            : (bottomSectionSwitch.currentIndex === 1
+            : (bottomSectionSwitch.currentIndex === root.audioTab
                 ? (Math.abs(root.balanceSlider.value) >= 0.005 || root.eqData.mono === true || root.eqData.swap === true || String(root.eqData.dynamics || "off") !== "off")
                 : true)
-        opacity: bottomSectionSwitch.currentIndex === 2
+        opacity: bottomSectionSwitch.currentIndex === root.lyricsTab
             ? (root.hasTargetPlayer && !Lyrics.loading ? 1.0 : 0.45)
-            : (bottomSectionSwitch.currentIndex === 1
+            : (bottomSectionSwitch.currentIndex === root.audioTab
                 ? (enabled ? 1.0 : 0.45)
                 : 1.0)
-        Behavior on opacity { NumberAnimation { duration: 250 } }
-        Behavior on accentColor { ColorAnimation { duration: 250 } }
-        Behavior on textColor { ColorAnimation { duration: 250 } }
+        Behavior on opacity { NumberAnimation { duration: 300 } }
+        Behavior on accentColor { ColorAnimation { duration: 320 } }
+        Behavior on textColor { ColorAnimation { duration: 320 } }
         onClicked: {
-            if (bottomSectionSwitch.currentIndex === 2) {
+            if (bottomSectionSwitch.currentIndex === root.lyricsTab) {
                 root.lyricsPickerPopup.targetScreen = (root.Window && root.Window.window) ? root.Window.window.screen : null;
                 root.lyricsPickerPopup.openPicker();
-            } else if (bottomSectionSwitch.currentIndex === 1) {
+            } else if (bottomSectionSwitch.currentIndex === root.audioTab) {
                 root.resetAudio();
             } else if (root.eqData && root.eqData.pending) {
                 var temp = Object.assign({}, root.eqData);

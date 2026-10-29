@@ -8,3 +8,12 @@ IslandPreview 1.0 IslandPreview.qml
 
 WeatherSky 1.0 WeatherSky.qml
 IslandOsd 1.0 IslandOsd.qml
+
+MusicAura 1.0 MusicAura.qml
+
+ArtworkBackdrop 1.0 ArtworkBackdrop.qml
+BatteryPanel 1.0 BatteryPanel.qml
+ControlCenterPanel 1.0 ControlCenterPanel.qml
+ControlGlassCard 1.0 ControlGlassCard.qml
+ControlRoundButton 1.0 ControlRoundButton.qml
+ControlCenterWindow 1.0 ControlCenterWindow.qml

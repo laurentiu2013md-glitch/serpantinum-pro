@@ -104,6 +104,8 @@ PanelWindow {
                             Layout.preferredHeight: Scaler.s(80)
                             radius: filePicker.crLarge
                             color: ThemeBackend.surface1
+                            border.width: 1
+                            border.color: filePicker.selectedFilePath !== "" ? ThemeBackend.mauve : ThemeBackend.surface1
 
                             Text {
                                 anchors.centerIn: parent

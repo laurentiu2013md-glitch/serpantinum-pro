@@ -157,6 +157,8 @@ Item {
         anchors.fill: parent
         radius: root.cornerRadius
         color: "transparent"
+        border.color: Qt.rgba(1, 1, 1, 0.06)
+        border.width: 1
     }
 
     Rectangle {
@@ -164,6 +166,8 @@ Item {
         anchors.margins: -3
         radius: root.cornerRadius + 3
         color: "transparent"
+        border.width: 2
+        border.color: Qt.alpha(ThemeBackend.mauve, 0.8)
         visible: root.activeFocus
     }
 

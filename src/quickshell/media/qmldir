@@ -10,3 +10,4 @@ MusicPlayerState 1.0 MusicPlayerState.qml
 MusicPopup 1.0 MusicPopup.qml
 MusicPresetButton 1.0 MusicPresetButton.qml
 MusicTrackControls 1.0 MusicTrackControls.qml
+MusicSpotifyView 1.0 MusicSpotifyView.qml

@@ -61,7 +61,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.leftMargin: popup.s(10)
                 horizontalAlignment: I18n.textAlignment
-                text: I18n.t("guide.settings", "Settings")
+                text: "Serpantinum Pro"
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: popup.s(15)
                 font.bold: true
@@ -117,7 +117,7 @@ Rectangle {
 
                 readonly property bool isMoving: Math.abs(y - targetY) > 0.5 || Math.abs(subMix - (isSub ? 1 : 0)) > 0.01
                 property real lift: (activeGlass.active && isMoving) ? 1.0 : 0.0
-                Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on lift { NumberAnimation { duration: 80; easing.type: Easing.OutCubic } }
                 scale: 1.0 + 0.04 * lift
                 opacity: popup.getTabOpacity(sidebar.curTab)
                 transform: Translate { x: (I18n.rtl ? popup.s(24) : popup.s(-24)) * (1.0 - popup.getTabProgress(sidebar.curTab)) }
@@ -127,7 +127,7 @@ Rectangle {
                 readonly property real baseY: activeDelegate ? activeDelegate.y + activeDelegate.sepH : 0
                 readonly property real subIndent: popup.compact ? 0 : popup.s(26)
                 property real subMix: isSub ? 1.0 : 0.0
-                Behavior on subMix { enabled: activeHighlight.ready; NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                Behavior on subMix { enabled: activeHighlight.ready; NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
                 readonly property real targetX: subIndent * subMix
                 readonly property real targetY: isSub ? baseY + sidebar.headerH + popup.s(4) + sidebar.curSub * (sidebar.subH + sidebar.gap) : baseY
                 readonly property real targetW: tabsCol.width - subIndent * subMix
@@ -138,8 +138,8 @@ Rectangle {
                 width: targetW
                 height: targetH
 
-                Behavior on y { enabled: activeHighlight.ready; NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-                Behavior on height { enabled: activeHighlight.ready; NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                Behavior on y { enabled: activeHighlight.ready; NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
+                Behavior on height { enabled: activeHighlight.ready; NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
             }
 
             ColumnLayout {
@@ -163,7 +163,7 @@ Rectangle {
                         readonly property real fullSubtabsHeight: hasSubtabs ? (modelData.subtabs.length * sidebar.subH + (modelData.subtabs.length - 1) * sidebar.gap + popup.s(8)) : 0
                         readonly property real sepH: modelData.separatorBefore ? popup.s(14) + 1 : 0
                         property real expandProgress: isExpanded ? 1.0 : 0.0
-                        Behavior on expandProgress { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                        Behavior on expandProgress { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
 
                         Layout.fillWidth: true
                         spacing: 0
@@ -223,7 +223,7 @@ Rectangle {
 
                                 Text {
                                     visible: !popup.compact
-                                    text: I18n.t("guide.tabs." + (tabDelegate.modelData.key || tabDelegate.modelData.id).toLowerCase(), tabDelegate.modelData.name || tabDelegate.modelData.id)
+                                    text: tabDelegate.modelData.name || tabDelegate.modelData.id
                                     font.family: ThemeBackend.fontFamily
                                     font.weight: header.active ? Font.Bold : Font.Medium
                                     font.pixelSize: popup.s(13)
@@ -373,7 +373,7 @@ Rectangle {
 
                                                 Text {
                                                     visible: !popup.compact
-                                                    text: I18n.t("guide.tabs." + (sub.modelData.key || sub.modelData.id).toLowerCase(), sub.modelData.name || sub.modelData.id)
+                                                    text: sub.modelData.name || sub.modelData.id
                                                     font.family: ThemeBackend.fontFamily
                                                     font.weight: sub.isCurrent ? Font.Bold : Font.Medium
                                                     font.pixelSize: popup.s(12)

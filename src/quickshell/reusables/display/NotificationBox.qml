@@ -159,6 +159,8 @@ Item {
         anchors.fill: parent
         radius: root.cornerRadius
         color: "transparent"
+        border.color: root.borderColor
+        border.width: root.borderWidth
         visible: root.borderWidth > 0
     }
 
@@ -297,10 +299,10 @@ Item {
 
                 add: Transition {
                     NumberAnimation { property: "scale"; from: 0.96; to: 1.0; duration: 250; easing.type: Easing.OutQuint }
-                    NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 200; easing.type: Easing.OutQuint }
                 }
                 remove: Transition {
-                    NumberAnimation { property: "opacity"; to: 0.0; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; to: 0.0; duration: 200; easing.type: Easing.OutQuint }
                 }
 
                 delegate: Item {
@@ -378,7 +380,7 @@ Item {
                         target: groupWrapper
                         property: "dragX"
                         to: notifList.width * 1.2
-                        duration: 250
+                        duration: 220
                         easing.type: Easing.OutQuad
                     }
                     Timer {
@@ -403,7 +405,7 @@ Item {
                         property: "dragX"
                         from: groupWrapper.dragX
                         to: 0
-                        duration: 250
+                        duration: 200
                         easing.type: Easing.OutCubic
                     }
 
@@ -413,7 +415,7 @@ Item {
                         property: "dragY"
                         from: groupWrapper.dragY
                         to: 0
-                        duration: 250
+                        duration: 200
                         easing.type: Easing.OutCubic
                     }
 
@@ -423,7 +425,7 @@ Item {
                         property: "dragX"
                         from: groupWrapper.dragX
                         to: 0
-                        duration: 250
+                        duration: 200
                         easing.type: Easing.OutQuad
                         onFinished: NotificationManager.dismissGroup(groupKey)
                     }
@@ -568,7 +570,7 @@ Item {
                                         tintColor: parent.baseColor
                                         tintAmount: 0.3
                                         press: groupHeaderMa.pressed ? 0.8 : (groupHeaderMa.containsMouse ? 0.2 : 0)
-                                        Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                        Behavior on press { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                                     }
 
                                     MouseArea {

@@ -13,6 +13,25 @@ SettingsBlob {
 
     SettingsRow {
         rootObj: section.tab.rootObj
+        settingId: "appearance_mode"
+        icon: "󰔎"
+        title: "Appearance mode"
+        description: "Light, neutral 50% gray, or dark surfaces."
+        searchKeywords: "light gray grey dark appearance mode"
+        Switch {
+            Layout.preferredWidth: rootObj.s(230)
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            options: ["Light", "Gray", "Dark"]
+            currentIndex: Math.max(0, ["light", "gray", "dark"].indexOf(Config.getSetting("theme",{}).mode || "dark"))
+            enabled: !Matugen.isRunning
+            accentColor: ThemeBackend.mauve; baseColor: ThemeBackend.surface1
+            textColor: ThemeBackend.text; activeTextColor: ThemeBackend.crust
+            onValueChanged: (index,value)=>Matugen.setMode(["light", "gray", "dark"][index])
+        }
+    }
+
+    SettingsRow {
+        rootObj: section.tab.rootObj
         settingId: "font"
         icon: "󰛖"
         title: I18n.t("guide.theme.font.title")
@@ -125,7 +144,6 @@ SettingsBlob {
     SettingsRow {
         rootObj: section.tab.rootObj
         settingId: "element_opacity"
-        visible: !(section.tab.currentBlurBackground && section.tab.currentBlurStyle === "liquid")
         icon: "󰃟"
         title: I18n.t("guide.theme.element_opacity.title", "Element opacity")
         description: I18n.t("guide.theme.element_opacity.desc", "Opacity of the bar, dock, widgets and every other shell element")
@@ -166,8 +184,8 @@ SettingsBlob {
         rootObj: section.tab.rootObj
         settingId: "blur_background"
         icon: "󰂵"
-        title: I18n.t("guide.theme.blur_background.title", "Add a blurred wallpaper background")
-        description: I18n.t("guide.theme.blur_background.desc", "Blur the wallpaper behind every element that uses transparency")
+        title: "Background blur"
+        description: "Blur the desktop behind translucent surfaces. Liquid Glass adds live refraction and edge highlights. Disabled in Game Mode."
         searchKeywords: "blur blurred wallpaper background frosted glass liquid glass apple transparency opacity"
 
         Switch {

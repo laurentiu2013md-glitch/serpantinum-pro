@@ -18,7 +18,7 @@ Item {
 
     Behavior on opacity {
         enabled: dockWindow.initialized && !dockWindow.positionChanging
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: 260; easing.type: Easing.OutCubic }
     }
     Behavior on scale {
         enabled: dockWindow.initialized && !dockWindow.positionChanging

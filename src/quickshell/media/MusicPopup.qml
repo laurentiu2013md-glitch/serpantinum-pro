@@ -12,6 +12,14 @@ MusicEqualizerState {
     property bool embedded: false
     focus: !embedded
 
+    readonly property int equalizerTab: 0
+    readonly property int spotifyTab: 1
+    readonly property int audioTab: 2
+    readonly property int lyricsTab: 3
+    readonly property int musicTabCount: 4
+    readonly property var spotifyClient: spotifyView.player
+    readonly property var spotifyBrowser: spotifyView
+
     property alias maskRectOuter: borderLayer.maskRectOuter
     property alias chargeAnim: borderLayer.chargeAnim
     property alias bottomSectionSwitch: bottomHeader.bottomSectionSwitch
@@ -19,6 +27,7 @@ MusicEqualizerState {
     property alias toAudioAnim: toAudioAnim
     property alias toEqAnim: toEqAnim
     property alias toLyricsAnim: toLyricsAnim
+    property alias toSpotifyAnim: toSpotifyAnim
     property alias lyricsPickerPopup: lyricsPickerPopup
 
     property var exitCallback: null
@@ -51,13 +60,28 @@ MusicEqualizerState {
         maskRectOuter.drawProgress = 0;
         introAnim.restart();
         chargeAnim.restart();
-        if (bottomSectionSwitch.currentIndex === 1) playAudioIntro();
+        if (bottomSectionSwitch.currentIndex === audioTab) playAudioIntro();
     }
 
     property bool lyricsSubscribed: false
 
+    function textEntryFocused() {
+        let item = popupRoot.Window.window ? popupRoot.Window.window.activeFocusItem : null;
+        for (let depth = 0; item && depth < 12; depth++, item = item.parent) {
+            if (typeof item.insert === "function" && item.cursorPosition !== undefined) return true;
+        }
+        return false;
+    }
+
+    Shortcut {
+        sequence: "Space"
+        context: Qt.WindowShortcut
+        enabled: popupRoot.active && popupRoot.spotifyClient !== null && !popupRoot.textEntryFocused()
+        onActivated: if (popupRoot.spotifyClient && popupRoot.spotifyClient.canTogglePlaying) popupRoot.spotifyClient.togglePlaying()
+    }
+
     function updateLyricsSubscription() {
-        let shouldSub = popupRoot.active && (bottomSectionSwitch.currentIndex === 2);
+        let shouldSub = popupRoot.active && (bottomSectionSwitch.currentIndex === lyricsTab);
         if (shouldSub && !lyricsSubscribed) {
             lyricsSubscribed = true;
             Lyrics.customPlayer = popupRoot.targetPlayer;
@@ -73,18 +97,18 @@ MusicEqualizerState {
 
     Shortcut {
         sequence: "Tab"
-        enabled: popupRoot.active
+        enabled: popupRoot.active && !popupRoot.embedded
         onActivated: {
-            bottomSectionSwitch.currentIndex = (bottomSectionSwitch.currentIndex + 1) % 3;
+            bottomSectionSwitch.currentIndex = (bottomSectionSwitch.currentIndex + 1) % popupRoot.musicTabCount;
             popupRoot.updateLyricsSubscription();
         }
     }
 
     Shortcut {
         sequence: "Backtab"
-        enabled: popupRoot.active
+        enabled: popupRoot.active && !popupRoot.embedded
         onActivated: {
-            bottomSectionSwitch.currentIndex = (bottomSectionSwitch.currentIndex + 2) % 3;
+            bottomSectionSwitch.currentIndex = (bottomSectionSwitch.currentIndex + popupRoot.musicTabCount - 1) % popupRoot.musicTabCount;
             popupRoot.updateLyricsSubscription();
         }
     }
@@ -94,7 +118,7 @@ MusicEqualizerState {
         if (active) {
             if (!embedded) forceActiveFocus();
             resetAndPlayIntro();
-            if (!Motion.reduced) registerCava();
+            if (!Motion.reduced && bottomSectionSwitch.currentIndex !== spotifyTab) registerCava();
             triggerLocalArtFetch();
         } else {
             exitAnim.stop();
@@ -115,7 +139,7 @@ MusicEqualizerState {
         if (active) {
             if (!embedded) forceActiveFocus();
             resetAndPlayIntro();
-            if (!Motion.reduced) registerCava();
+            if (!Motion.reduced && bottomSectionSwitch.currentIndex !== spotifyTab) registerCava();
             triggerLocalArtFetch();
             updateLyricsSubscription();
         }
@@ -132,7 +156,7 @@ MusicEqualizerState {
     Connections {
         target: Motion
         function onReducedChanged() {
-            if (!popupRoot.active || Motion.reduced) popupRoot.unregisterCava();
+            if (!popupRoot.active || Motion.reduced || bottomSectionSwitch.currentIndex === popupRoot.spotifyTab) popupRoot.unregisterCava();
             else popupRoot.registerCava();
         }
     }
@@ -185,6 +209,12 @@ MusicEqualizerState {
     readonly property real actionBtnCurrentWidth: actionBtnMorph <= 1.0
         ? eqActionBtnWidth + (audioActionBtnWidth - eqActionBtnWidth) * actionBtnMorph
         : audioActionBtnWidth + (lyricsActionBtnWidth - audioActionBtnWidth) * (actionBtnMorph - 1.0)
+
+    ParallelAnimation {
+        id: toSpotifyAnim
+        NumberAnimation { target: popupRoot; property: "presetSlideProgress"; to: 1.0; duration: Motion.duration(400); easing.type: Easing.OutCubic }
+        NumberAnimation { target: popupRoot; property: "audioHeaderProgress"; to: 0.0; duration: Motion.duration(320); easing.type: Easing.OutCubic }
+    }
 
     ParallelAnimation {
         id: toLyricsAnim
@@ -446,6 +476,7 @@ MusicEqualizerState {
                 spacing: 0
 
                 RowLayout {
+                    visible: bottomSectionSwitch.currentIndex !== popupRoot.spotifyTab
                     Layout.fillWidth: true
                     Layout.preferredHeight: popupRoot.s(224)
                     spacing: popupRoot.s(16)
@@ -460,6 +491,7 @@ MusicEqualizerState {
                 }
 
                 Rectangle {
+                    visible: bottomSectionSwitch.currentIndex !== popupRoot.spotifyTab
                     Layout.fillWidth: true
                     Layout.preferredHeight: popupRoot.s(2)
                     Layout.topMargin: popupRoot.s(16)
@@ -473,6 +505,7 @@ MusicEqualizerState {
 
                 ColumnLayout {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     spacing: popupRoot.s(12)
 
                     MusicBottomHeader {
@@ -483,9 +516,15 @@ MusicEqualizerState {
                     Item {
                         id: bottomViewsContainer
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         Layout.preferredHeight: popupRoot.s(235)
 
                         MusicEqView {
+                            root: popupRoot
+                        }
+
+                        MusicSpotifyView {
+                            id: spotifyView
                             root: popupRoot
                         }
 

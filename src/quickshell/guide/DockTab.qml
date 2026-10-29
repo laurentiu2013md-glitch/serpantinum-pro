@@ -236,6 +236,8 @@ GuideTab {
                         tintColor: ThemeBackend.surface0
                         tintAmount: 0.25
                     }
+                    border.color: Qt.alpha(ThemeBackend.surface1, 0.4)
+                    border.width: 1
 
                     property string settingId: "dock_apps"
                     property string title: I18n.t("guide.dock.apps.title", "Dock Applications")
@@ -453,6 +455,8 @@ GuideTab {
                                         tintColor: Qt.alpha(ThemeBackend.surface1, 0.3)
                                         tintAmount: 0.25
                                     }
+                                    border.color: Qt.alpha(ThemeBackend.surface2, 0.35)
+                                    border.width: ThemeBackend.liquidGlass ? 0 : 1
 
                                     RowLayout {
                                         anchors.fill: parent

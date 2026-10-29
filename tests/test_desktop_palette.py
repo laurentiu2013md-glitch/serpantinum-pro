@@ -23,13 +23,18 @@ class DesktopPaletteTests(unittest.TestCase):
             state = home / '.local/state/serpantinum/qs_matugen_colors.json'
             state.parent.mkdir(parents=True)
             with patch.object(palette, 'HOME', home), patch.object(palette.subprocess, 'run'):
-                for background, foreground in [('#202020', '#ffffff'), ('#eeeeee', '#101010')]:
+                for background, foreground, mode in [('#202020', '#ffffff', 'dark'), ('#eeeeee', '#101010', 'light'), ('#202020', '#101010', 'gray')]:
+                    settings = home / '.config/serpantinum/settings.json'
+                    settings.parent.mkdir(parents=True, exist_ok=True)
+                    settings.write_text(json.dumps({'theme': {'mode': mode}}))
                     state.write_text(json.dumps({'base': background, 'mauve': '#725188'}))
                     palette.main()
                     palette.main()
                     css = (home / '.config/gtk-4.0/nautilus-colors.css').read_text()
                     self.assertIn('alpha(#aabbcc, 0.45)', css)
                     self.assertIn('nautilus_fg ' + foreground, css)
+                    if mode == 'gray':
+                        self.assertIn('@define-color window_bg_color #808080;', (home / '.config/gtk-4.0/coloros-colors.css').read_text())
                     style = (home / '.config/gtk-4.0/coloros-nautilus.css').read_text()
                     self.assertIn('window.nautilus-window', style)
                     self.assertIn('backdrop-filter: blur(16px)', style)

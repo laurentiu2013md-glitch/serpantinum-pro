@@ -560,6 +560,8 @@ Item {
                 height: s(44)
                 radius: ThemeBackend.borderRadius
                 color: root.panelBgColor
+                border.width: 1
+                border.color: root.panelBorderColor
 
                 WallpaperBlur {
                     z: -1
@@ -666,6 +668,8 @@ Item {
             height: s(64)
             radius: ThemeBackend.borderRadius
             color: root.popupBgColor
+            border.width: 1
+            border.color: root.panelBorderColor
 
             WallpaperBlur {
                 z: -1
@@ -679,7 +683,7 @@ Item {
             
             visible: root.showSizeConfig
             opacity: visible ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutExpo } }
 
             RowLayout {
                 anchors.fill: parent
@@ -736,6 +740,8 @@ Item {
                     width: s(40)
                     height: s(28)
                     color: ThemeBackend.surface0
+                    border.width: 1
+                    border.color: ThemeBackend.surface1
                     radius: ThemeBackend.borderRadius
                     
                     TextInput {
@@ -787,6 +793,8 @@ Item {
                         height: width
                         radius: width / 2
                         color: root.currentTool === "eraser" ? "transparent" : root.currentColor
+                        border.width: 1
+                        border.color: Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.2)
                     }
                 }
             }
@@ -799,6 +807,8 @@ Item {
             height: s(400)
             radius: ThemeBackend.borderRadius
             color: root.popupBgColor
+            border.width: 1
+            border.color: root.panelBorderColor
 
             WallpaperBlur {
                 z: -1
@@ -812,7 +822,7 @@ Item {
             
             visible: root.showColorPicker
             opacity: visible ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
+            Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutExpo } }
 
             Column {
                 anchors.centerIn: parent
@@ -827,10 +837,12 @@ Item {
                         radius: ThemeBackend.borderRadius
                         color: Qt.hsva(root.activeColorSlot === 0 ? root.primaryHSV.h : root.secondaryHSV.h, 1, 1, 1)
                         clip: true
+                        border.width: 0
 
                         Rectangle {
                             anchors.fill: parent
                             radius: parent.radius
+                            border.width: 0
                             gradient: Gradient {
                                 orientation: Gradient.Horizontal
                                 GradientStop { position: 0.0; color: "white" }
@@ -840,6 +852,7 @@ Item {
                         Rectangle {
                             anchors.fill: parent
                             radius: parent.radius
+                            border.width: 0
                             gradient: Gradient {
                                 orientation: Gradient.Vertical
                                 GradientStop { position: 0.0; color: "transparent" }
@@ -957,6 +970,8 @@ Item {
                             radius: width / 2
                             color: modelData
                             
+                            border.width: root.currentColor.toString() === color.toString() ? s(2) : 0
+                            border.color: root.baseTextColor
                             
                             MouseArea {
                                 anchors.fill: parent
@@ -989,6 +1004,8 @@ Item {
                         width: s(120)
                         height: s(28)
                         color: ThemeBackend.surface0
+                        border.width: 1
+                        border.color: ThemeBackend.surface1
                         radius: ThemeBackend.borderRadius
                         
                         TextInput {
@@ -1024,6 +1041,8 @@ Item {
             radius: ThemeBackend.borderRadius
             
             color: root.panelBgColor
+            border.width: 1
+            border.color: root.panelBorderColor
 
             WallpaperBlur {
                 z: -1
@@ -1165,6 +1184,8 @@ Item {
                             height: s(26)
                             radius: width / 2
                             color: root.primaryColor
+                            border.width: root.activeColorSlot === 0 ? s(2) : 1
+                            border.color: root.activeColorSlot === 0 ? root.baseTextColor : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.4)
                             anchors.verticalCenter: parent.verticalCenter
 
                             MouseArea {
@@ -1202,6 +1223,8 @@ Item {
                             height: s(26)
                             radius: width / 2
                             color: root.secondaryColor
+                            border.width: root.activeColorSlot === 1 ? s(2) : 1
+                            border.color: root.activeColorSlot === 1 ? root.baseTextColor : Qt.rgba(root.baseTextColor.r, root.baseTextColor.g, root.baseTextColor.b, 0.4)
                             anchors.verticalCenter: parent.verticalCenter
 
                             MouseArea {

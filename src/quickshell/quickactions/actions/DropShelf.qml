@@ -46,6 +46,13 @@ Item {
     // The card is inset 4px from the floating panel; keep its curve concentric.
     function radius() { return Math.max(0, s(ThemeBackend.borderRadius) - s(4)); }
 
+    property real landingGlow: 0
+    NumberAnimation { id: shelfPulse; target: root; property: "landingGlow"; from: .6; to: 0; duration: 800; easing.type: Easing.OutCubic }
+    Connections {
+        target: DropShelfStore
+        function onEntriesAdded(uris) { if (root.visible && !Motion.reduced && Config.getSetting("coloros", {}).shelfLanding !== false) shelfPulse.restart(); }
+    }
+    Connections { target: Motion; function onReducedChanged() { if (Motion.reduced) { shelfPulse.stop(); root.landingGlow = 0; } } }
     Item {
         id: rotatedRoot
         anchors.fill: parent
@@ -75,7 +82,8 @@ Item {
                     anchors.margins: root.s(5)
                     radius: Math.max(0, root.radius() - root.s(2))
                     color: dropArea.containsDrag ? alpha(accentColor(), 0.10) : "transparent"
-                    border.width: dropArea.containsDrag ? root.s(2) : 0
+                    opacity: dropArea.containsDrag ? 1 : root.landingGlow
+                    border.width: dropArea.containsDrag || root.landingGlow > 0 ? root.s(2) : 0
                     border.color: accentColor()
                 }
 
@@ -196,7 +204,7 @@ Item {
                             }
                             Text {
                                 width: parent.width
-                                text: dropArea.containsDrag ? "Release to add" : "Drop files, images, or links here"
+                                text: dropArea.containsDrag ? "Release to add" : "Empty"
                                 horizontalAlignment: Text.AlignHCenter
                                 wrapMode: Text.WordWrap
                                 font.family: ThemeBackend.fontFamily
@@ -205,15 +213,7 @@ Item {
                                 font.bold: true
                                 color: ThemeBackend.text
                             }
-                            Text {
-                                width: parent.width
-                                text: "Files stay where they are. Images are saved privately. Links are stored and can be opened or dragged out."
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                font.family: ThemeBackend.fontFamily
-                                font.pixelSize: root.s(9)
-                                color: mutedColor()
-                            }
+
                         }
 
                         GridView {
@@ -230,6 +230,12 @@ Item {
                                 id: tile
                                 required property var modelData
                                 required property int index
+                                activeFocusOnTab: true
+                                Keys.onPressed: event => {
+                                    if (event.key===Qt.Key_Return || event.key===Qt.Key_Enter) { DropShelfStore.openEntry(tile.uri); event.accepted=true; }
+                                    else if (event.key===Qt.Key_Delete) { root.removeAt(tile.index); event.accepted=true; }
+                                    else if (event.key===Qt.Key_C && (event.modifiers & Qt.ControlModifier)) { DropShelfStore.copyEntry(tile.uri); event.accepted=true; }
+                                }
 
                                 width: shelfGrid.cellWidth
                                 height: shelfGrid.cellHeight
@@ -238,10 +244,29 @@ Item {
                                 readonly property string name: String(modelData.name || "File")
                                 readonly property bool linkItem: String(modelData.kind || "") === "link" || Model.isWebUrl(uri)
                                 readonly property bool imageFile: !linkItem && Model.isImage(name)
+                                readonly property bool richPreviewEnabled: Config.getSetting("coloros", {}).shelfThumbnails !== false
+                                onRichPreviewEnabledChanged: if (richPreviewEnabled) ShelfThumbnails.request(uri)
+                                readonly property string richPreview: richPreviewEnabled ? (ShelfThumbnails.paths[uri] || "") : ""
+                                Timer { interval: 0; running: true; onTriggered: if (Config.getSetting("coloros", {}).shelfThumbnails !== false) ShelfThumbnails.request(tile.uri) }
                                 property var grabResult: null
+                                property real landingScale: 1
+                                property real landingY: 0
+                                function land() {
+                                    if (root.visible && !Motion.reduced && Config.getSetting("coloros", {}).shelfLanding !== false && DropShelfStore.lastAddedUris.indexOf(uri) !== -1 && Date.now() - DropShelfStore.lastAddedAt < 1500) landing.restart();
+                                }
+                                Timer { interval: 0; running: true; onTriggered: tile.land() }
+                                Connections { target: DropShelfStore; function onEntriesAdded(uris) { if (uris.indexOf(tile.uri) !== -1) tile.land(); } }
+                                Connections { target: Motion; function onReducedChanged() { if (Motion.reduced) { landing.stop(); tile.landingScale = 1; tile.landingY = 0; } } }
+                                ParallelAnimation {
+                                    id: landing
+                                    NumberAnimation { target: tile; property: "landingScale"; from: .86; to: 1; duration: 550; easing.type: Easing.OutBack; easing.overshoot: 1.5 }
+                                    NumberAnimation { target: tile; property: "landingY"; from: 12; to: 0; duration: 600; easing.type: Easing.OutBounce }
+                                }
 
                                 Rectangle {
                                     id: tileSurface
+                                    scale: tile.Drag.active ? 1 : tile.landingScale
+                                    transform: Translate { y: tile.Drag.active ? 0 : tile.landingY }
                                     anchors.fill: parent
                                     anchors.margins: root.s(5)
                                     radius: Math.max(0, root.radius() - root.s(1))
@@ -256,11 +281,11 @@ Item {
                                         anchors.topMargin: root.s(9)
                                         width: root.s(70)
                                         height: root.s(70)
-                                        source: tile.imageFile ? tile.uri : ""
-                                        visible: tile.imageFile && status === Image.Ready
+                                        source: tile.richPreview || (tile.imageFile ? tile.uri : "")
+                                        visible: source.toString() !== "" && status === Image.Ready
                                         asynchronous: true
                                         cache: true
-                                        fillMode: Image.PreserveAspectCrop
+                                        fillMode: tile.imageFile ? Image.PreserveAspectCrop : Image.PreserveAspectFit
                                         sourceSize: Qt.size(width * 2, height * 2)
                                     }
 
@@ -407,8 +432,7 @@ Item {
                                     }
 
                                     onDoubleClicked: {
-                                        if (tile.linkItem)
-                                            Quickshell.execDetached(["xdg-open", tile.uri]);
+                                        DropShelfStore.openEntry(tile.uri);
                                     }
                                 }
                             }

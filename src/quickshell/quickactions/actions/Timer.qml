@@ -211,12 +211,46 @@ Item {
     }
 
     Component.onCompleted: {
-        stateInitProc.running = true;
+        if (!TimerState.owner) { TimerState.owner = root; stateInitProc.running = true; }
+    }
+    Component.onDestruction: if (TimerState.owner === root) TimerState.owner = null
+    Connections {
+        target: TimerState
+        function onStartFocusRequested(minutes) {
+            if (TimerState.owner !== root || !root.stateLoaded) return;
+            stateCache.activeMode = 2;
+            stateCache.pomoState = 0;
+            stateCache.pomoWorkLimit = Math.max(1, Math.min(180, minutes));
+            stateCache.pomoRemainingMs = stateCache.pomoWorkLimit * 60000;
+            stateCache.pomoTargetEpoch = Date.now() + stateCache.pomoRemainingMs;
+            root.saveFullState(); root.updateExportedState();
+        }
+        function onToggleFocusRequested() {
+            if (TimerState.owner !== root || !root.stateLoaded) return;
+            stateCache.activeMode = 2;
+            if (stateCache.pomoTargetEpoch > 0) {
+                stateCache.pomoRemainingMs = Math.max(0, stateCache.pomoTargetEpoch - Date.now());
+                stateCache.pomoTargetEpoch = 0;
+            } else stateCache.pomoTargetEpoch = Date.now() + stateCache.pomoRemainingMs;
+            root.saveFullState(); root.updateExportedState();
+        }
+        function onResetFocusRequested() {
+            if (TimerState.owner !== root || !root.stateLoaded) return;
+            stateCache.pomoTargetEpoch = 0;
+            stateCache.pomoState = 0;
+            stateCache.pomoRemainingMs = stateCache.pomoWorkLimit * 60000;
+            root.saveFullState(); root.updateExportedState();
+        }
     }
 
     property string exportedStateKey: ""
 
     function updateExportedState() {
+        if (TimerState.owner !== root) return;
+        TimerState.focusRunning = stateCache.pomoTargetEpoch > 0;
+        TimerState.focusRemaining = Math.max(0, Math.round(stateCache.pomoRemainingMs));
+        TimerState.focusPhase = stateCache.pomoState === 0 ? "Focus" : stateCache.pomoState === 1 ? "Short break" : "Long break";
+        TimerState.focusActive = TimerState.focusRunning || stateCache.pomoState !== 0 || stateCache.pomoRemainingMs < stateCache.pomoWorkLimit * 60000;
         let list = [];
 
         if (stateCache.timerTargetEpoch > 0) {
@@ -329,7 +363,7 @@ Item {
             id: globalTicker
             interval: (root.visible && root.isActiveTab && stateCache.activeMode === 1 && stateCache.swStartEpoch > 0) ? 32 : 200
             repeat: true
-            running: root.anyTimerActive
+            running: root.anyTimerActive && TimerState.owner === root
             onTriggered: {
                 let now = Date.now();
 
@@ -564,6 +598,8 @@ Item {
                                     height: root.s(32)
                                     radius: ThemeBackend.borderRadius
                                     color: lapGlass.active ? "transparent" : Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
+                                    border.width: 1
+                                    border.color: ThemeBackend.surface1
 
                                     GlassFill {
                                         id: lapGlass
@@ -714,6 +750,8 @@ Item {
                         height: root.s(160)
                         radius: ThemeBackend.borderRadius
                         color: pomoGlass.active ? "transparent" : Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
+                        border.width: 1
+                        border.color: ThemeBackend.surface1
                         visible: pomodoroView.showSettings
 
                         GlassFill {

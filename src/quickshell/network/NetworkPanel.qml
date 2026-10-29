@@ -2,18 +2,55 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import "../"
 import "../reusables"
 ColumnLayout {
     id: panel
     spacing: 12
+    property var details: ({})
+    property string qrSource: ""
+    property string detailsError: ""
+    property string pendingDetailsAction: ""
+    function readDetails(action) {
+        if (detailsWorker.running) { if (action !== "info") pendingDetailsAction = action; return; }
+        detailsWorker.action = action;
+        detailsWorker.command = ["python3", Caching.serpantinumDir + "/scripts/network_details.py", action];
+        detailsWorker.running = true;
+    }
+    Process {
+        id: detailsWorker
+        property string action: "info"
+        onExited: {
+            if (panel.pendingDetailsAction !== "") {
+                const next = panel.pendingDetailsAction; panel.pendingDetailsAction = "";
+                Qt.callLater(() => panel.readDetails(next));
+            }
+        }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const data = JSON.parse(text);
+                    if (detailsWorker.action === "info" && panel.qrSource && (!data.connected || data.ssid !== panel.details.ssid)) {
+                        panel.qrSource = ""; panel.pendingDetailsAction = "clear";
+                    }
+                    if (detailsWorker.action !== "clear") panel.details = data;
+                    panel.detailsError = data.error || "";
+                    if (data.qr && panel.visible) panel.qrSource = "file://" + data.qr + "?v=" + Date.now();
+                    if (!panel.visible && detailsWorker.action !== "clear") panel.pendingDetailsAction = "clear";
+                } catch(error) { panel.detailsError = "Connection details unavailable"; }
+            }
+        }
+    }
+    Timer { interval: 5000; repeat: true; running: panel.visible; onTriggered: panel.readDetails("info") }
     property bool registered: false
     property var passwordNetwork: null
     property var forgetNetwork: null
+    function openAdvanced() { IslandController.request("", "close"); Quickshell.execDetached(["serpantinum", "settings", "connectivity"]); }
     function registration() {
-        if (visible && !registered) { registered = true; NetworkController.views++; }
-        else if (!visible && registered) { registered = false; NetworkController.views = Math.max(0, NetworkController.views - 1); password.text = ""; passwordNetwork = null; forgetNetwork = null; }
+        if (visible && !registered) { registered = true; NetworkController.views++; readDetails("info"); }
+        else if (!visible && registered) { registered = false; NetworkController.views = Math.max(0, NetworkController.views - 1); password.text = ""; passwordNetwork = null; forgetNetwork = null; qrSource = ""; readDetails("clear"); }
     }
     onVisibleChanged: registration()
     Component.onCompleted: registration()
@@ -31,11 +68,26 @@ ColumnLayout {
     }
     RowLayout {
         Layout.fillWidth: true
-        Caption { text: "󰤨  Network"; font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
+        PulseIcon { text: "󰤨"; scanning: NetworkController.scanning; accent: ThemeBackend.primary }
+        Caption { text: "Network"; font.pixelSize: 20; font.bold: true; Layout.fillWidth: true }
         MaterialSwitch { checked: NetworkController.powered; enabled: !!NetworkController.wifiDevice && !NetworkController.busy; Accessible.name: "Wi-Fi power"; onClicked: NetworkController.power(checked) }
         Action { text: NetworkController.scanning ? "Stop" : "Scan"; enabled: !!NetworkController.wifiDevice && NetworkController.powered; onClicked: NetworkController.scanning ? NetworkController.stopScan() : NetworkController.scan() }
     }
     Caption { Layout.fillWidth: true; font.pixelSize: 12; opacity: 0.8; wrapMode: Text.Wrap; elide: Text.ElideNone; Accessible.role: Accessible.AlertMessage; text: NetworkController.status || (!NetworkController.wifiDevice ? "No Wi-Fi adapter found" : !NetworkController.powered ? "Wi-Fi is off" : "Select a network to connect") }
+    RowLayout {
+        Layout.fillWidth: true
+        visible: panel.details.connected === true
+        Caption { Layout.fillWidth: true; text: (panel.details.signal || 0) + "% signal · " + (panel.details.mbps > 0 ? panel.details.mbps + " Mb/s link" : "Link rate unavailable"); font.pixelSize: 12 }
+        Action { text: panel.qrSource ? "Hide QR" : "Share Wi-Fi"; enabled: !detailsWorker.running
+            onClicked: { if (panel.qrSource) { panel.qrSource = ""; panel.readDetails("clear"); } else panel.readDetails("share"); }
+        }
+    }
+    Caption { Layout.fillWidth: true; visible: panel.detailsError !== ""; text: panel.detailsError; wrapMode: Text.Wrap; elide: Text.ElideNone }
+    ColumnLayout {
+        Layout.fillWidth: true; Layout.fillHeight: true; visible: panel.qrSource !== ""
+        Image { Layout.alignment: Qt.AlignHCenter; Layout.preferredWidth: 230; Layout.preferredHeight: 230; source: panel.qrSource; cache: false; smooth: false; fillMode: Image.PreserveAspectFit }
+        Caption { Layout.fillWidth: true; text: "Scan to join " + (panel.details.ssid || "this network"); horizontalAlignment: Text.AlignHCenter; font.pixelSize: 12 }
+    }
     ColumnLayout {
         Layout.fillWidth: true; visible: panel.passwordNetwork !== null
         Caption { Layout.fillWidth: true; text: panel.passwordNetwork ? "Password for " + panel.passwordNetwork.name : ""; font.bold: true }
@@ -52,6 +104,7 @@ ColumnLayout {
         Action { text: "Forget"; onClicked: { if (panel.forgetNetwork) panel.forgetNetwork.forget(); panel.forgetNetwork = null; } }
     }
     ClippingRectangle {
+        visible: panel.qrSource === ""
         Layout.fillWidth: true; Layout.fillHeight: true
         color: "transparent"; radius: ThemeBackend.cardRadius
         ScrollView {
@@ -79,7 +132,7 @@ ColumnLayout {
                                 enabled: NetworkController.powered && !NetworkController.busy && !modelData.stateChanging
                                 onClicked: {
                                     if (modelData.connected) modelData.disconnect();
-                                    else if (NetworkController.enterprise(modelData) && !modelData.known) { NetworkController.status = "Configure enterprise credentials in the advanced network editor."; Quickshell.execDetached(["kitty", "nmtui"]); }
+                                    else if (NetworkController.enterprise(modelData) && !modelData.known) { NetworkController.status = "Select the saved enterprise connection in Settings → Connectivity."; panel.openAdvanced(); }
                                     else if (NetworkController.needsPassword(modelData)) { panel.passwordNetwork = modelData; password.forceActiveFocus(); }
                                     else NetworkController.connectNetwork(modelData, "");
                                 }
@@ -101,5 +154,5 @@ ColumnLayout {
             }
         }
     }
-    Action { text: "Advanced network settings"; onClicked: Quickshell.execDetached(["kitty", "nmtui"]) }
+    Action { text: "Advanced network settings"; onClicked: panel.openAdvanced() }
 }

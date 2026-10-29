@@ -15,6 +15,17 @@ Item {
     property var pairingRequest: ({})
     readonly property bool busy: operation.running || unblock.running
     property int views: 0
+    property var batteryDetails: ({})
+    Process {
+        id: batteries
+        command: ["python3", Caching.serpantinumDir + "/scripts/bluetooth_batteries.py"]
+        stdout: StdioCollector { onStreamFinished: { try { controller.batteryDetails = JSON.parse(text); } catch(error) {} } }
+    }
+    Timer {
+        interval: 30000; repeat: true; triggeredOnStart: true
+        running: controller.views > 0 && Config.getSetting("coloros", {}).bluetoothBatteries !== false
+        onTriggered: if (!batteries.running) batteries.running = true
+    }
     signal feedback(string title, string detail)
     function run(action, device, alreadyUnblocked) {
         if (busy) { status = "Wait for the current Bluetooth operation"; return; }
@@ -27,7 +38,7 @@ Item {
         pendingAction = action; pendingDevice = device || null;
         const path = device ? device.dbusPath : adapter.dbusPath;
         status = action.replace("-", " ") + "…";
-        operation.command = ["python3", Caching.serpantinumDir + "/scripts/coloros/bluetooth-op.py", action, path];
+        operation.command = ["python3", Quickshell.env("HOME") + "/.config/serpantinum/user/ColorOS/tools/bluetooth-op.py", action, path];
         operation.running = true;
     }
     function scan() {
@@ -68,7 +79,7 @@ Item {
         id: agent
         running: true
         stdinEnabled: true
-        command: ["python3", Caching.serpantinumDir + "/scripts/coloros/bluetooth-agent.py"]
+        command: ["python3", Quickshell.env("HOME") + "/.config/serpantinum/user/ColorOS/tools/bluetooth-agent.py"]
         stdout: SplitParser {
             onRead: line => {
                 try {

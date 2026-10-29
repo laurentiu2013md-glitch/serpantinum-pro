@@ -29,6 +29,8 @@ RowLayout {
         implicitHeight: timeLayout.implicitHeight + rootObj.s(32)
         radius: ThemeBackend.borderRadius
         color: timeGlass.active ? "transparent" : Qt.alpha(ThemeBackend.surface0, 0.4)
+        border.color: Qt.alpha(ThemeBackend.surface1, 0.3)
+        border.width: ThemeBackend.liquidGlass ? 0 : 1
 
         GlassFill {
             id: timeGlass
@@ -137,6 +139,8 @@ RowLayout {
             Layout.fillHeight: true
             radius: ThemeBackend.borderRadius
             color: cardGlass.active ? "transparent" : Qt.alpha(ThemeBackend.surface0, 0.4)
+            border.color: Qt.alpha(ThemeBackend.surface1, 0.3)
+            border.width: ThemeBackend.liquidGlass ? 0 : 1
 
             GlassFill {
                 id: cardGlass

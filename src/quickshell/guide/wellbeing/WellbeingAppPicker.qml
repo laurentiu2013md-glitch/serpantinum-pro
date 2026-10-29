@@ -31,7 +31,7 @@ Item {
     z: 50
     visible: opacity > 0.001
     opacity: active ? 1.0 : 0.0
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
 
     onActiveChanged: {
         if (active) {

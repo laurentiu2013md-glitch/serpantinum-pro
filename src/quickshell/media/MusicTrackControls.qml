@@ -18,7 +18,7 @@ ColumnLayout {
         spacing: root.s(6)
         opacity: root.introText
         transform: Translate { x: root.s(25) * (1 - root.introText) }
-        
+
         MarqueeText {
             Layout.fillWidth: true
             Layout.preferredHeight: root.s(25)
@@ -145,21 +145,21 @@ ColumnLayout {
 
         RowLayout {
             Layout.fillWidth: true
-            Text { 
-                text: root.formatTime(root.currentLivePosition); 
+            Text {
+                text: root.formatTime(root.currentLivePosition);
                 color: ThemeBackend.neutralTextColor(root.dynamicTextColor);
-                font.family: ThemeBackend.fontFamily; 
-                font.bold: true; 
-                font.pixelSize: root.s(12); 
+                font.family: ThemeBackend.fontFamily;
+                font.bold: true;
+                font.pixelSize: root.s(12);
                 Behavior on color { ColorAnimation { duration: 600 } }
             }
             Item { Layout.fillWidth: true }
-            Text { 
-                text: root.formatTime(root.targetPlayer ? root.targetPlayer.length : 0); 
+            Text {
+                text: root.formatTime(root.targetPlayer ? root.targetPlayer.length : 0);
                 color: ThemeBackend.neutralTextColor(root.dynamicTextColor);
-                font.family: ThemeBackend.fontFamily; 
-                font.bold: true; 
-                font.pixelSize: root.s(12); 
+                font.family: ThemeBackend.fontFamily;
+                font.bold: true;
+                font.pixelSize: root.s(12);
                 Behavior on color { ColorAnimation { duration: 600 } }
             }
         }
@@ -175,7 +175,7 @@ ColumnLayout {
             id: prevMediaBtn
             Layout.preferredWidth: root.s(32)
             Layout.preferredHeight: root.s(32)
-            cornerRadius: ThemeBackend.borderRadius
+            cornerRadius: ThemeBackend.liquidGlass ? width / 2 : ThemeBackend.borderRadius
             buttonIcon: "󰒮"
             iconFontSize: root.s(11)
             accentColor: ThemeBackend.surface0 || "#313244"
@@ -189,7 +189,7 @@ ColumnLayout {
             id: playPauseBtn
             Layout.preferredWidth: root.s(43)
             Layout.preferredHeight: root.s(43)
-            cornerRadius: ThemeBackend.borderRadius
+            cornerRadius: ThemeBackend.liquidGlass ? width / 2 : ThemeBackend.borderRadius
             buttonIcon: (root.targetPlayer && root.targetPlayer.isPlaying) ? "󰏤" : "󰐊"
             iconFontSize: root.s(15)
             accentColor: ThemeBackend.surface0 || "#313244"
@@ -203,7 +203,7 @@ ColumnLayout {
             id: nextMediaBtn
             Layout.preferredWidth: root.s(32)
             Layout.preferredHeight: root.s(32)
-            cornerRadius: ThemeBackend.borderRadius
+            cornerRadius: ThemeBackend.liquidGlass ? width / 2 : ThemeBackend.borderRadius
             buttonIcon: "󰒭"
             iconFontSize: root.s(11)
             accentColor: ThemeBackend.surface0 || "#313244"

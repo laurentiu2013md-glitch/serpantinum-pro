@@ -10,10 +10,10 @@ import "../reusables"
 GuideTab {
     id: aboutTabRoot
 
-    property real updateTransitionProgress: Updater.updateAvailable ? 1.0 : 0.0
+    property real updateTransitionProgress: 0.0
     Behavior on updateTransitionProgress {
         NumberAnimation {
-            duration: 400
+            duration: 450
             easing.type: Easing.OutQuint
         }
     }
@@ -106,7 +106,7 @@ GuideTab {
                             spacing: rootObj.s(4)
 
                             Text {
-                                text: I18n.t("guide.about.title")
+                                text: "Serpantinum Pro"
                                 font.family: ThemeBackend.fontFamily
                                 font.weight: Font.Bold
                                 font.pixelSize: rootObj.s(22)
@@ -115,10 +115,7 @@ GuideTab {
                             }
 
                             Text {
-                                text: I18n.t("guide.about.version_by", {
-                                    version: (Updater.localVersion !== "..." ? Updater.localVersion : (rootObj.dotsVersion !== "Loading..." && rootObj.dotsVersion !== I18n.t("guide.about.loading") ? rootObj.dotsVersion : "2.0.0")),
-                                    author: "@ilyamiro"
-                                })
+                                text: "by laurentiu2013md-glitch"
                                 font.family: ThemeBackend.fontFamily
                                 font.pixelSize: rootObj.s(13)
                                 color: ThemeBackend.subtext0
@@ -167,7 +164,7 @@ GuideTab {
                             accentColor: ThemeBackend.surface0
                             textColor: ThemeBackend.text
 
-                            onTriggered: Quickshell.execDetached(["xdg-open", "https://github.com/ilyamiro/serpantinum/blob/master/CHANGELOG.md"])
+                            onTriggered: Quickshell.execDetached(["xdg-open", "https://github.com/laurentiu2013md-glitch/serpantinum-pro/blob/master/docs/pro-features.md"])
                         }
 
                         FillButton {
@@ -186,9 +183,7 @@ GuideTab {
                             fillDuration: 1200
 
                             onTriggered: {
-                                let cmd = "if command -v kitty >/dev/null 2>&1; then kitty --hold bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; else ${TERM:-xterm} -hold -e bash -c 'eval \"$(curl -fsSL https://raw.githubusercontent.com/ilyamiro/serpantinum/master/install/install.sh)\"'; fi";
-                                Quickshell.execDetached(["bash", "-c", cmd]);
-                                rootObj.dismissHost();
+                                Qt.openUrlExternally("https://github.com/laurentiu2013md-glitch/serpantinum-pro");
                             }
                         }
                     }
@@ -230,6 +225,7 @@ GuideTab {
                                 tintColor: Qt.alpha(ThemeBackend.surface0, 0.4)
                                 tintAmount: 0.25
                             }
+                            border.width: 0
 
                             RowLayout {
                                 id: rowHwLayout
@@ -309,6 +305,7 @@ GuideTab {
                                 tintColor: Qt.alpha(ThemeBackend.surface0, 0.4)
                                 tintAmount: 0.25
                             }
+                            border.width: 0
 
                             RowLayout {
                                 id: rowSysLayout
@@ -367,14 +364,14 @@ GuideTab {
                     Layout.preferredHeight: rootObj.s(42)
                     horizontalPadding: rootObj.s(14)
                     cornerRadius: ThemeBackend.borderRadius
-                    buttonText: I18n.t("guide.about.github_repo")
+                    buttonText: "Serpantinum Pro on GitHub"
                     textFontSize: rootObj.s(13)
                     buttonIcon: "󰊤"
                     iconFontSize: rootObj.s(16)
                     accentColor: ThemeBackend.surface0
                     textColor: ThemeBackend.text
 
-                    onTriggered: Quickshell.execDetached(["xdg-open", "https://github.com/ilyamiro/serpantinum"])
+                    onTriggered: Quickshell.execDetached(["xdg-open", "https://github.com/laurentiu2013md-glitch/serpantinum-pro"])
                 }
             }
         }

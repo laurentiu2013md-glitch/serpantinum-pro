@@ -2,6 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "widgets"
+import "bar" as BarWindows
+import "quickactions/actions" as QuickActionTools
 
 ShellRoot {
     id: shell
@@ -9,6 +11,13 @@ ShellRoot {
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
     readonly property bool quickactionsEnabled: Config.getSetting("general", {}).quickactions !== false
     readonly property bool dockEnabled: Config.getSetting("dock", {}).enabled !== false
+
+    // Keep the shared timer available when the QuickActions UI is disabled.
+    Loader {
+        active: !shell.gameMode && (shell.performanceMode || !shell.quickactionsEnabled)
+        visible: false
+        sourceComponent: QuickActionTools.Timer {}
+    }
 
     Connections {
         target: Quickshell
@@ -50,11 +59,12 @@ ShellRoot {
         function status(): string {
             return JSON.stringify({opacity:ThemeBackend.elementOpacity,blur:ThemeBackend.blurBackground,compositorBlur:ThemeBackend.compositorBlur,
                 gameMode:GameMode.enabled,reducedMotion:Motion.reduced,adaptiveBlur:SurfacePolicy.enabled,
-                light:ThemeBackend.isLight,surface:ThemeBackend.base.toString(),accent:ThemeBackend.mauve.toString()});
+                light:ThemeBackend.isLight,text:ThemeBackend.text.toString(),subtext0:ThemeBackend.subtext0.toString(),subtext1:ThemeBackend.subtext1.toString(),neutralText:ThemeBackend.neutralTextColor("#725188").toString(),surface:ThemeBackend.base.toString(),accent:ThemeBackend.mauve.toString()});
         }
     }
     Main {}
     Bar {}
+    BarWindows.ControlCenterWindow {}
     Lock {}
     Loader { active: !shell.gameMode; sourceComponent: WidgetRedactor {} }
     Loader { active: !shell.gameMode; sourceComponent: LockRedactor {} }

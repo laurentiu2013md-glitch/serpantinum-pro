@@ -11,13 +11,13 @@ Item {
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     width: parent.width
-    x: root.bottomSectionSwitch.currentIndex === 2 ? 0 : parent.width + root.s(24)
-    opacity: root.bottomSectionSwitch.currentIndex === 2 ? 1.0 : 0.0
+    x: root.bottomSectionSwitch.currentIndex === root.lyricsTab ? 0 : parent.width + root.s(24)
+    opacity: root.bottomSectionSwitch.currentIndex === root.lyricsTab ? 1.0 : 0.0
     visible: opacity > 0.0
     clip: true
 
-    Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on x { NumberAnimation { duration: 420; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
 
     LyricsView {
         id: popupLyricsViewport

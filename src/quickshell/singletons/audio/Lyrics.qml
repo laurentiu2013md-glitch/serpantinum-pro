@@ -164,11 +164,7 @@ Item {
         let ly = root.lyrics;
         if (!root.hasLyrics || !ly || ly.length === 0) return Infinity;
         let p = root.currentPosition;
-        let idx = -1;
-        for (let i = 0; i < ly.length; i++) {
-            if (p >= ly[i].time) idx = i;
-            else break;
-        }
+        let idx = root.currentIndex;
         let best = Infinity;
         if (idx + 1 < ly.length) best = ly[idx + 1].time;
         if (idx >= 0) {
@@ -309,13 +305,6 @@ Item {
     onCurrentTrackKeyChanged: triggerSearch()
     onPlayerChanged: triggerSearch()
 
-    property double lastAttemptAt: 0
-
-    function resetPositionGuards() {
-        root.pendingJumpPosition = -1;
-        root.seekGuardUntil = 0;
-    }
-
     function triggerSearch() {
         if (root.subscribers <= 0) return;
 
@@ -330,24 +319,17 @@ Item {
             return;
         }
 
-        let isNewKey = currentTrackKey !== activeFetchKey;
-        if (!isNewKey) {
-            if (lyrics && lyrics.length > 0) return;
+        if (currentTrackKey === lastFetchedKey && currentTrackKey === activeFetchKey) {
             if (loading) return;
-            if (Date.now() - lastAttemptAt < 30000) return;
+            if (lyrics && lyrics.length > 0) return;
         }
 
         lastFetchedKey = currentTrackKey;
         activeFetchKey = currentTrackKey;
-        if (activeSession) activeSession.done = true;
         activeSession = null;
         searchTimeoutTimer.stop();
-        cacheReadProcess.running = false;
-        if (isNewKey) resetPositionGuards();
         lyrics = [];
         hasLyrics = false;
-        loading = true;
-        lastAttemptAt = Date.now();
         checkCacheAndFetch(currentTrackKey);
     }
 
@@ -724,8 +706,6 @@ Item {
         } catch (e) {}
         album = cleanString(album);
 
-        if (activeSession) activeSession.done = true;
-
         let session = {
             key: requestKey,
             artist: cleanA,
@@ -1021,19 +1001,15 @@ Item {
         command: [
             "bash",
             "-c",
-            'CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/serpantinum/lyrics"; HASH=$(echo -n "$1" | md5sum | cut -d" " -f1); FILE="$CACHE_DIR/${HASH}.json"; printf "%s\\n" "$1"; if [ -f "$FILE" ] && [ -s "$FILE" ]; then cat "$FILE"; fi',
+            'CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/serpantinum/lyrics"; HASH=$(echo -n "$1" | md5sum | cut -d" " -f1); FILE="$CACHE_DIR/${HASH}.json"; if [ -f "$FILE" ] && [ -s "$FILE" ]; then cat "$FILE"; fi',
             "--",
             targetKey
         ]
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
-                let raw = this.text;
-                let nl = raw.indexOf("\n");
-                let echoedKey = nl < 0 ? raw : raw.substring(0, nl);
-                let content = nl < 0 ? "" : raw.substring(nl + 1).trim();
+                let content = this.text.trim();
                 let key = cacheReadProcess.targetKey;
-                if (echoedKey !== key.split("\n")[0]) return;
                 if (key !== root.currentTrackKey || key !== root.activeFetchKey) return;
 
                 if (content !== "") {

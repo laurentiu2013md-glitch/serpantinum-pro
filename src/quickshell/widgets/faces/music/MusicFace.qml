@@ -150,6 +150,8 @@ Item {
                 height: width
                 radius: ThemeBackend.borderRadius
                 color: Qt.alpha(ThemeBackend.surface1, ThemeBackend.elementOpacity)
+                border.width: 1
+                border.color: (root.isMediaActive && MprisController.isPlaying) ? ThemeBackend.mauve : ThemeBackend.surface1
                 visible: root.showArt
 
                 Text {
@@ -178,13 +180,13 @@ Item {
                         maskSource: artMask
                     }
 
-                    Image {
+                    BoundedImage {
                         id: artImg
                         anchors.fill: parent
                         source: (root.isMediaActive && MprisController.artUrl) ? (MprisController.artUrl.startsWith("file://") || MprisController.artUrl.startsWith("http") ? MprisController.artUrl : "file://" + MprisController.artUrl) : ""
                         fillMode: Image.PreserveAspectCrop
                         opacity: (root.isMediaActive && status === Image.Ready && MprisController.artUrl !== "") ? 1.0 : 0.0
-                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                        Behavior on opacity { NumberAnimation { duration: 300 } }
                     }
                 }
             }

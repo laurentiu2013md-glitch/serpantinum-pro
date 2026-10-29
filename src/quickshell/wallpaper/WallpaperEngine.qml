@@ -50,6 +50,18 @@ ShellRoot {
                 readonly property string layerSnapshotPathA: wpCacheDir + "/layer_" + barWindow.screen.name + "_a.png"
                 readonly property string layerSnapshotPathB: wpCacheDir + "/layer_" + barWindow.screen.name + "_b.png"
 
+                readonly property bool depthEnabled: !Motion.reduced && Config.getSetting("coloros", {}).wallpaperDepth !== false && !barWindow.isVideoA && !barWindow.isVideoB
+                property real depthPointerX: 0
+                property real depthPointerY: 0
+                readonly property real depthScale: depthEnabled ? (LauncherController.isVisible ? 1.055 : 1.025) : 1
+                readonly property real depthOffsetX: depthEnabled ? -depthPointerX * 10 : 0
+                readonly property real depthOffsetY: depthEnabled ? -depthPointerY * 7 : 0
+                Behavior on depthPointerX { NumberAnimation { duration: Motion.duration(800); easing.type: Easing.OutCubic } }
+                Behavior on depthPointerY { NumberAnimation { duration: Motion.duration(800); easing.type: Easing.OutCubic } }
+                IpcHandler {
+                    target: "wallpaperDepth-" + (barWindow.screen ? barWindow.screen.name : "default")
+                    function state(): string { return JSON.stringify({enabled:barWindow.depthEnabled,scale:barWindow.depthScale,x:barWindow.depthOffsetX,y:barWindow.depthOffsetY}); }
+                }
                 readonly property int fadeDuration: 1000
                 readonly property int maskDuration: 1600
                 property real transitionProgress: 1.0
@@ -531,6 +543,15 @@ ShellRoot {
                     id: scene
                     anchors.fill: parent
                     clip: true
+                    transform: [
+                        Scale {
+                            origin.x: scene.width / 2; origin.y: scene.height / 2
+                            xScale: barWindow.depthScale; yScale: barWindow.depthScale
+                            Behavior on xScale { NumberAnimation { duration: Motion.duration(650); easing.type: Easing.OutCubic } }
+                            Behavior on yScale { NumberAnimation { duration: Motion.duration(650); easing.type: Easing.OutCubic } }
+                        },
+                        Translate { x: barWindow.depthOffsetX; y: barWindow.depthOffsetY }
+                    ]
 
                     ShaderEffect {
                         id: transitionShaderA
@@ -694,6 +715,12 @@ ShellRoot {
                     MouseArea {
                         anchors.fill: parent
                         acceptedButtons: Qt.RightButton | Qt.LeftButton
+                        hoverEnabled: barWindow.depthEnabled
+                        onPositionChanged: mouse => {
+                            barWindow.depthPointerX = (mouse.x / Math.max(1,width) - 0.5) * 2;
+                            barWindow.depthPointerY = (mouse.y / Math.max(1,height) - 0.5) * 2;
+                        }
+                        onExited: { barWindow.depthPointerX = 0; barWindow.depthPointerY = 0; }
                         onClicked: mouse => {
                             if (mouse.button === Qt.RightButton) {
                                 DesktopMenuController.toggle(barWindow.screen, mouse.x, mouse.y, "desktop");

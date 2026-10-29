@@ -144,7 +144,7 @@ PanelWindow {
                 property: "animProgress"
                 from: menuContainer.animProgress > 0.8 ? 0.2 : 0.0
                 to: 1.0
-                duration: 150
+                duration: 180
                 easing.type: Easing.OutBack
                 easing.overshoot: 1.05
             }
@@ -258,7 +258,7 @@ PanelWindow {
                                         WindowTracker.focusWindow(dockAppMenuWindow.windowsList[0]);
                                     }
                                 } else if (typeof DesktopEntries !== "undefined" && DockAppMenuController.desktopId) {
-                                    let entry = DesktopEntries.byId(DockAppMenuController.desktopId) || DesktopEntries.byId(String(DockAppMenuController.desktopId).replace(/\.desktop$/, ""));
+                                    let entry = DesktopEntries.byId(DockAppMenuController.desktopId);
                                     if (entry) entry.execute();
                                 }
                                 DockAppMenuController.hide();
@@ -363,7 +363,7 @@ PanelWindow {
                                     Layout.fillHeight: true
                                     clip: true
                                     Behavior on Layout.preferredWidth {
-                                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                                     }
 
                                     CloseButton {
@@ -378,7 +378,7 @@ PanelWindow {
                                         iconFontSize: dockAppMenuWindow.s(13)
                                         opacity: rowHover.hovered ? 1.0 : 0.0
                                         Behavior on opacity {
-                                            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                                            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                                         }
                                         onClicked: {
                                             if (typeof WindowTracker !== "undefined") {
@@ -429,7 +429,7 @@ PanelWindow {
                             textColor: ThemeBackend.text
                             onClicked: {
                                 if (typeof DesktopEntries !== "undefined" && DockAppMenuController.desktopId) {
-                                    let entry = DesktopEntries.byId(DockAppMenuController.desktopId) || DesktopEntries.byId(String(DockAppMenuController.desktopId).replace(/\.desktop$/, ""));
+                                    let entry = DesktopEntries.byId(DockAppMenuController.desktopId);
                                     if (entry) entry.execute();
                                 }
                                 DockAppMenuController.hide();

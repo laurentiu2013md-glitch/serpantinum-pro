@@ -127,12 +127,12 @@ Item {
                 tintColor: runningDockButton.btnColor
                 tintAmount: 0.3
                 press: runningBtnMa.pressed ? 1 : Math.max(runningBtnMa.containsMouse ? 0.3 : 0, 0.3 * Math.max(0, Math.min(1, (runningDockButton.baseHoverScale - 1.0) / Math.max(0.01, runningDockButton.hoverScaleDelta))))
-                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on press { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
             }
             transformOrigin: Item.Center
             scale: runningDockButton.targetScale * runningDockButton.popScale
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: 180 } }
             Behavior on scale {
                 NumberAnimation { duration: runningBtnMa.pressed ? 90 : 340; easing.type: runningBtnMa.pressed ? Easing.OutCubic : Easing.OutBack; easing.overshoot: 1.15 }
             }
@@ -211,6 +211,8 @@ Item {
                 height: dockWindow.s(4)
                 radius: width / 2
                 color: "transparent"
+                border.width: 1
+                border.color: ThemeBackend.overlay0
             }
 
             Rectangle {

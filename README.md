@@ -15,11 +15,19 @@ A Serpantinum fork with a bouncy Dynamic Island, compact hover panels, and a Dro
 ## What’s new in Pro
 
 - **An integrated Dynamic Island:** the center bar morphs into music, weather/calendar and Bluetooth panels within the same window.
+- **Separate Quick Controls:** individual glass controls for system toggles and shortcuts, with repeated island panels removed. Both panels close after one second outside.
+- **Pinned launcher favorites:** select your own apps with row pin buttons or Ctrl+P, alongside All/Favorites/Recent views and keyboard navigation.
+- **Battery details in the island:** remaining time, live power draw, health and existing custom power profiles in one wave-style card.
 - **A quieter desktop:** on Hyprland, the center becomes clock-only when the pointer moves below the upper 10% of the screen. Enter that zone to restore it; open controls stay usable until you leave them.
 - **Playful motion with room for text:** interruptible spring transitions, stable module spacing, padded edges, coordinated widget reveal and a small pointer-boundary buffer. Reduced motion respects the system preference and a shell setting.
 - **A sky that follows the weather:** animated clouds, sun/moon, rain, snow and fog inside the weather/calendar island; reduced motion pauses it and Game Mode stays plain.
 - **Charging with a green wave:** a horizontal liquid animation follows the battery percentage, stays aligned with the battery pill and disappears at 100%.
 - **OSDs inside the island:** volume, brightness, microphone, lock keys and airplane-mode feedback share its surface and restore the previous panel afterward.
+- **Keyboard access:** Super+S/C/B/N/D opens island panels with Tab, Shift+Tab and Escape navigation. Low-battery colors transition gently without extra popups.
+- **Fork-specific settings:** focused pages for the island, music, connectivity, notifications and shared shelf; obsolete Dock and standalone OSD pages are removed.
+- **Music with atmosphere:** Spotify artwork fills the music island at the configured bar opacity, with track crossfades and adaptive contrast; other players retain an artwork-colored glow.
+- **Small moments of motion:** connection and scan ripples, bouncing shelf arrivals, and KDE-inspired cursor enlargement through a native Hyprland plugin. Effects respect reduced motion and Game Mode.
+- **Notifications in one place:** arrivals queue inside the island and remain available in notification history, with their action buttons.
 - **Your original music player, compact:** artwork, playback controls, lyrics, EQ and audio settings remain part of the real player.
 - **One shared DropShelf:** files, links and text added through the bar appear in QuickActions immediately, with previews, copy, rearrangement and removal. Hover the upper 5% of the bar’s height to reveal it. Native drag/drop preserves original files.
 - **Network controls on hover:** a compact Wi-Fi/Ethernet panel shares Bluetooth’s layout, Material switch and integrated island, with scanning, saved networks and password entry.

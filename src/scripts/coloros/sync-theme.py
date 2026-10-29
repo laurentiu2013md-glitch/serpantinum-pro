@@ -10,10 +10,16 @@ def write(path,text):
 def main():
     source=HOME/'.local/state/serpantinum/qs_matugen_colors.json'
     c=json.loads(source.read_text()); raw=c.get('base','#252830')
-    light=sum(int(raw[i:i+2],16)*w for i,w in [(1,.2126),(3,.7152),(5,.0722)])>153
+    settings=HOME/'.config/serpantinum/settings.json'
+    mode=json.loads(settings.read_text()).get('theme',{}).get('mode') if settings.exists() else None
+    grayMode=mode=='gray'
+    light=mode=='light' or (mode not in ['dark','gray'] and sum(int(raw[i:i+2],16)*w for i,w in [(1,.2126),(3,.7152),(5,.0722)])>153)
     n=dict(zip(['base','mantle','crust','surface0','surface1','surface2','text','subtext0'],
         ['#e6e8ec','#dde0e5','#d4d8df','#f0f1f4','#d7dce3','#c3cbd5','#1b1f28','#505866'] if light else
         ['#252830','#20232a','#191c22','#30343e','#3d4350','#505967','#ffffff','#ffffff']))
+    if grayMode:
+        n.update(dict(zip(['base','mantle','crust','surface0','surface1','surface2','text','subtext0'],
+                          ['#808080','#787878','#707070','#888888','#949494','#a0a0a0','#101010','#181818'])))
     accent=c.get('mauve',c.get('blue','#725188'));onaccent='#ffffff' if sum(int(accent[i:i+2],16)*w for i,w in [(1,.2126),(3,.7152),(5,.0722)])<140 else '#181b22'
     if not light: onaccent='#ffffff'
     defs={'accent_color':accent,'accent_bg_color':accent,'accent_fg_color':onaccent,
@@ -59,7 +65,7 @@ def main():
     opacity=re.search(r'^background_opacity\s+([0-9.]+)',kittyconfig,re.M)
     gray=bg.group(1) if bg else '#b3b3b3'
     amount=max(0,min(1,float(opacity.group(1)))) if opacity else .5
-    foreground='#101010' if light else '#ffffff'
+    foreground='#101010' if light or grayMode else '#ffffff'
     write(HOME/'.config/gtk-4.0/nautilus-colors.css',
         '/* Match Kitty gray/opacity; keep dark-mode labels white. */\n'
         +f'@define-color nautilus_bg alpha({gray}, {amount});\n'
@@ -79,5 +85,5 @@ def main():
         subprocess.run(['pkill','-SIGUSR1','-x','kitty'],capture_output=True)
     # GNOME's preference is also consumed by libadwaita and portals.
     subprocess.run(['gsettings','set','org.gnome.desktop.interface','color-scheme','prefer-light' if light else 'prefer-dark'],capture_output=True)
-    print(json.dumps({'mode':'light' if light else 'dark','accent':accent,'gtk':[3,4],'qt6':'Breeze/qt6ct'}))
+    print(json.dumps({'mode':'gray' if grayMode else 'light' if light else 'dark','accent':accent,'gtk':[3,4],'qt6':'Breeze/qt6ct'}))
 if __name__=='__main__':main()

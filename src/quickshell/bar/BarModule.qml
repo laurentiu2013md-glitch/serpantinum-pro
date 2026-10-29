@@ -20,6 +20,7 @@ Rectangle {
     property bool moduleActive: true
     // Hidden island widgets retain their natural width; only their layout slot collapses.
     property bool islandHeader: false
+    property bool islandClockOnly: false
     property real revealOpacity: 1
     property bool isGrouped: false
     property bool isCompact: isGrouped || (isSolid && distinctPills)
@@ -143,14 +144,17 @@ Rectangle {
     readonly property url faceSource: BarModuleRegistry.faceFile(moduleId, variant)
 
     property url loadedFaceSource: ""
+    readonly property bool faceWanted: moduleActive && (!barWindow || barWindow.barConfigReady !== false)
 
     function loadFace() {
+        if (!faceWanted) return;
         if (loadedFaceSource === faceSource && faceLoader.item) return;
         loadedFaceSource = faceSource;
         faceLoader.setSource(faceSource, { "module": root });
     }
 
     onFaceSourceChanged: loadFace()
+    onFaceWantedChanged: loadFace()
     Component.onCompleted: {
         loadFace();
         updateVisible();

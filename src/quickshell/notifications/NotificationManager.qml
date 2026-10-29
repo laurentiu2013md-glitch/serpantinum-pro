@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
+import "../"
 
 Item {
     id: root
@@ -12,6 +13,8 @@ Item {
     property bool isStartup: true
     property bool sysPanelOpen: false
     property real lastNotifTime: 0
+    property string lastSoundGroup: ""
+    property double lastSoundAt: 0
     property bool _isBatchUpdating: false
 
     ListModel { id: historyModel }
@@ -351,9 +354,6 @@ Item {
 
         onNotification: (n) => {
             let now = Date.now();
-            if (n.urgency !== 2 && now - root.lastNotifTime < 100) {
-                return;
-            }
             root.lastNotifTime = now;
 
             n.tracked = true;
@@ -412,7 +412,7 @@ Item {
 
             historyModel.insert(0, notifData);
 
-            if (!root.isStartup && !root.sysPanelOpen) {
+            if (!root.isStartup && !root.sysPanelOpen && Config.getSetting("notifications", {}).dnd !== true) {
                 let newPopup = {
                     "uid":           currentUid,
                     "latestUid":     currentUid,
@@ -437,6 +437,10 @@ Item {
                 };
                 popupsModel.insert(0, newPopup);
                 root.popupAdded(currentUid, n);
+                const cfg = Config.getSetting("notifications", {});
+                if (cfg.sound !== false && cfg.soundFile && (Config.getSetting("coloros", {}).notificationGrouping === false || resolved.groupKey !== root.lastSoundGroup || now - root.lastSoundAt > 2000)) {
+                    Sounds.play(cfg.soundFile); root.lastSoundGroup = resolved.groupKey; root.lastSoundAt = now;
+                }
             }
         }
     }

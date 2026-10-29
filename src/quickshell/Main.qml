@@ -13,6 +13,12 @@ import "notifications" as Notifs
 PanelWindow {
     id: masterWindow
     color: "transparent"
+    Connections {
+        target: IslandController
+        function onRequested(screen,kind,action) {
+            if (action === "keyboard" && masterWindow.targetActive !== "hidden") masterWindow.switchWidget("hidden","");
+        }
+    }
 
     anchors {
         top: true
@@ -101,14 +107,19 @@ PanelWindow {
                 return;
             }
 
+            if (cmd === "system" || targetWidget === "system") {
+                IslandController.request("controls", cmd === "close" ? "close" : "keyboard", masterWindow.resolveTargetScreen());
+                return;
+            }
+
             // The center island replaces the former standalone player/calendar windows.
             if (cmd === "network" || targetWidget === "network" || cmd === "wifi" || targetWidget === "wifi") {
                 const kind = ["bt", "bluetooth"].indexOf(arg) !== -1 || targetWidget === "bt" ? "bluetooth" : "network";
                 IslandController.request(kind, cmd === "close" ? "close" : cmd === "toggle" ? "toggle" : "open", masterWindow.resolveTargetScreen());
                 return;
             }
-            const islandTarget = ["music", "calendar"].indexOf(targetWidget) !== -1 ? targetWidget
-                : (["music", "calendar"].indexOf(cmd) !== -1 ? cmd : "");
+            const islandTarget = ["music", "calendar", "shelf"].indexOf(targetWidget) !== -1 ? targetWidget
+                : (["music", "calendar", "shelf"].indexOf(cmd) !== -1 ? cmd : "");
             if (islandTarget !== "") {
                 IslandController.request(islandTarget, cmd === "close" ? "close" : cmd === "toggle" ? "toggle" : "open", masterWindow.resolveTargetScreen());
                 return;
@@ -445,9 +456,7 @@ PanelWindow {
 
     property real globalUiScale: 1.0
 
-    Notifs.NotificationPopups {
-        id: osdPopups
-    }
+    // Notification arrivals are rendered by the island; history remains in the center.
 
     function applyConfigSettings() {
         let parsed = (typeof Config !== "undefined" && Config.rawSettings) ? Config.rawSettings : {};
@@ -677,6 +686,7 @@ PanelWindow {
     }
 
     function switchWidget(newWidget, arg) {
+        if (newWidget !== "hidden") IslandController.request("","close",masterWindow.resolveTargetScreen());
         if (newWidget === "hidden" && masterWindow.isClosing) return;
 
         masterWindow.switchGeneration++;

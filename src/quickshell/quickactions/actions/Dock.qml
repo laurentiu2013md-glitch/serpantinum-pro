@@ -89,6 +89,8 @@ Item {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
             color: dockGlass.active ? "transparent" : root.alpha(root.cSurface0, 0.85)
+            border.color: root.alpha(root.cText, 0.1)
+            border.width: 1
 
             GlassFill {
                 id: dockGlass
@@ -117,7 +119,7 @@ Item {
                         anchors.fill: parent
                         radius: ThemeBackend.borderRadius
                         color: (itemGlass.active || !itemMouseArea.containsMouse) ? "transparent" : root.alpha(root.cSurface1, 0.4)
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        Behavior on color { ColorAnimation { duration: 300 } }
 
                         GlassFill {
                             id: itemGlass

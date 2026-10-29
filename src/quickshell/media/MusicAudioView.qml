@@ -14,15 +14,15 @@ Item {
     anchors.bottom: parent.bottom
     width: parent.width
     x: {
-        if (root.bottomSectionSwitch.currentIndex === 1) return 0;
-        return root.bottomSectionSwitch.currentIndex < 1 ? parent.width + root.s(24) : -parent.width - root.s(24);
+        if (root.bottomSectionSwitch.currentIndex === root.audioTab) return 0;
+        return root.bottomSectionSwitch.currentIndex < root.audioTab ? parent.width + root.s(24) : -parent.width - root.s(24);
     }
-    opacity: root.bottomSectionSwitch.currentIndex === 1 ? 1.0 : 0.0
+    opacity: root.bottomSectionSwitch.currentIndex === root.audioTab ? 1.0 : 0.0
     visible: opacity > 0.0
     clip: true
 
-    Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on x { NumberAnimation { duration: 420; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
 
     ColumnLayout {
         anchors.top: parent.top
@@ -57,7 +57,7 @@ Item {
                 anchors.topMargin: root.s(5)
                 height: root.s(45)
                 opacity: root.eqData.mono === true ? 0.45 : 1.0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: 180 } }
 
                 Repeater {
                     model: 9
@@ -104,6 +104,8 @@ Item {
                         height: balanceSlider.trackHeight
                         radius: height / 2
                         color: balanceTrackGlass.active ? "transparent" : Qt.alpha(ThemeBackend.surface2 || "#585b70", ThemeBackend.elementOpacity)
+                        border.width: 1
+                        border.color: Qt.rgba(1, 1, 1, 0.06)
                         clip: true
 
                         GlassFill {
@@ -134,7 +136,7 @@ Item {
                                 tintAmount: 0.6
                                 tintStrength: 1.0
                                 press: balanceSlider.pressed ? 0.5 : (balanceSlider.hovered ? 0.2 : 0)
-                                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                Behavior on press { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                             }
 
                             Rectangle {
@@ -174,7 +176,7 @@ Item {
                             tintAmount: 0.45
                             shadow: 1
                             press: balanceSlider.pressed ? 1 : (balanceSlider.hovered ? 0.3 : 0)
-                            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                            Behavior on press { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
                         }
                         scale: balanceSlider.pressed ? 1.25 : (balanceSlider.hovered ? 1.12 : 1.0)
 

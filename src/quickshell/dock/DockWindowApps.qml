@@ -426,7 +426,7 @@ DockWindowState {
 
     function launchApp(desktopId) {
         if (typeof DesktopEntries !== "undefined") {
-            let entry = DesktopEntries.byId(desktopId) || DesktopEntries.byId(String(desktopId).replace(/\.desktop$/, ""));
+            let entry = DesktopEntries.byId(desktopId);
             if (entry) {
                 entry.execute();
             }

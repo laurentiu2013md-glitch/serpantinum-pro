@@ -20,11 +20,13 @@ Item {
     readonly property bool compact: width < s(780)
 
     signal requestLoad(int order)
+    signal releaseTabs()
     signal exitRequested()
 
     property int activationCounter: 0
     property var appPaths: Caching
     property int currentTab: 0
+    property bool explicitTabRequested: false
     property int currentSubTab: 0
     property int expandedTab: -1
 
@@ -105,7 +107,7 @@ Item {
             if ((t.key && t.key.toLowerCase() === cleanKey) ||
                 (t.id && t.id.toLowerCase() === cleanKey) ||
                 (t.name && t.name.toLowerCase() === cleanKey)) {
-                return I18n.t("guide.tabs." + (t.key || t.id).toLowerCase(), t.name || t.id);
+                return t.name || t.id;
             }
         }
         return resolveI18nText(s);
@@ -129,7 +131,7 @@ Item {
                         (x.name && x.name.toLowerCase() === cleanSub)
                     );
                     if (st) {
-                        return I18n.t("guide.tabs." + (st.key || st.id).toLowerCase(), st.name || st.id);
+                        return st.name || st.id;
                     }
                 }
             }
@@ -163,6 +165,8 @@ Item {
     function resolveIndices(tabKey, subKey) {
         if (!tabKey) return { tabIndex: -1, subIndex: -1 };
         let lower = String(tabKey).toLowerCase().replace(/^guide\.tabs\./, "");
+        const aliases = {osd:"island", "on-screen display":"island", welcome:"home", theme:"appearance", display:"desktop", idle:"desktop", dock:"home", wellbeing:"home"};
+        lower = aliases[lower] || lower;
         for (let i = 0; i < tabsModel.length; i++) {
             let t = tabsModel[i];
             if ((t.id && t.id.toLowerCase() === lower) ||
@@ -561,41 +565,25 @@ Item {
     }
 
     property var tabsModel: [
-        { id: "Welcome", key: "welcome", name: "Welcome", icon: "󰋜", file: "WelcomeTab.qml" },
-        { id: "General", key: "general", name: "General", icon: "󰒓", file: "general/GeneralTab.qml" },
-        {
-            id: "Display",
-            key: "display",
-            name: "Display",
-            icon: "󰃠",
-            file: "display/DisplayMainTab.qml",
-            subtabs: [
-                { id: "DisplayGeneral", key: "display_general", name: "Display", icon: "󰍹", file: "display/DisplayMainTab.qml" },
-                { id: "DisplayWidgets", key: "display_widgets", name: "Widgets", icon: "󰕰", file: "display/DisplayWidgetsTab.qml" },
-                { id: "DisplayLockscreen", key: "display_lockscreen", name: "Lock screen", icon: "󰌾", file: "display/DisplayLockscreenTab.qml" }
-            ]
-        },
-        { id: "Theme", key: "theme", name: "Theme", icon: "󰏘", file: "theme/ThemeTab.qml" },
-        {
-            id: "Bar",
-            key: "bar",
-            name: "Bar",
-            icon: "󰖲",
-            separatorBefore: true,
-            file: "bar/BarGeneralTab.qml",
-            subtabs: [
-                { id: "BarGeneral", key: "bar_general", name: "General", icon: "󰍜", file: "bar/BarGeneralTab.qml" },
-                { id: "BarModules", key: "bar_modules", name: "Modules", icon: "󰐱", file: "bar/BarModulesTab.qml" }
-            ]
-        },
-        { id: "Dock", key: "dock", name: "Dock", icon: "󰮯", file: "DockTab.qml" },
-        { id: "Launcher", key: "launcher", name: "Launcher", icon: "󰵆", file: "LauncherTab.qml" },
-        { id: "On-Screen Display", key: "osd", name: "On-Screen Display", icon: "󰕾", file: "OnScreenDisplayTab.qml" },
-        { id: "Notifications", key: "notifications", name: "Notifications", icon: "󰂚", file: "notifications/NotificationsTab.qml" },
-        { id: "Screenshot", key: "screenshot", name: "Screenshot", icon: "󰹑", file: "screenshot/ScreenshotTab.qml" },
-        { id: "Wellbeing", key: "wellbeing", name: "Wellbeing", icon: "󰄉", separatorBefore: true, file: "wellbeing/DigitalWellbeingTab.qml" },
-        { id: "Idle", key: "idle", name: "Idle", icon: "󰒲", file: "IdleTab.qml" },
-        { id: "About", key: "about", name: "About", icon: "󰋽", separatorBefore: true, file: "AboutTab.qml" }
+        {id:"Home",key:"home",name:"Overview",icon:"󰋜",file:"WelcomeTab.qml"},
+        {id:"Island",key:"island",name:"Dynamic Island",icon:"󰖲",file:"ForkSettingsTab.qml"},
+        {id:"Music",key:"music",name:"Music",icon:"󰝚",file:"ForkSettingsTab.qml"},
+        {id:"Appearance",key:"appearance",name:"Appearance",icon:"󰏘",file:"theme/ThemeTab.qml"},
+        {id:"Bar",key:"bar",name:"Bar layout",icon:"󰍜",file:"bar/BarGeneralTab.qml",subtabs:[
+            {id:"BarGeneral",key:"bar_general",name:"Layout",icon:"󰍜",file:"bar/BarGeneralTab.qml"},
+            {id:"BarModules",key:"bar_modules",name:"Modules",icon:"󰐱",file:"bar/BarModulesTab.qml"}
+        ]},
+        {id:"Connectivity",key:"connectivity",name:"Connectivity",icon:"󰤨",file:"ForkSettingsTab.qml"},
+        {id:"Notifications",key:"notifications",name:"Notifications",icon:"󰂚",file:"ForkSettingsTab.qml"},
+        {id:"QuickActions",key:"quickactions",name:"QuickActions & shelf",icon:"󰉋",file:"ForkSettingsTab.qml"},
+        {id:"Desktop",key:"desktop",name:"Desktop",icon:"󰍹",file:"general/GeneralTab.qml",subtabs:[
+            {id:"General",key:"general",name:"General",icon:"󰒓",file:"general/GeneralTab.qml"},
+            {id:"DisplayGeneral",key:"display_general",name:"Displays",icon:"󰍹",file:"display/DisplayMainTab.qml"},
+            {id:"DisplayLockscreen",key:"display_lockscreen",name:"Lock screen",icon:"󰌾",file:"display/DisplayLockscreenTab.qml"}
+        ]},
+        {id:"Launcher",key:"launcher",name:"Launcher",icon:"󰵆",file:"LauncherTab.qml"},
+        {id:"Screenshot",key:"screenshot",name:"Capture",icon:"󰹑",file:"screenshot/ScreenshotTab.qml"},
+        {id:"About",key:"about",name:"About",icon:"󰋽",file:"AboutTab.qml"}
     ]
 
     readonly property var currentTabModel: tabsModel[currentTab] || null
@@ -650,6 +638,7 @@ Item {
             r = { tabIndex: num, subIndex: (!isNaN(sNum) && t.subtabs && sNum >= 0 && sNum < t.subtabs.length) ? sNum : 0 };
         }
         if (r.tabIndex < 0) return;
+        explicitTabRequested = true;
         currentTab = r.tabIndex;
         let t = tabsModel[r.tabIndex];
         expandedTab = (t.subtabs && t.subtabs.length > 0) ? r.tabIndex : -1;
@@ -841,7 +830,22 @@ Item {
         onTriggered: root.rebuildSearchIndex()
     }
 
+    Timer {
+        id: tabReleaseTimer
+        interval: 600000
+        repeat: false
+        onTriggered: {
+            if (root.visible || root.standalone) return;
+            root.searchLoadCursor = 0;
+            root.releaseTabs();
+        }
+    }
+
     onVisibleChanged: {
+        if (!standalone) {
+            if (visible) tabReleaseTimer.stop();
+            else tabReleaseTimer.restart();
+        }
         if (visible) {
             forceActiveFocus();
             focusTimer.restart();
@@ -989,9 +993,9 @@ Item {
     FileView {
         id: lastTabWatcher
         path: Caching.getCacheDir("guide") + "/last_tab.txt"
-        watchChanges: true
-        onFileChanged: reload()
         onLoaded: {
+            // A delayed cache read must not override an explicit IPC tab request.
+            if (root.explicitTabRequested) return;
             try {
                 let val = text().trim();
                 if (val !== "") {
@@ -1046,7 +1050,7 @@ Item {
                 property: "introSidebar"
                 from: 0.0
                 to: 1.0
-                duration: 250
+                duration: 240
                 easing.type: Easing.OutCubic
             }
         }
@@ -1057,7 +1061,7 @@ Item {
                 property: "introTabs"
                 from: 0.0
                 to: 1.0
-                duration: 250
+                duration: 320
                 easing.type: Easing.Linear
             }
         }

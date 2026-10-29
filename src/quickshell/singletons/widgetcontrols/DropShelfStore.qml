@@ -8,8 +8,23 @@ import "../../quickactions/actions/Model.js" as Model
 Item {
     id: root
     property var entries: []
-    property string statusText: "Drop files here"
+    property var knownUris: []
+    property var lastAddedUris: []
+    property double lastAddedAt: 0
+    property bool initialStateLoaded: false
+    signal entriesAdded(var uris)
+    onEntriesChanged: {
+        const uris = entries.map(e => e.uri);
+        const added = uris.filter(uri => knownUris.indexOf(uri) === -1);
+        knownUris = uris;
+        if (initialStateLoaded && added.length) {
+            lastAddedUris = added; lastAddedAt = Date.now(); entriesAdded(added);
+        }
+    }
+    property string statusText: "Empty"
     property var pendingCandidates: []
+    property var pendingLinks: []
+    property var importQueue: []
     property int candidateAttempts: 0
     readonly property int maxCandidateAttempts: 4
     property var lastRemovedEntry: null
@@ -23,6 +38,36 @@ Item {
             : (Quickshell.env("HOME") || "~") + "/.local/state/serpantinum/dropshelf";
     }
     readonly property string statePath: root.stateDir + "/shelf.json"
+    readonly property string ramImageDir: "/dev/shm/serpantinum-image-links-" + (Quickshell.env("USER") || "user").replace(/[^A-Za-z0-9_.-]/g,"_")
+    property int importGeneration: 0
+    property var ramJobs: []
+    function ramAction(action, uris) {
+        ramJobs = ramJobs.concat([{action:action,uris:uris || []}]);
+        nextRamJob();
+    }
+    function nextRamJob() {
+        if (ramCleaner.running || !ramJobs.length) return;
+        const job=ramJobs[0];ramJobs=ramJobs.slice(1);
+        ramCleaner.command=["python3",Caching.serpantinumDir + "/scripts/shelf_ram.py",job.action,JSON.stringify(job.uris)];
+        ramCleaner.running=true;
+    }
+    Process {
+        id: ramCleaner
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const result=JSON.parse(text);
+                    if (result.missing && result.missing.length) {
+                        const filtered=root.entries.filter(item=>result.missing.indexOf(item.uri)<0);
+                        if (filtered.length!==root.entries.length) { root.entries=filtered;root.updateStatus();root.persist(); }
+                    }
+                } catch(e) {}
+            }
+        }
+        onExited: ramJobTimer.restart()
+    }
+    Timer { id: ramJobTimer; interval: 0; onTriggered: root.nextRamJob() }
+
     readonly property string dataDir: {
         const configured = Quickshell.env("XDG_DATA_HOME");
         return configured && configured.length > 0
@@ -38,16 +83,22 @@ Item {
         function addText(value: string): void { root.addText(value); }
         function remove(uri: string): void { const index = root.entries.findIndex(e => e.uri === uri); if (index >= 0) root.removeAt(index); }
         function move(uri: string, index: string): void { root.moveTo(uri, parseInt(index)); }
+        function clear(): void { root.clearShelf(); }
+        function use(uri: string): void { root.consumeEntry(uri); }
+        function status(): string { return root.statusText; }
     }
 
     function updateStatus() {
         statusText = entries.length === 0
-            ? "Drop files or images here"
+            ? "Empty"
             : entries.length + (entries.length === 1 ? " item" : " items");
     }
 
     function loadState(text) {
+        initialStateLoaded = false;
         entries = Model.parseState(text);
+        ramAction("check", entries.map(item=>item.uri));
+        initialStateLoaded = true;
         updateStatus();
     }
 
@@ -73,6 +124,7 @@ Item {
     }
 
     function removeAt(index) {
+        if (entries[index]) ramAction("schedule",[entries[index].uri]);
         entries = Model.removeAt(entries, index);
         lastRemovedEntry = null;
         updateStatus();
@@ -82,6 +134,8 @@ Item {
     function removeAfterDrag(uri) {
         const matches = entries.filter(function(item) { return item.uri === uri; });
         if (matches.length === 0) return;
+        ramAction("schedule",[uri]);
+        undoExpiry.restart();
         lastRemovedEntry = matches[0];
         entries = Model.removeUri(entries, uri);
         statusText = "Dragged out — Undo to restore";
@@ -90,13 +144,39 @@ Item {
 
     function undoRemove() {
         if (!lastRemovedEntry) return;
+        ramAction("cancel",[lastRemovedEntry.uri]);
+        undoExpiry.stop();
         entries = Model.addUrls(entries, [lastRemovedEntry.uri]);
         lastRemovedEntry = null;
         updateStatus();
         persist();
     }
 
+    Timer { id: undoExpiry; interval: 5000; onTriggered: root.lastRemovedEntry=null }
+    function consumeEntry(uri) {
+        if (uri.startsWith("file://" + root.ramImageDir + "/")) root.removeAfterDrag(uri);
+    }
+    function openEntry(uri) {
+        Quickshell.execDetached(["xdg-open",uri]); consumeEntry(uri);
+    }
+    function queueImport(candidates, links) {
+        if (downloader.running || imageWriter.running || pendingCandidates.length) {
+            importQueue=importQueue.concat([{candidates:candidates,links:links}]); statusText="Media queued"; return;
+        }
+        pendingCandidates=candidates;pendingLinks=links || [];candidateAttempts=0;tryNextCandidate();
+    }
+    Timer {
+        id: nextImport; interval: 0
+        onTriggered: {
+            if (!root.importQueue.length) return;
+            const job=root.importQueue[0];root.importQueue=root.importQueue.slice(1);root.queueImport(job.candidates,job.links);
+        }
+    }
     function clearShelf() {
+        importGeneration++;
+        pendingCandidates=[]; pendingLinks=[]; importQueue=[]; nextImport.stop(); undoExpiry.stop();
+        downloader.running=false; imageWriter.running=false;
+        ramAction("clear",[]);
         entries = [];
         lastRemovedEntry = null;
         statusText = "Shelf cleared";
@@ -136,6 +216,7 @@ Item {
         return Model.localUrls(drop.urls || []).length > 0
             || Model.webUrls(drop.urls || [], drop.hasText ? drop.text : "", "").length > 0
             || (drop.hasText && String(drop.text || "").trim() !== "")
+            || (drop.hasHtml && /<(img|video|source)\b/i.test(String(drop.html || "")))
             || imageMimeFormat(formats) !== "" || formats.some(f => String(f).indexOf("moz") !== -1 || f === "DownloadURL");
     }
     function moveTo(uri, target) {
@@ -168,6 +249,9 @@ Item {
         }
     }
     function addText(value) {
+        if (Model.isWebUrl(String(value).trim())) {
+            queueImport([String(value).trim()],[String(value).trim()]);return;
+        }
         if (textWriter.running) { statusText = "Wait for the current text item"; return; }
         importedText = value;
         textWriter.command = ["python3", "-c", "import os,sys,tempfile; os.makedirs(sys.argv[1],exist_ok=True); fd,path=tempfile.mkstemp(prefix='note-',suffix='.txt',dir=sys.argv[1]); os.write(fd,sys.argv[2].encode()); os.close(fd); print(path)", dataDir, value];
@@ -187,11 +271,6 @@ Item {
             return;
         }
 
-        if (downloader.running || imageWriter.running) {
-            statusText = "Please wait for the current image";
-            return;
-        }
-
         const nativeUrl = firstMimeText(drop, [
             "application/x-moz-file-promise-url",
             "application/x-moz-url",
@@ -205,39 +284,25 @@ Item {
             nativeUrl
         );
 
-        pendingCandidates = Model.remoteImageCandidates(
+        const candidates = Model.remoteImageCandidates(
             drop.urls || [],
             drop.hasText ? drop.text : "",
             drop.hasHtml ? drop.html : "",
             nativeUrl
         );
-        candidateAttempts = 0;
-
+        // Firefox supplies both a URL and binary image formats. Prefer the
+        // original URL so a transient/unsupported binary buffer cannot abort it.
+        if (candidates.length || directLinks.length) {
+            queueImport(candidates.length ? candidates : directLinks,directLinks); return;
+        }
         const imageFormat = imageMimeFormat(drop.formats || []);
-        if (imageFormat !== "") {
-            importBase64Image(imageFormat, Model.base64FromArrayBuffer(drop.getDataAsArrayBuffer(imageFormat)));
-            return;
-        }
-
-        const imageCandidates = pendingCandidates.filter(function(candidate) {
-            return Model.looksLikeImageSource(candidate);
-        });
-
-        if (imageCandidates.length > 0) {
-            pendingCandidates = imageCandidates;
-            tryNextCandidate();
-            return;
-        }
-
-        if (directLinks.length > 0) {
-            const next = Model.addUrls(entries, directLinks);
-            const added = next.length - entries.length;
-            entries = next;
-            statusText = added > 0
-                ? "Added " + added + (added === 1 ? " link" : " links")
-                : "Already on the shelf";
-            persist();
-            return;
+        if (imageFormat !== "" && !downloader.running && !imageWriter.running) {
+            const payload=Model.base64FromArrayBuffer(drop.getDataAsArrayBuffer(imageFormat));
+            if (payload) {
+                pendingCandidates=[];pendingLinks=[];candidateAttempts=0;
+                importBase64Image(imageFormat,payload);return;
+            }
+            statusText="Image data unavailable. Drop the image's link instead.";return;
         }
 
         if (drop.hasText && String(drop.text || "").trim() !== "") {
@@ -248,8 +313,10 @@ Item {
 
     function tryNextCandidate() {
         if (candidateAttempts >= maxCandidateAttempts || pendingCandidates.length === 0) {
-            pendingCandidates = [];
-            statusText = "Could not save that image";
+            const links=pendingLinks;
+            root.entries=Model.addUrls(root.entries,links);
+            root.persist(); root.importFinished();
+            statusText=links.length ? "No downloadable media found — link kept" : "Could not download this image or video";
             return;
         }
         const next = String(pendingCandidates.shift());
@@ -263,8 +330,9 @@ Item {
     }
 
     function importFinished() {
-        pendingCandidates = [];
+        pendingCandidates = [];pendingLinks=[];
         candidateAttempts = 0;
+        nextImport.restart();
     }
 
     function importBase64Image(mime, base64) {
@@ -272,9 +340,10 @@ Item {
         statusText = "Saving image…";
         imageWriter.command = [
             "bash", "-c",
-            "set -e; umask 077; mkdir -p -- \"$1\"; out=$(mktemp --tmpdir=\"$1\" dropshelf-XXXXXX.\"$2\"); trap 'rm -f -- \"$out\"' EXIT; base64 -d > \"$out\"; file -Lb --mime-type \"$out\" | grep -q '^image/'; trap - EXIT; printf '%s' \"$out\"",
-            "serpantinum-dropshelf", root.dataDir, suffix
+            "set -e; umask 077; python3 \"$3\" ensure '[]' >/dev/null; mkdir -p -- \"$1\"; out=$(mktemp --tmpdir=\"$1\" dropshelf-XXXXXX.\"$2\"); trap 'rm -f -- \"$out\"' EXIT; base64 -d > \"$out\"; file -Lb --mime-type \"$out\" | grep -q '^image/'; trap - EXIT; printf '%s' \"$out\"",
+            "serpantinum-dropshelf", root.ramImageDir, suffix, Caching.serpantinumDir + "/scripts/shelf_ram.py"
         ];
+        imageWriter.generation = importGeneration;
         imageWriter.stdinEnabled = true;
         imageWriter.running = true;
         imageWriter.write(base64);
@@ -282,12 +351,9 @@ Item {
     }
 
     function startDownload(url) {
-        statusText = candidateAttempts > 1 ? "Saving image… (trying another source)" : "Saving image…";
-        downloader.command = [
-            "bash", "-c",
-            "set -e; umask 077; mkdir -p -- \"$1\"; out=$(mktemp --tmpdir=\"$1\" dropshelf-XXXXXX); trap 'rm -f -- \"$out\"' EXIT; curl -fL --max-time 30 --max-filesize 52428800 --proto '=http,https' -A 'Mozilla/5.0' -e \"$3\" -o \"$out\" -- \"$2\"; mime=$(file -Lb --mime-type \"$out\"); case \"$mime\" in image/*) ;; *) exit 65 ;; esac; ext=$(printf '%s' \"${mime#image/}\" | tr -cd 'a-zA-Z0-9'); final=\"${out}.${ext:-img}\"; mv -- \"$out\" \"$final\"; trap - EXIT; printf '%s' \"$final\"",
-            "serpantinum-dropshelf", root.dataDir, url, Model.refererFor(url)
-        ];
+        statusText = "Downloading media to RAM…";
+        downloader.command = ["python3", Caching.serpantinumDir + "/scripts/shelf_download.py", url, Model.refererFor(url)];
+        downloader.generation = importGeneration;
         downloader.running = true;
     }
 
@@ -312,10 +378,12 @@ Item {
 
     Process {
         id: downloader
+        property int generation: 0
         running: false
         stdout: StdioCollector { id: downloadOutput; waitForEnd: true }
         onExited: function(exitCode) {
             const path = String(downloadOutput.text || "").trim();
+            if (downloader.generation !== root.importGeneration) { if (path) root.ramAction("remove",["file://"+encodeURI(path)]); return; }
             if (exitCode !== 0 || path === "") {
                 root.tryNextCandidate();
                 return;
@@ -323,17 +391,19 @@ Item {
             root.importFinished();
             const uri = "file://" + encodeURI(path);
             root.entries = Model.addUrls(root.entries, [uri]);
-            root.statusText = "Image added";
+            root.statusText = "Media added in RAM";
             root.persist();
         }
     }
 
     Process {
         id: imageWriter
+        property int generation: 0
         running: false
         stdout: StdioCollector { id: imageWriterOutput; waitForEnd: true }
         onExited: function(exitCode) {
             const path = String(imageWriterOutput.text || "").trim();
+            if (imageWriter.generation !== root.importGeneration) { if (path) root.ramAction("remove",["file://"+encodeURI(path)]); return; }
             if (exitCode !== 0 || path === "") {
                 root.tryNextCandidate();
                 return;
@@ -341,7 +411,7 @@ Item {
             root.importFinished();
             const uri = "file://" + encodeURI(path);
             root.entries = Model.addUrls(root.entries, [uri]);
-            root.statusText = "Image added";
+            root.statusText = "Media added in RAM";
             root.persist();
         }
     }

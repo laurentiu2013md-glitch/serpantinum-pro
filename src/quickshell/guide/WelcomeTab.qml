@@ -200,8 +200,8 @@ GuideTab {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 0
 
-                property string mainTitle: I18n.t("guide.about.title")
-                property string verText: " v" + (Updater.localVersion !== "..." ? Updater.localVersion : (rootObj.dotsVersion !== "Loading..." && rootObj.dotsVersion !== I18n.t("guide.about.loading") ? rootObj.dotsVersion : "2.0.0"))
+                property string mainTitle: "Serpantinum Pro"
+                property string verText: ""
                 property string fullText: mainTitle + verText
 
                 Repeater {
@@ -212,12 +212,12 @@ GuideTab {
 
                         text: modelData === " " ? "\u00A0" : modelData
                         font.family: ThemeBackend.fontFamily
-                        font.weight: index < 11 ? Font.Black : Font.Bold
-                        font.pixelSize: index < 11 ? rootObj.s(32) : rootObj.s(14)
-                        color: ThemeBackend.neutralTextColor(index < 11 ? ThemeBackend.text : ThemeBackend.subtext0)
+                        font.weight: Font.Black
+                        font.pixelSize: rootObj.s(32)
+                        color: ThemeBackend.text
 
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: index < 11 ? 0 : rootObj.s(4)
+                        anchors.bottomMargin: 0
 
                         transform: Translate {
                             y: Math.sin(welcomeTabRoot.titleWavePhase - index * 0.35) * rootObj.s(2.5)
@@ -227,7 +227,7 @@ GuideTab {
             }
 
             Text {
-                text: I18n.t("guide.welcome.by_author", { author: "ilyamiro" })
+                text: "by laurentiu2013md-glitch"
                 font.family: ThemeBackend.fontFamily
                 font.pixelSize: rootObj.s(14)
                 color: ThemeBackend.subtext0

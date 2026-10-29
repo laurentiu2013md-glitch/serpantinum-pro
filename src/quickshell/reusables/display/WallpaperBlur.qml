@@ -23,7 +23,7 @@ Item {
     property bool earsOnly: false
     property rect boxRect: Qt.rect(0, 0, 0, 0)
     property Item maskItem: null
-    property real bezelSize: Math.max(5, Math.min(26, Math.min(width, height) * 0.36))
+    property real bezelSize: Math.max(6, Math.min(22, Math.min(width, height) * 0.25))
 
     readonly property bool liquid: ThemeBackend.liquidGlass
     readonly property real blurPad: liquid ? 0 : 64
@@ -37,9 +37,19 @@ Item {
     property bool surfaceEnabled: true
 
     Component.onCompleted: {
+        syncLiveRegistration();
         inheritedOwner = findInheritedOwner();
         nestLevel = (standalone || inheritedOwner !== null) ? 0 : Nesting.nestLevel(root, null, true);
     }
+    property bool liveRegistered: false
+    function syncLiveRegistration() {
+        const wanted = root.active && root.liquid;
+        if (wanted === liveRegistered) return;
+        if (wanted) LiveGlassScene.registerSurface(root);
+        else LiveGlassScene.unregisterSurface(root);
+        liveRegistered = wanted;
+    }
+    Component.onDestruction: if (liveRegistered) LiveGlassScene.unregisterSurface(root)
     readonly property bool transitioning: engine ? (engine.transitionProgress > 0.0 && engine.transitionProgress < 1.0) : false
     property int frame: 0
 
@@ -118,7 +128,7 @@ Item {
     onOldSourceChanged: refreshTexture()
     onRevisionChanged: refreshTexture()
     onConsumersChanged: refreshTexture()
-    onLiquidChanged: refreshTexture()
+    onLiquidChanged: { refreshTexture(); syncLiveRegistration(); }
     onTintChanged: refreshTexture()
     onBlurStrengthChanged: refreshTexture()
 
@@ -173,6 +183,7 @@ Item {
     }
 
     onActiveChanged: {
+        syncLiveRegistration();
         if (active) refreshGeometry();
     }
 
@@ -202,6 +213,9 @@ Item {
 
                     Image {
                         anchors.fill: parent
+                        scale: root.engine && root.engine.depthScale !== undefined ? root.engine.depthScale : 1
+                        Behavior on scale { NumberAnimation { duration: Motion.duration(650); easing.type: Easing.OutCubic } }
+                        transform: Translate { x: root.engine && root.engine.depthOffsetX !== undefined ? root.engine.depthOffsetX : 0; y: root.engine && root.engine.depthOffsetY !== undefined ? root.engine.depthOffsetY : 0 }
                         source: root.oldSource
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
@@ -223,6 +237,9 @@ Item {
 
                     Image {
                         anchors.fill: parent
+                        scale: root.engine && root.engine.depthScale !== undefined ? root.engine.depthScale : 1
+                        Behavior on scale { NumberAnimation { duration: Motion.duration(650); easing.type: Easing.OutCubic } }
+                        transform: Translate { x: root.engine && root.engine.depthOffsetX !== undefined ? root.engine.depthOffsetX : 0; y: root.engine && root.engine.depthOffsetY !== undefined ? root.engine.depthOffsetY : 0 }
                         source: root.newSource
                         fillMode: Image.PreserveAspectCrop
                         asynchronous: true
@@ -260,6 +277,25 @@ Item {
                         property vector2d origin: Qt.vector2d(root.engine ? root.engine.transitionOriginX : 0.5, root.engine ? root.engine.transitionOriginY : 0.5)
                         property vector4d params: Qt.vector4d(root.engine && root.engine.wipeIsVertical ? 1.0 : 0.0, root.engine ? root.engine.swipeDirection : 0, 0.0, 0.0)
 
+                        fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/transitions/wallpaper_blend.frag.qsb"
+                    }
+
+                    ShaderEffect {
+                        x: root.imageX + root.blurPad
+                        y: root.imageY + root.blurPad
+                        width: root.screenWidth
+                        height: root.screenHeight
+                        scale: root.imageScale
+                        transformOrigin: Item.TopLeft
+                        rotation: root.imageRotation
+                        property variant newTex: root.active && root.liquid ? LiveGlassScene.sceneFor(root.hostScreen, root.hostWindow) : null
+                        property variant oldTex: newTex
+                        visible: root.active && root.liquid && newTex !== null
+                        property vector2d itemSize: Qt.vector2d(width, height)
+                        property real progress: 1.0
+                        property real transitionType: 0
+                        property vector2d origin: Qt.vector2d(0.5, 0.5)
+                        property vector4d params: Qt.vector4d(0, 0, 0, 0)
                         fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/transitions/wallpaper_blend.frag.qsb"
                     }
 
@@ -319,15 +355,19 @@ Item {
                         id: glassEffect
                         anchors.fill: parent
                         visible: root.liquid
+                        opacity: ThemeBackend.elementOpacity
                         src: content
                         topLeftRadius: root.topLeftRadius
                         topRightRadius: root.topRightRadius
                         bottomLeftRadius: root.bottomLeftRadius
                         bottomRightRadius: root.bottomRightRadius
                         tintColor: ThemeBackend.base
-                        tintAmount: Math.max(root.tint, 0.12) * (1 - 0.5 * root.nest)
-                        frost: Math.max(0.5, root.blurStrength * 2.5) * 1.08 * (1 - 0.5 * root.nest)
-                        rim: root.rim * (1 - 0.35 * root.nest)
+                        tintAmount: Math.max(root.tint, ThemeBackend.isLight ? 0.14 : 0.24) * (1 - 0.5 * root.nest)
+                        frost: Math.max(4, Math.min(16, Math.min(root.width, root.height) * 0.08)) * root.blurStrength * (1 - 0.35 * root.nest)
+                        rim: root.rim * 1.25 * (1 - 0.35 * root.nest)
+                        dispersion: 0.035
+                        saturation: 1.12
+                        morph: Motion.reduced ? 0 : 0.25
                         nest: root.nest
                         bezel: root.bezelSize
                         filletDir: root.filletDir
@@ -347,7 +387,7 @@ Item {
                     id: glassTexture
                     anchors.fill: parent
                     sourceItem: rendered
-                    live: root.liquid && root.consumers > 0 && root.transitioning
+                    live: root.liquid && root.consumers > 0 && (root.transitioning || LiveGlassScene.enabled)
                     mipmap: true
                     visible: false
                     smooth: true
@@ -363,7 +403,7 @@ Item {
     }
 
     property real hoverAmount: pointer.hovered ? 1.0 : 0.0
-    Behavior on hoverAmount { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on hoverAmount { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
 
     property real cursorX: width / 2
     property real cursorY: height / 2

@@ -12,6 +12,8 @@ Rectangle {
     Layout.preferredHeight: rootObj.s(72)
     radius: ThemeBackend.borderRadius
     color: ThemeBackend.surface0
+    border.color: Qt.alpha(ThemeBackend.surface2, 0.6)
+    border.width: 1
 
     Rectangle {
         id: maskRect

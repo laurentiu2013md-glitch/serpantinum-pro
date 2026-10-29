@@ -89,17 +89,40 @@ ColumnLayout {
                             Rectangle {
                                 required property var modelData
                                 Layout.fillWidth: true
-                                implicitHeight: 72
+                                implicitHeight: Config.getSetting("coloros", {}).bluetoothBatteries !== false && modelData.connected ? 100 : 72
                                 radius: 14
                                 color: "transparent"
                                 Rectangle { anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom; height: 1; color: ThemeBackend.borderColor }
                                 RowLayout {
                                     anchors.fill: parent; anchors.margins: 10; spacing: 10
-                                    Caption { text: modelData.icon && modelData.icon.indexOf("audio") !== -1 ? "󰋋" : "󰂯"; font.family: ThemeBackend.iconFont; font.pixelSize: 24 }
+                                    PulseIcon {
+                                        text: modelData.icon && modelData.icon.indexOf("audio") !== -1 ? "󰋋" : "󰂯"
+                                        accent: ThemeBackend.green
+                                        property bool connected: modelData.connected
+                                        onConnectedChanged: if (connected) pulse()
+                                    }
                                     ColumnLayout {
                                         Layout.fillWidth: true
                                         Caption { Layout.fillWidth: true; text: modelData.name || modelData.deviceName || modelData.address; font.bold: true }
                                         Caption { Layout.fillWidth: true; text: (modelData.connected ? "Connected" : modelData.paired ? "Paired" : "Available") + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : ""); font.pixelSize: 11; opacity: 0.65 }
+                                        Row {
+                                            visible: modelData.connected && Config.getSetting("coloros", {}).bluetoothBatteries !== false
+                                            spacing: 12
+                                            property var cells: BluetoothController.batteryDetails[modelData.address] || (modelData.batteryAvailable ? [{label:"Battery",percentage:Math.round(modelData.battery*100)}] : [])
+                                            Repeater {
+                                                model: parent.cells
+                                                Column {
+                                                    required property var modelData
+                                                    spacing: 4
+                                                    Caption { text: modelData.label + " " + modelData.percentage + "%"; font.pixelSize: 10 }
+                                                    Rectangle {
+                                                        width: 56; height: 3; radius: 1.5; color: Qt.alpha(ThemeBackend.text,.12)
+                                                        Rectangle { width: parent.width * modelData.percentage / 100; height: parent.height; radius: parent.radius; color: modelData.percentage <= 20 ? ThemeBackend.red : ThemeBackend.green }
+                                                    }
+                                                }
+                                            }
+                                            Caption { visible: parent.cells.length === 0; text: "Battery not reported"; font.pixelSize: 10; opacity: .55 }
+                                        }
                                     }
                                     Action { text: modelData.connected ? "Disconnect" : modelData.paired || modelData.bonded ? "Connect" : "Pair"; enabled: BluetoothController.adapter && BluetoothController.adapter.enabled && !BluetoothController.busy; onClicked: BluetoothController.run(modelData.connected ? "disconnect" : modelData.paired || modelData.bonded ? "connect" : "pair", modelData) }
                                     Action { text: "×"; visible: modelData.paired || modelData.bonded; Accessible.name: "Forget device"; enabled: !BluetoothController.busy; onClicked: panel.forgetDevice = modelData }

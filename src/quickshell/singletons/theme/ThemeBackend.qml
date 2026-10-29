@@ -21,12 +21,13 @@ Item {
     property real elementOpacity: 1.0
     property bool blurBackground: false
     property string blurStyle: "blur"
-    readonly property real liquidGlassOpacity: 0.1
+    readonly property real liquidGlassOpacity: elementOpacity
     readonly property bool glassActive: !GameMode.enabled && blurBackground && elementOpacity < 0.999
     readonly property bool liquidGlass: !GameMode.enabled && blurBackground && blurStyle === "liquid"
-    // Hyprland blurs the live scene behind translucent shell surfaces.
+    // Regular blur uses the compositor; Liquid Glass owns its live refracted backdrop.
     readonly property bool compositorBlur: !GameMode.enabled && blurBackground && !liquidGlass && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
 
+    readonly property bool isGray: Config.getSetting("theme", {}).mode === "gray"
     property color base: "#1e1e2e"
     readonly property bool isLight: (0.2126 * base.r + 0.7152 * base.g + 0.0722 * base.b) > 0.6
     property color mantle: "#181825"
@@ -34,9 +35,9 @@ Item {
     property color _text: "#cdd6f4"
     property color _subtext0: "#a6adc8"
     property color _subtext1: "#bac2de"
-    readonly property color text: (!isLight || liquidGlass) ? "#ffffff" : _text
-    readonly property color subtext0: (!isLight || liquidGlass) ? "#ffffff" : _subtext0
-    readonly property color subtext1: (!isLight || liquidGlass) ? "#ffffff" : _subtext1
+    readonly property color text: isGray ? "#101010" : (!isLight || liquidGlass) ? "#ffffff" : _text
+    readonly property color subtext0: isGray ? "#101010" : (!isLight || liquidGlass) ? "#ffffff" : _subtext0
+    readonly property color subtext1: isGray ? "#101010" : (!isLight || liquidGlass) ? "#ffffff" : _subtext1
     property color surface0: "#313244"
     property color surface1: "#45475a"
     property color surface2: "#585b70"
@@ -203,6 +204,11 @@ Item {
     IpcHandler {
         target: "theme"
 
+        function state(): string {
+            return JSON.stringify({blur: root.blurBackground, style: root.blurStyle, liquid: root.liquidGlass,
+                opacity: root.elementOpacity, compositorBlur: root.compositorBlur, gameMode: GameMode.enabled, liveSurfaces: LiveGlassScene.consumers});
+        }
+
         function reloadColors() {
             root.reloadColors();
         }
@@ -253,8 +259,9 @@ Item {
         return false;
     }
 
-    // Keep neutral and white text unchanged; render chromatic labels in pure black.
+    // Dark-mode labels are white; light mode retains neutral/chromatic text handling.
     function neutralTextColor(value) {
+        if (root.isGray) return Qt.color("#101010");
         if (!root.isLight) return Qt.rgba(1, 1, 1, 1);
         const c = Qt.color(value);
         const chroma = Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b);
@@ -270,7 +277,7 @@ Item {
         const pct = themeConfig.elementOpacity !== undefined ? Number(themeConfig.elementOpacity) : 100;
         root.blurBackground = !GameMode.enabled && !Caching.isStandalone && (themeConfig.blurBackground !== undefined ? Boolean(themeConfig.blurBackground) : false);
         root.blurStyle = themeConfig.blurStyle === "liquid" ? "liquid" : "blur";
-        root.elementOpacity = (GameMode.enabled || Caching.isStandalone) ? 1.0 : root.liquidGlass ? root.liquidGlassOpacity : (isNaN(pct) ? 1.0 : Math.max(0, Math.min(1.0, pct / 100.0)));
+        root.elementOpacity = (GameMode.enabled || Caching.isStandalone) ? 1.0 : (isNaN(pct) ? 1.0 : Math.max(0, Math.min(1.0, pct / 100.0)));
     }
 
     function updateColors() {
@@ -308,7 +315,7 @@ Item {
 
     Process {
         id: syncDesktopPalette
-        command: ["python3", Caching.serpantinumDir + "/scripts/coloros/sync-theme.py"]
+        command: ["python3", Quickshell.env("HOME") + "/.config/serpantinum/user/ColorOS/tools/sync-theme.py"]
     }
     Timer { id: paletteSyncDebounce; interval: 300; onTriggered: if (!syncDesktopPalette.running) syncDesktopPalette.running = true }
     function applyColorObject(c) {
@@ -327,10 +334,13 @@ Item {
         };
 
         // Keep Matugen accents, but use coordinated neutral grays for shell surfaces.
-        if (Config.getSetting("coloros", {}).neutralSurfaces !== false) {
+        if (root.isGray || Config.getSetting("coloros", {}).neutralSurfaces !== false) {
             const rawBase = Qt.color(resolveHex(c.base) || "#252830");
-            const light = (rawBase.r * 0.2126 + rawBase.g * 0.7152 + rawBase.b * 0.0722) > 0.6;
-            const neutral = light
+            const requestedMode = Config.getSetting("theme", {}).mode;
+            const light = requestedMode === "light" || (requestedMode !== "dark" && (rawBase.r * 0.2126 + rawBase.g * 0.7152 + rawBase.b * 0.0722) > 0.6);
+            const neutral = root.isGray
+                ? {base:"#808080", mantle:"#787878", crust:"#707070", surface0:"#888888", surface1:"#949494", surface2:"#a0a0a0", text:"#101010", subtext0:"#181818", subtext1:"#141414"}
+                : light
                 ? {base:"#e6e8ec", mantle:"#dde0e5", crust:"#d4d8df", surface0:"#f0f1f4", surface1:"#d7dce3", surface2:"#c3cbd5", text:"#1b1f28", subtext0:"#505866", subtext1:"#3e4755"}
                 : {base:"#252830", mantle:"#20232a", crust:"#191c22", surface0:"#30343e", surface1:"#3d4350", surface2:"#505967", text:"#f1f3f7", subtext0:"#bbc2cf", subtext1:"#d0d5df"};
             c = Object.assign({}, c, neutral);

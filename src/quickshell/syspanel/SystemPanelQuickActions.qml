@@ -53,8 +53,8 @@ Item {
             shadow: 1
             press: qaMa.pressed ? 1 : (qaMa.containsMouse ? 0.25 : 0)
             pulse: qaBtn.togglePulse
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on press { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+            Behavior on tintAmount { NumberAnimation { duration: 180 } }
         }
         Behavior on color {
             enabled: view.panel.visible
@@ -64,7 +64,7 @@ Item {
         scale: qaMa.pressed ? 0.95 : (qaMa.containsMouse ? 1.01 : 1.0)
         Behavior on scale {
             enabled: view.panel.visible
-            NumberAnimation { duration: 250; easing.type: Easing.OutQuart }
+            NumberAnimation { duration: 200; easing.type: Easing.OutQuart }
         }
 
         Text {
@@ -375,13 +375,13 @@ Item {
         QuickActionBtn {
             id: themeModeBtn
             objectName: "systemThemeModeButton"
-            iconText: isActive ? "󰖔" : "󰖙"
+            iconText: ThemeBackend.isGray ? "󰔎" : isActive ? "󰖔" : "󰖙"
             activeColor: ThemeBackend.mauve
             isActive: Config.getSetting("theme", {}).mode === "dark"
             enabled: !Matugen.isRunning
             opacity: Matugen.isRunning ? 0.5 : 1
             Accessible.role: Accessible.CheckBox
-            Accessible.name: isActive ? "Dark mode; switch to light" : "Light mode; switch to dark"
+            Accessible.name: "Appearance: " + (Config.getSetting("theme",{}).mode || "dark") + "; cycle light, gray, dark"
             Accessible.checked: isActive
             Accessible.onPressAction: { if (!Matugen.isRunning) Matugen.toggleMode(); }
             onLeftClicked: { if (!Matugen.isRunning) Matugen.toggleMode(); }

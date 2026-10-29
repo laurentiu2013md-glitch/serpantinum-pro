@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Io
@@ -19,6 +20,7 @@ Item {
         && !BarPointerZone.nearTop(barWindow.screen) && !islandPreview.opened
         && Config.getSetting("coloros", {}).clockOnlyAway !== false
     property var barWindow
+    readonly property real recordingMarkerWidth: RecordingState.active ? (barWindow ? barWindow.s(24) : 24) : 0
 
     readonly property real islandExpansion: visible ? islandPreview.height : 0
     function headerOpacity(item) {
@@ -52,7 +54,7 @@ Item {
         id: islandPreview
         barWindow: contentWrapper.barWindow
         // A small inset protects header text from the closing bounce undershoot.
-        collapsedWidth: (contentWrapper.clockOnly ? contentWrapper.wTimedate + contentWrapper.groupPad * 2 : contentWrapper.cWidthTarget) + (barWindow ? barWindow.s(40) : 40)
+        collapsedWidth: contentWrapper.clockOnly ? Math.max(contentWrapper.wWorkspaces, contentWrapper.wTimedate + contentWrapper.recordingMarkerWidth + (barWindow ? barWindow.s(28) : 28)) : contentWrapper.cWidthTarget + (barWindow ? barWindow.s(40) : 40)
         x: contentWrapper.cFinalX + (contentWrapper.cWidthTarget - width) / 2
         y: barWindow ? (contentWrapper.barAtBottom
             ? barWindow.baseOffsetY - height
@@ -61,6 +63,44 @@ Item {
         z: 10
     }
 
+    Rectangle {
+        id: compactRecordingMarker
+        visible: contentWrapper.clockOnly && RecordingState.active
+        z: 30
+        width: barWindow ? barWindow.s(18) : 18
+        height: width; radius: width/2
+        x: contentWrapper.timeDateWidget ? contentWrapper.timeDateWidget.x + contentWrapper.timeDateWidget.width + (barWindow ? barWindow.s(6) : 6) : 0
+        y: barWindow ? barWindow.baseOffsetY + (barWindow.barHeight-height)/2 : 0
+        color: "transparent"; border.width: 2; border.color: "#ff453a"
+        Accessible.role: Accessible.StaticText
+        Accessible.name: "Screen recording in progress"
+        Rectangle { anchors.centerIn: parent; width: parent.width*.46; height: width; radius: width/2; color: "#ff453a" }
+        SequentialAnimation on opacity {
+            running: compactRecordingMarker.visible && !Motion.reduced && !GameMode.enabled
+            loops: Animation.Infinite
+            NumberAnimation { to: .6; duration: 850; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 1; duration: 850; easing.type: Easing.InOutSine }
+            onRunningChanged: if (!running) compactRecordingMarker.opacity=1
+        }
+    }
+
+    readonly property alias controlsEdgeArea: controlsEdge
+    MouseArea {
+        id: controlsEdge
+        anchors.top: parent.top; anchors.right: parent.right
+        width: contentWrapper.barWindow ? contentWrapper.barWindow.s(96) : 96
+        height: 12; z: 200
+        visible: !contentWrapper.barAtBottom
+        hoverEnabled: true; preventStealing: true
+        property bool pulled: false
+        onPressed: { pulled = true; IslandController.request("controls","open",contentWrapper.barWindow.screen); }
+        onPositionChanged: mouse => {
+            if (pressed && !pulled && mouse.y > 34) { pulled = true; IslandController.request("controls","keyboard",contentWrapper.barWindow.screen); }
+        }
+        onClicked: if (!pulled) IslandController.request("controls","keyboard",contentWrapper.barWindow.screen)
+        Accessible.name: "Pull down for quick controls"
+        Rectangle { anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.top; anchors.topMargin: 2; width: 28; height: 3; radius: 2; color: ThemeBackend.text; opacity: controlsEdge.containsMouse || controlsEdge.pressed ? .8 : .18 }
+    }
     readonly property alias shelfEdgeArea: shelfEdge
     Item {
         id: shelfEdge
@@ -835,7 +875,7 @@ Item {
                 let firstX = -1;
                 let lastX = -1;
                 let lastW = 0;
-                let groupH = barWindow ? ((contentWrapper.isSolid && contentWrapper.distinctPills) ? barWindow.barHeight - 6 : barWindow.barHeight) : ((contentWrapper.isSolid && contentWrapper.distinctPills) ? 24 : 30);
+                let groupH = isCenterGroup && contentWrapper.clockOnly ? (contentWrapper.workspacesWidget ? contentWrapper.workspacesWidget.height : (barWindow ? barWindow.barHeight : 48)) : barWindow ? ((contentWrapper.isSolid && contentWrapper.distinctPills) ? barWindow.barHeight - 6 : barWindow.barHeight) : ((contentWrapper.isSolid && contentWrapper.distinctPills) ? 24 : 30);
                 for (let i = 0; i < groupIds.length; i++) {
                     let id = groupIds[i];
                     let widget = contentWrapper.getPositionedWidget(id);
@@ -865,7 +905,7 @@ Item {
             visible: metrics.v && (barWindow ? !barWindow.positionChanging : true) && width > 0 && (!contentWrapper.isSolid || contentWrapper.distinctPills)
             opacity: visible ? 1.0 : 0.0
 
-            color: (isCenterGroup && islandPreview.weatherBackdropActive) ? "transparent" : (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
+            color: (isCenterGroup && (islandPreview.weatherBackdropActive || islandPreview.spotifyArtworkActive)) ? "transparent" : (groupGlass.active || (ThemeBackend.liquidGlass && groupBlur.active)) ? "transparent" : ((contentWrapper.isSolid && contentWrapper.distinctPills)
                 ? Qt.alpha(Qt.darker(ThemeBackend.surface0, 1.15), (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
                 : Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0))
             radius: ThemeBackend.borderRadius
@@ -875,11 +915,19 @@ Item {
                 anchors.fill: parent
                 radius: parent.radius
                 color: "transparent"
-                visible: groupBgRect.isCenterGroup && islandPreview.weatherBackdropActive
+                visible: groupBgRect.isCenterGroup && (islandPreview.weatherBackdropActive || islandPreview.spotifyArtworkActive)
                 Loader {
                     anchors.fill: parent
-                    active: parent.visible
+                    active: islandPreview.weatherBackdropActive
                     sourceComponent: WeatherSky {
+                        backgroundOpacity: (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 0.5
+                    }
+                }
+                Loader {
+                    anchors.fill: parent
+                    active: islandPreview.spotifyArtworkActive
+                    sourceComponent: ArtworkBackdrop {
+                        artwork: islandPreview.musicArtwork
                         backgroundOpacity: (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 0.5
                     }
                 }
@@ -932,6 +980,7 @@ Item {
             isSolid: contentWrapper.isSolid || contentWrapper.isFill
             distinctPills: contentWrapper.distinctPills
             islandHeader: contentWrapper.flatCenterArr.indexOf(modelData) !== -1
+            islandClockOnly: islandHeader && contentWrapper.clockOnly
             // Reveal each module as the actual surface and moving clock clear its bounds.
             revealOpacity: islandHeader && modelData !== "timedate" ? contentWrapper.headerOpacity(barMod) : 1
             moduleActive: contentWrapper.isModuleActive(modelData)
@@ -939,7 +988,7 @@ Item {
             isGrouped: contentWrapper.isModuleGrouped(modelData)
             providedBackdrop: { void groupBgRepeater.count; void contentWrapper.groupRev; return contentWrapper ? contentWrapper.backdropFor(modelData) : null; }
             targetX: islandHeader && modelData === "timedate" && contentWrapper.clockOnly
-                ? contentWrapper.cFinalX + (contentWrapper.cWidthTarget - targetWidth) / 2
+                ? contentWrapper.cFinalX + (contentWrapper.cWidthTarget - targetWidth - contentWrapper.recordingMarkerWidth) / 2
                 : contentWrapper.getModuleX(modelData, contentWrapper.layoutState)
             suppressAnimation: contentWrapper.suppressAnimation
             layoutAnimationsEnabled: contentWrapper.layoutAnimationsEnabled
@@ -947,9 +996,9 @@ Item {
 
             HoverHandler {
                 enabled: barMod.moduleActive && (["bt", "wifi"].indexOf(barMod.moduleId) !== -1 || (contentWrapper.flatCenterArr.indexOf(barMod.moduleId) !== -1
-                    && ["media", "timedate", "weather"].indexOf(barMod.moduleId) !== -1))
+                    && ["media", "timedate", "weather", "bat"].indexOf(barMod.moduleId) !== -1))
                 onHoveredChanged: {
-                    if (hovered) islandPreview.enter(barMod, barMod.moduleId === "bt" ? "bluetooth" : barMod.moduleId === "wifi" ? "network" : barMod.moduleId === "media" ? "music" : "calendar");
+                    if (hovered) islandPreview.enter(barMod, barMod.moduleId === "bt" ? "bluetooth" : barMod.moduleId === "wifi" ? "network" : barMod.moduleId === "bat" ? "battery" : barMod.moduleId === "media" ? "music" : barMod.moduleId === "timedate" && TimerState.focusActive ? "focus" : "calendar");
                     else islandPreview.leave(barMod);
                 }
             }

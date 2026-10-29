@@ -28,6 +28,14 @@ Item {
     property int scrollAccum: 0
     property real scrollThreshold: window.s(45)
 
+    IpcHandler {
+        target: "wallpaperPicker"
+        function state(): string {
+            let videos=0;
+            for(let i=0;i<displayModel.count;i++) if(displayModel.get(i).isVideo) videos++;
+            return JSON.stringify({filter:window.currentFilter,count:displayModel.count,videos:videos,photos:localProxyModel.count,videoSource:videoProxyModel.count,categories:window.filterData.map(item=>item.name)});
+        }
+    }
     property string currentFilter: "All"
     property string _lastFilter: "All"
     property string searchQuery: ""
@@ -121,10 +129,10 @@ Item {
         id: exitAnim
         running: false
         ParallelAnimation {
-            NumberAnimation { target: filterBarBackground; property: "anchors.topMargin"; to: window.s(-75); duration: 150; easing.type: Easing.InCubic }
+            NumberAnimation { target: filterBarBackground; property: "anchors.topMargin"; to: window.s(-75); duration: 180; easing.type: Easing.InCubic }
             NumberAnimation { target: filterBarBackground; property: "opacity"; to: 0.0; duration: 160; easing.type: Easing.InQuad }
-            NumberAnimation { target: view; property: "opacity"; to: 0.0; duration: 250; easing.type: Easing.InQuad }
-            NumberAnimation { target: view; property: "anchors.margins"; to: window.s(45); duration: 250; easing.type: Easing.InCubic }
+            NumberAnimation { target: view; property: "opacity"; to: 0.0; duration: 200; easing.type: Easing.InQuad }
+            NumberAnimation { target: view; property: "anchors.margins"; to: window.s(45); duration: 200; easing.type: Easing.InCubic }
         }
         ScriptAction {
             script: {
@@ -158,9 +166,7 @@ Item {
     property int _lastSearchFolderCount: 0
 
     readonly property var filterData: [
-        { name: "All", hex: "", label: I18n.t("wallpaper.filters.all") },
-        { name: "History", hex: "", label: I18n.t("wallpaper.filters.history") },
-        { name: "Video", hex: "", label: I18n.t("wallpaper.filters.vid") },
+        { name: "All", hex: "", label: "All wallpapers" },
         { name: "Red", hex: "#FF4500", label: "" },
         { name: "Orange", hex: "#FFA500", label: "" },
         { name: "Yellow", hex: "#FFD700", label: "" },
@@ -238,13 +244,24 @@ Item {
         }
     }
 
-    MediaPlayer {
-        id: globalPreviewPlayer
-        audioOutput: AudioOutput { muted: true }
-        loops: MediaPlayer.Infinite
+    Component {
+        id: previewPlayerComponent
+        MediaPlayer {
+            audioOutput: AudioOutput { muted: true }
+            loops: MediaPlayer.Infinite
+        }
+    }
+
+    property var globalPreviewPlayer: null
+    readonly property bool previewPlaying: !!globalPreviewPlayer && globalPreviewPlayer.playbackState === MediaPlayer.PlayingState
+
+    function ensurePreviewPlayer() {
+        if (!globalPreviewPlayer) globalPreviewPlayer = previewPlayerComponent.createObject(window);
+        return globalPreviewPlayer;
     }
 
     function resetPreviewPlayer() {
+        if (!globalPreviewPlayer) return;
         if (globalPreviewPlayer.playbackState === MediaPlayer.PlayingState) {
             globalPreviewPlayer.stop();
         }
@@ -564,26 +581,10 @@ Item {
             return;
         }
 
-        let isVid = window.isVideoTarget(window.targetWallName);
-        if (isVid) {
-            if (window.currentFilter !== "Video") {
-                window._silentFilterChange = true;
-                window.currentFilter = "Video";
-                window._silentFilterChange = false;
-            }
-        } else {
-            if (window.currentFilter === "Video" || window.currentFilter === "Search") {
-                window._silentFilterChange = true;
-                window.currentFilter = "All";
-                window._silentFilterChange = false;
-            } else if (window.currentFilter !== "All" && window.currentFilter !== "History") {
-                let b = window.bucketMap[window.targetWallName] || window.bucketMap[window.getCleanName(window.targetWallName)] || window.bucketMap[window.getCleanBaseName(window.targetWallName)] || "";
-                if (b && b !== window.currentFilter) {
-                    window._silentFilterChange = true;
-                    window.currentFilter = "All";
-                    window._silentFilterChange = false;
-                }
-            }
+        if (window.currentFilter === "History" || window.currentFilter === "Video" || window.currentFilter === "Search") {
+            window._silentFilterChange = true;
+            window.currentFilter = "All";
+            window._silentFilterChange = false;
         }
         window.applyFilters(true);
     }
@@ -1264,8 +1265,9 @@ Item {
         let anchorIndex = -1;
 
         if (isLocalMode) {
-            for (let i = 0; i < localProxyModel.count; i++) {
-                let it = localProxyModel.get(i);
+            const combinedCount = localProxyModel.count + videoProxyModel.count;
+            for (let i = 0; i < combinedCount; i++) {
+                let it = i < localProxyModel.count ? localProxyModel.get(i) : videoProxyModel.get(i - localProxyModel.count);
                 if (!it || !it.fileName) continue;
                 let fname = it.fileName;
                 if (seenNames[fname]) continue;
@@ -1278,7 +1280,7 @@ Item {
                     "fileUrl": String(it.fileUrl),
                     "posterPath": it.posterPath || "",
                     "posterUrl": String(it.posterUrl || ""),
-                    "isVideo": false,
+                    "isVideo": !!it.isVideo,
                     "hex": it.hex || "#808080",
                     "bucket": bucket
                 });
@@ -1662,7 +1664,7 @@ Item {
 
             ListView.onPooled: {
                 imageRetryTimer.stop();
-                if (delegateRoot.isPlayingVideo || globalPreviewPlayer.videoOutput === previewOutput) {
+                if (delegateRoot.isPlayingVideo || (window.globalPreviewPlayer && previewOutputLoader.item && window.globalPreviewPlayer.videoOutput === previewOutputLoader.item)) {
                     window.resetPreviewPlayer();
                     delegateRoot.isPlayingVideo = false;
                 }
@@ -1706,16 +1708,17 @@ Item {
                     isPlayingVideo = false;
                 } else {
                     window.resetPreviewPlayer();
-                    globalPreviewPlayer.videoOutput = previewOutput;
-                    globalPreviewPlayer.source = delegateRoot.itemFileUrl !== "" ? delegateRoot.itemFileUrl : ("file://" + window.srcDir + "/" + window.getOriginalFileName(delegateRoot.safeFileName));
+                    let player = window.ensurePreviewPlayer();
                     isPlayingVideo = true;
-                    globalPreviewPlayer.play();
+                    player.videoOutput = previewOutputLoader.item;
+                    player.source = delegateRoot.itemFileUrl !== "" ? delegateRoot.itemFileUrl : ("file://" + window.srcDir + "/" + window.getOriginalFileName(delegateRoot.safeFileName));
+                    player.play();
                 }
             }
 
             onIsVisuallyEnlargedChanged: {
                 if (!isVisuallyEnlarged) {
-                    if (globalPreviewPlayer.videoOutput === previewOutput) {
+                    if (window.globalPreviewPlayer && previewOutputLoader.item && window.globalPreviewPlayer.videoOutput === previewOutputLoader.item) {
                         window.resetPreviewPlayer();
                     }
                     isPlayingVideo = false;
@@ -1730,7 +1733,7 @@ Item {
             anchors.verticalCenterOffset: window.s(25)
             z: isVisuallyEnlarged ? 100 : Math.max(1, 50 - dist)
 
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
             Behavior on width { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
             Behavior on height { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
 
@@ -1822,15 +1825,20 @@ Item {
                             transform: Matrix4x4 { property real s: -window.skewFactor; matrix: Qt.matrix4x4(1, s, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) }
                         }
 
-                        VideoOutput {
-                            id: previewOutput
+                        Loader {
+                            id: previewOutputLoader
                             anchors.centerIn: parent ? parent : undefined
                             anchors.horizontalCenterOffset: window.s(-50)
                             width: (window.itemWidth * 1.5) + ((window.itemHeight + window.s(30)) * Math.abs(window.skewFactor)) + window.s(50)
                             height: window.itemHeight + window.s(30)
-                            fillMode: VideoOutput.PreserveAspectCrop
-                            visible: delegateRoot.isPlayingVideo && globalPreviewPlayer.playbackState === MediaPlayer.PlayingState
+                            active: delegateRoot.isPlayingVideo
+                            visible: delegateRoot.isPlayingVideo && window.previewPlaying
                             transform: Matrix4x4 { property real s: -window.skewFactor; matrix: Qt.matrix4x4(1, s, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) }
+                            sourceComponent: Component {
+                                VideoOutput {
+                                    fillMode: VideoOutput.PreserveAspectCrop
+                                }
+                            }
                         }
 
                         IconButton {
@@ -1841,11 +1849,11 @@ Item {
                             size: window.s(50)
                             cornerRadius: window.s(16)
                             iconFontSize: window.s(20)
-                            buttonIcon: delegateRoot.isPlayingVideo && globalPreviewPlayer.playbackState === MediaPlayer.PlayingState ? "󰏤" : "󰐊"
+                            buttonIcon: delegateRoot.isPlayingVideo && window.previewPlaying ? "󰏤" : "󰐊"
                             accentColor: Qt.rgba(ThemeBackend.surface0.r, ThemeBackend.surface0.g, ThemeBackend.surface0.b, 0.65)
                             textColor: ThemeBackend.text
-                            opacity: (delegateRoot.isPlayingVideo && globalPreviewPlayer.playbackState === MediaPlayer.PlayingState) ? (isHoveredOrHighlighted ? 0.9 : 0.18) : 0.88
-                            Behavior on opacity { NumberAnimation { duration: 250 } }
+                            opacity: (delegateRoot.isPlayingVideo && window.previewPlaying) ? (isHoveredOrHighlighted ? 0.9 : 0.18) : 0.88
+                            Behavior on opacity { NumberAnimation { duration: 200 } }
                             enabled: !window.isApplying
                             onClicked: delegateRoot.toggleVideoPlay()
                             transform: Matrix4x4 { property real s: -window.skewFactor; matrix: Qt.matrix4x4(1, s, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) }
@@ -1856,6 +1864,8 @@ Item {
                         anchors.fill: parent
                         radius: delegateRoot.dynamicRadius
                         color: "transparent"
+                        border.width: 0
+                        border.color: "transparent"
                     }
                 }
             }
@@ -1867,7 +1877,7 @@ Item {
         anchors.topMargin: window.isReady ? window.s(65) : window.s(-75)
         opacity: window.isReady ? 1.0 : 0.0
         Behavior on anchors.topMargin { NumberAnimation { duration: 650; easing.type: Easing.OutQuint } }
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
         anchors.horizontalCenter: parent.horizontalCenter; z: 200; height: window.s(48); width: filterRow.width + window.s(20); radius: ThemeBackend.borderRadius
         color: ThemeBackend.surfaceColor(QsWindow.window ? QsWindow.window.screen : null); border.width: 0; border.color: "transparent"
 
@@ -1885,9 +1895,9 @@ Item {
                 property real paddingLeft: window.showSpinner ? window.s(36) : window.s(12)
                 property real targetWidth: window.showNotification ? Math.min(notifTextDrawer.implicitWidth + paddingLeft + window.s(16), window.s(300)) : 0
                 width: targetWidth; visible: width > 0.1; radius: ThemeBackend.borderRadius; clip: true; anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation { duration: 250 } }
+                color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity); border.width: 0
+                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation { duration: 200 } }
 
                 Item {
                     visible: window.showSpinner
@@ -1909,7 +1919,7 @@ Item {
                     id: notifTextDrawer; anchors.left: parent ? parent.left : undefined; anchors.leftMargin: window.showSpinner ? window.s(36) : window.s(12); anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                     width: Math.min(implicitWidth, window.s(300) - anchors.leftMargin - window.s(12)); text: window.currentNotification; color: ThemeBackend.text; font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(12); font.bold: true; elide: Text.ElideRight
                     opacity: window.showNotification ? 0.9 : 0.0; Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                    Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on anchors.leftMargin { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
                 }
             }
 
@@ -1918,9 +1928,10 @@ Item {
                 property real expandedWidth: window.s(34) + monitorListRow.implicitWidth + window.s(6)
                 width: visible ? (window.isMonitorSelectorOpen ? expandedWidth : window.s(34)) : 0
                 radius: ThemeBackend.borderRadius; clip: true; anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                color: Qt.alpha(window.isMonitorSelectorOpen ? ThemeBackend.surface2 : ThemeBackend.surface0, ThemeBackend.elementOpacity)
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation { duration: 250 } }
+                color: Qt.alpha(window.isMonitorSelectorOpen ? ThemeBackend.surface2 : ThemeBackend.surface0, ThemeBackend.elementOpacity); border.color: window.isMonitorSelectorOpen ? ThemeBackend.text : ThemeBackend.surface1; border.width: window.isMonitorSelectorOpen ? window.s(1.5) : 1
+                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on border.color { ColorAnimation { duration: 200 } }
 
                 CanvasIconButton {
                     glassShadow: 0
@@ -1951,7 +1962,7 @@ Item {
 
                 Row {
                     id: monitorListRow; anchors.left: monitorToggleBtn.right; anchors.verticalCenter: parent ? parent.verticalCenter : undefined; spacing: window.s(6)
-                    opacity: window.isMonitorSelectorOpen ? 1.0 : 0.0; Behavior on opacity { NumberAnimation { duration: 250 } }
+                    opacity: window.isMonitorSelectorOpen ? 1.0 : 0.0; Behavior on opacity { NumberAnimation { duration: 200 } }
                     Repeater {
                         model: monitorModel
                         delegate: ClickButton {
@@ -2065,9 +2076,10 @@ Item {
                         anchors.fill: parent
                         radius: ThemeBackend.borderRadius
                         color: Qt.alpha(window.currentFilter === modelData.name ? ThemeBackend.surface2 : (filterMouse.containsMouse ? ThemeBackend.surface1 : ThemeBackend.surface0), ThemeBackend.elementOpacity)
+                        border.width: 0
                         scale: window.currentFilter === modelData.name ? 1.05 : (filterMouse.containsMouse ? 1.03 : 1.0)
                         Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        Behavior on color { ColorAnimation { duration: 200 } }
 
                         Text {
                             id: filterText
@@ -2077,7 +2089,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: window.s(12)
                             font.bold: window.currentFilter === modelData.name
-                            Behavior on color { ColorAnimation { duration: 250 } }
+                            Behavior on color { ColorAnimation { duration: 200 } }
                         }
 
                         MouseArea {
@@ -2095,6 +2107,7 @@ Item {
                         anchors.fill: parent
                         radius: ThemeBackend.borderRadius
                         color: modelData.hex
+                        border.width: 0
                         scale: window.currentFilter === modelData.name ? 1.05 : (colorMouse.containsMouse ? 1.03 : 1.0)
                         Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
 
@@ -2118,7 +2131,7 @@ Item {
                 clip: true
                 visible: width > 0.1
                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
                 CanvasIconButton {
                     glassShadow: 0
@@ -2163,7 +2176,7 @@ Item {
                 height: window.s(34)
                 clip: true
                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
                 CanvasIconButton {
                     glassShadow: 0

@@ -54,10 +54,6 @@ function webUrls(urls, text, nativeUrl) {
     if (!match) return;
 
     let url = match[0].replace(/[),.;]+$/, "");
-    try {
-      url = decodeURIComponent(url);
-    } catch (error) {}
-
     if (isWebUrl(url) && result.indexOf(url) === -1)
       result.push(url);
   }
@@ -158,6 +154,9 @@ function remoteImageCandidates(urls, text, html, nativeUrl) {
   if (html) {
     const source = String(html);
 
+    const videoSources = /<(?:video|source)\b[^>]*\bsrc=["']([^"']+)["']/gi;
+    let video;
+    while ((video = videoSources.exec(source)) !== null) add(video[1], "html");
     const src = source.match(
       /<img\b[^>]*\bsrc=["']([^"']+)["']/i
     );
@@ -341,7 +340,8 @@ function base64FromArrayBuffer(buffer) {
   const alphabet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-  const bytes = new Uint8Array(buffer);
+  let bytes;
+  try { bytes = new Uint8Array(buffer); } catch (error) { return ""; }
   const parts = [];
   let chunk = "";
 
